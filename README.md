@@ -14,7 +14,9 @@ Static microsites published with GitHub Pages at **https://sites.aranguibel.com*
 
 1. Create a folder with a URL-friendly name (lowercase, hyphens, no spaces).
 2. Put the site's files in it, with `index.html` as the entry point.
-3. Commit and push to `main`. GitHub Pages redeploys automatically, usually within a minute.
+3. Give it an icon: if the site ships its own app icon, the index card uses that; otherwise create a custom contextual icon for it in `assets/icons/` (square, legible at small sizes).
+4. Add its entry to the `SITES` array in the root `index.html` (path, title, one-line description, `icon`, monogram fallback) in the same commit.
+5. Commit and push to `main`. GitHub Pages redeploys automatically, usually within a minute.
 
 ## One-time setup (already done / reference)
 

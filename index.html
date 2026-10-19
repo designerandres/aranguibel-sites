@@ -142,17 +142,14 @@
     color: var(--brand); background: var(--headline);
   }
   @media (prefers-color-scheme: dark) { .mark { background: var(--brand); color: var(--on-brand); } }
+  .icon {
+    width: 3.6rem; height: 3.6rem; border-radius: 26%; flex: 0 0 auto;
+    object-fit: cover; aspect-ratio: 1 / 1; display: block;
+    border: 1px solid var(--edge);
+    box-shadow: 0 2px 8px rgba(39, 39, 39, 0.12);
+  }
   .card h3 { font-size: 1.08rem; font-weight: 600; letter-spacing: -0.005em; color: var(--headline); }
   .card p { font-size: 0.92rem; line-height: 1.55; color: var(--muted); flex: 1 1 auto; }
-  .path {
-    font-size: 0.7rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase;
-    color: var(--faint); display: flex; align-items: center; gap: 0.45rem;
-  }
-  .path .arrow {
-    color: var(--on-brand); background: var(--brand); border-radius: 3px;
-    width: 1.15rem; height: 1.15rem; display: inline-flex; align-items: center; justify-content: center;
-    font-size: 0.78rem; letter-spacing: 0;
-  }
 
   footer {
     border-top: 1px solid var(--edge);
@@ -198,17 +195,21 @@
 <script>
   // The index of published microsites. One entry per folder in the repo;
   // this list is updated in the same commit that publishes a new site.
+  // Every site gets its own contextual icon: prefer an icon the site itself
+  // ships (e.g. its app icon); otherwise a custom one lives in assets/icons/.
   const SITES = [
     {
       path: "max-pocket-agenda/",
       title: "MAX Pocket Agenda",
       description: "Adobe MAX 2026 companion — schedule, people, and places, in your pocket.",
+      icon: "max-pocket-agenda/icons/icon-512.png",
       monogram: "M"
     },
     {
       path: "hello/",
       title: "Hello",
       description: "The starter microsite — the pattern every site published here follows.",
+      icon: "assets/icons/hello.svg",
       monogram: "H"
     }
   ];
@@ -218,10 +219,10 @@
     const a = document.createElement("a");
     a.className = "card";
     a.href = site.path;
-    a.innerHTML =
-      '<div class="mark">' + site.monogram + "</div>" +
-      "<h3></h3><p></p>" +
-      '<div class="path"><span class="arrow" aria-hidden="true">&rarr;</span>sites.aranguibel.com/' + site.path + "</div>";
+    const visual = site.icon
+      ? '<img class="icon" src="' + site.icon + '" alt="" width="512" height="512">'
+      : '<div class="mark">' + site.monogram + "</div>";
+    a.innerHTML = visual + "<h3></h3><p></p>";
     a.querySelector("h3").textContent = site.title;
     a.querySelector("p").textContent = site.description;
     grid.appendChild(a);
