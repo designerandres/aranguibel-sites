@@ -2,26 +2,169 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>sites.aranguibel.com</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Microsites — Andres Aranguibel</title>
+<meta name="description" content="An index of microsites published at sites.aranguibel.com.">
+<meta name="theme-color" content="#0e1420" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#faf9f6" media="(prefers-color-scheme: light)">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Microsites">
+<link rel="apple-touch-icon" href="https://images.squarespace-cdn.com/content/v1/5d311ea7904b4f000185b806/1693582702674-01VR3O1YC7V7O1OAIQD8/Andres-HeadShot-2022.jpg?format=300w">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23fed600'/%3E%3Ctext x='32' y='45' font-family='Georgia,serif' font-style='italic' font-size='38' fill='%23131c2b' text-anchor='middle'%3Ea%3C/text%3E%3C/svg%3E">
 <style>
-  :root { color-scheme: light dark; }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-    min-height: 100vh; display: flex; align-items: center; justify-content: center;
-    background: #0f0f12; color: #f2f2f0; padding: 2rem;
+  :root {
+    --bg: #faf9f6;
+    --surface: #ffffff;
+    --surface-edge: rgba(19, 28, 43, 0.08);
+    --ink: #131c2b;
+    --muted: #5b6577;
+    --faint: #98a0ae;
+    --brand: #fed600;
+    --brand-ink: #131c2b;
+    --shadow: 0 1px 2px rgba(19, 28, 43, 0.05), 0 10px 30px -12px rgba(19, 28, 43, 0.16);
+    --shadow-lift: 0 2px 4px rgba(19, 28, 43, 0.06), 0 18px 42px -14px rgba(19, 28, 43, 0.26);
   }
-  main { max-width: 34rem; text-align: center; }
-  h1 { font-size: 1.6rem; font-weight: 600; letter-spacing: -0.02em; margin-bottom: 0.75rem; }
-  p { font-size: 1rem; line-height: 1.55; color: #a7a7ad; }
-  .dot { color: #7c6cf0; }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0e1420;
+      --surface: #182032;
+      --surface-edge: rgba(255, 255, 255, 0.09);
+      --ink: #f4f1e8;
+      --muted: #a7aebe;
+      --faint: #6d7688;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.45), 0 10px 30px -12px rgba(0, 0, 0, 0.6);
+      --shadow-lift: 0 2px 4px rgba(0, 0, 0, 0.5), 0 18px 42px -14px rgba(0, 0, 0, 0.7);
+    }
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    font-family: "Helvetica Neue", -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+    background: var(--bg); color: var(--ink);
+    min-height: 100vh; min-height: 100dvh;
+    padding: max(2.5rem, env(safe-area-inset-top)) 1.25rem max(3rem, env(safe-area-inset-bottom));
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 68rem; margin: 0 auto; }
+
+  .identity { display: flex; align-items: center; gap: 1.05rem; margin-bottom: 2.6rem; }
+  .avatar {
+    width: 4.4rem; height: 4.4rem; border-radius: 50%; flex: 0 0 auto;
+    object-fit: cover; object-position: 50% 22%;
+    border: 3px solid var(--brand);
+    box-shadow: 0 4px 14px rgba(19, 28, 43, 0.18);
+    background: var(--surface);
+  }
+  .wordmark { line-height: 1.25; }
+  .wordmark .name {
+    font-size: 0.98rem; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase;
+  }
+  .wordmark .role { font-size: 0.86rem; color: var(--muted); margin-top: 0.2rem; }
+  .wordmark .role em { font-family: Georgia, "Times New Roman", serif; }
+
+  header { margin-bottom: 2.4rem; }
+  .kicker {
+    display: flex; align-items: center; gap: 0.65rem;
+    font-size: 0.72rem; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 1rem;
+  }
+  .kicker::before { content: ""; width: 0.55rem; height: 0.55rem; background: var(--brand); flex: 0 0 auto; }
+  h1 {
+    font-size: clamp(2.5rem, 7vw, 3.9rem); font-weight: 800; letter-spacing: -0.03em; line-height: 1.02;
+    text-transform: uppercase;
+  }
+  h1 em {
+    font-family: Georgia, "Times New Roman", serif; font-style: italic; font-weight: 500;
+    text-transform: none; letter-spacing: -0.01em; color: var(--muted);
+  }
+  .sub { margin-top: 1rem; font-size: 1.02rem; line-height: 1.55; color: var(--muted); max-width: 36rem; }
+
+  .grid {
+    display: grid; gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 19rem), 1fr));
+  }
+  .card {
+    display: flex; flex-direction: column; gap: 0.85rem;
+    background: var(--surface); border: 1px solid var(--surface-edge); border-radius: 20px;
+    padding: 1.35rem 1.35rem 1.2rem; text-decoration: none; color: inherit;
+    box-shadow: var(--shadow);
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+    -webkit-tap-highlight-color: transparent;
+    min-height: 9.5rem;
+  }
+  .card:hover, .card:focus-visible { transform: translateY(-3px); box-shadow: var(--shadow-lift); outline: none; }
+  .card:active { transform: translateY(-1px) scale(0.995); }
+  .mark {
+    width: 2.9rem; height: 2.9rem; border-radius: 13px; flex: 0 0 auto;
+    display: flex; align-items: center; justify-content: center;
+    font-family: Georgia, "Times New Roman", serif; font-style: italic; font-size: 1.5rem;
+    color: var(--brand); background: var(--ink);
+  }
+  @media (prefers-color-scheme: dark) { .mark { background: var(--brand); color: var(--brand-ink); } }
+  .card h2 { font-size: 1.14rem; font-weight: 700; letter-spacing: -0.012em; }
+  .card p { font-size: 0.93rem; line-height: 1.5; color: var(--muted); flex: 1 1 auto; }
+  .path { font-size: 0.8rem; font-weight: 600; color: var(--faint); display: flex; align-items: center; gap: 0.35rem; }
+  .path .arrow { color: var(--ink); font-weight: 800; }
+  .card:hover .path .arrow { color: var(--brand-ink); background: var(--brand); border-radius: 4px; padding: 0 0.22rem; margin: 0 -0.22rem; }
+
+  footer { margin-top: 3rem; font-size: 0.82rem; color: var(--faint); line-height: 1.6; }
+  footer .rule { height: 3px; width: 3.2rem; background: var(--brand); margin-bottom: 1.1rem; }
 </style>
 </head>
 <body>
-<main>
-  <h1>sites<span class="dot">.</span>aranguibel<span class="dot">.</span>com</h1>
-  <p>Microsites live at individual paths on this domain. If you were given a link, it goes straight to the site — there's nothing to browse from here.</p>
-</main>
+<div class="wrap">
+
+  <div class="identity">
+    <img class="avatar" alt="Portrait of Andres Aranguibel"
+         src="https://images.squarespace-cdn.com/content/v1/5d311ea7904b4f000185b806/1693582702674-01VR3O1YC7V7O1OAIQD8/Andres-HeadShot-2022.jpg?format=300w">
+    <div class="wordmark">
+      <div class="name">Andres Aranguibel</div>
+      <div class="role"><em>a design by</em> — aranguibel.com</div>
+    </div>
+  </div>
+
+  <header>
+    <div class="kicker">sites.aranguibel.com</div>
+    <h1>Microsites <em>in one place.</em></h1>
+    <p class="sub">Every site published on this domain, gathered into a single index. Tap a card to open it — or add this page to your home screen and treat it like an app.</p>
+  </header>
+
+  <nav class="grid" id="sites" aria-label="Microsites"></nav>
+
+  <footer>
+    <div class="rule"></div>
+    New sites appear here as they're published. Each one also has its own direct link, if you'd rather bookmark a single site.
+  </footer>
+</div>
+
+<script>
+  // The index of published microsites. One entry per folder in the repo;
+  // this list is updated in the same commit that publishes a new site.
+  const SITES = [
+    {
+      path: "hello/",
+      title: "Hello",
+      description: "The starter microsite — the pattern every site published here follows.",
+      monogram: "H"
+    }
+  ];
+
+  const grid = document.getElementById("sites");
+  for (const site of SITES) {
+    const a = document.createElement("a");
+    a.className = "card";
+    a.href = site.path;
+    a.innerHTML =
+      '<div class="mark">' + site.monogram + "</div>" +
+      "<h2></h2><p></p>" +
+      '<div class="path">sites.aranguibel.com/' + site.path +
+      ' <span class="arrow" aria-hidden="true">&rarr;</span></div>';
+    a.querySelector("h2").textContent = site.title;
+    a.querySelector("p").textContent = site.description;
+    grid.appendChild(a);
+  }
+</script>
 </body>
 </html>

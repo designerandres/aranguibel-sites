@@ -6,7 +6,7 @@ Static microsites published with GitHub Pages at **https://sites.aranguibel.com*
 
 - Each microsite is a top-level folder containing an `index.html` (plus any CSS/JS/assets it needs).
 - A folder named `canada-trip` publishes at `https://sites.aranguibel.com/canada-trip/`.
-- The repo root has its own `index.html` (a minimal landing page — microsites are reached by direct link, not browsed from the root).
+- The repo root has its own `index.html`: a landing page that indexes every microsite as a tappable card (Andres bookmarks it on his phone's home screen). The list lives in the `SITES` array in that file — **whenever a new microsite is published, add its entry to `SITES` in the same commit** (path, title, one-line description, monogram letter, tile gradient).
 - `.nojekyll` disables Jekyll processing, so folders and files are served exactly as committed (important for folders starting with underscores and for pre-built artifacts).
 - `CNAME` contains `sites.aranguibel.com` — do not delete it, GitHub Pages uses it for the custom domain.
 
