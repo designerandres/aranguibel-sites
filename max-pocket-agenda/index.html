@@ -1,0 +1,439 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Andrés Aranguibel's Adobe MAX 2026 companion: today's sessions, full agenda, venue map, people to meet and hotel.">
+<meta name="theme-color" content="#f3f2ee" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f0f12" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MAX Agenda">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<title>MAX Pocket Agenda</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap">
+<style>
+:root{
+  --bg:#f3f2ee;--card:#ffffff;--card2:#f6f5f1;--ink:#121214;--sec:#6c6b70;--ter:#9a999e;--line:rgba(18,18,20,.08);--line2:rgba(18,18,20,.14);
+  --hero1:#0d2b6e;--hero2:#1a4fa3;--hero-ink:#ffffff;--hero-sec:rgba(255,255,255,.78);
+  --accent:#1a4fa3;--red:#d2222d;--teal:#1d8a7a;--blue:#1a4fa3;--grey:#8f8e93;--purple:#6b3fa0;--amber:#b9730a;--green:#1f8a3a;
+  --pill:#eceae4;--pill-on:#ffffff;--tabbar:rgba(255,255,255,.86);--tab-on:#fbe9ea;--tab-on-ink:#c01c27;--shadow:0 8px 30px rgba(18,18,20,.12);--sheet-shadow:0 -10px 40px rgba(18,18,20,.22);
+  --now-bg:#fff6df;--now-ink:#7a4a00;--done:#1f8a3a;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f0f12;--card:#1b1b20;--card2:#232329;--ink:#f2f1ee;--sec:#a2a1a8;--ter:#6e6d74;--line:rgba(255,255,255,.08);--line2:rgba(255,255,255,.14);
+  --hero1:#0a1f52;--hero2:#163f8e;--hero-ink:#ffffff;--hero-sec:rgba(255,255,255,.74);
+  --accent:#8db0ee;--red:#ef5a63;--teal:#4fc2ad;--blue:#8db0ee;--grey:#8f8e93;--purple:#b08ae0;--amber:#f0b454;--green:#7fd49a;
+  --pill:#26262c;--pill-on:#3a3a42;--tabbar:rgba(27,27,32,.88);--tab-on:#3a1f22;--tab-on-ink:#ff8b93;--shadow:0 8px 30px rgba(0,0,0,.5);--sheet-shadow:0 -10px 40px rgba(0,0,0,.6);
+  --now-bg:#3a2a10;--now-ink:#ffd089;--done:#7fd49a;}}
+:root[data-theme="dark"]{
+  --bg:#0f0f12;--card:#1b1b20;--card2:#232329;--ink:#f2f1ee;--sec:#a2a1a8;--ter:#6e6d74;--line:rgba(255,255,255,.08);--line2:rgba(255,255,255,.14);
+  --hero1:#0a1f52;--hero2:#163f8e;--hero-ink:#ffffff;--hero-sec:rgba(255,255,255,.74);
+  --accent:#8db0ee;--red:#ef5a63;--teal:#4fc2ad;--blue:#8db0ee;--grey:#8f8e93;--purple:#b08ae0;--amber:#f0b454;--green:#7fd49a;
+  --pill:#26262c;--pill-on:#3a3a42;--tabbar:rgba(27,27,32,.88);--tab-on:#3a1f22;--tab-on-ink:#ff8b93;--shadow:0 8px 30px rgba(0,0,0,.5);--sheet-shadow:0 -10px 40px rgba(0,0,0,.6);
+  --now-bg:#3a2a10;--now-ink:#ffd089;--done:#7fd49a;}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",Helvetica,Arial,sans-serif;font-size:16px;line-height:1.35}
+.serif{font-family:"Newsreader",ui-serif,"New York","Iowan Old Style",Georgia,serif;font-weight:500;letter-spacing:-.01em}
+.num{font-variant-numeric:tabular-nums}
+.eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--sec);font-weight:500}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;margin:0;cursor:pointer;text-align:left}
+a{color:var(--accent);text-decoration:none}
+button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:8px}
+.wrap{max-width:600px;margin:0 auto;padding:calc(14px + env(safe-area-inset-top)) 16px calc(110px + env(safe-area-inset-bottom))}
+.view[hidden]{display:none}
+.ph{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:14px}
+.ph h1{font-size:34px;line-height:1.05;margin:2px 0 0}
+.ph .eyebrow{display:block}
+.avatar{width:42px;height:42px;border-radius:50%;background:var(--red);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:15px;flex:none;letter-spacing:.02em}
+h2.sec{font-size:24px;margin:22px 0 10px;line-height:1.1}
+.secrow{display:flex;justify-content:space-between;align-items:baseline;margin:22px 0 10px}
+.secrow h2{margin:0}
+.secrow a,.secrow button{color:var(--red);font-size:15px;font-weight:500}
+.hint{color:var(--ter);font-size:13.5px;margin:8px 4px 0}
+
+/* hero */
+.hero{background:linear-gradient(145deg,var(--hero1),var(--hero2));color:var(--hero-ink);border-radius:18px;padding:18px 18px 16px;box-shadow:var(--shadow)}
+.hero .eyebrow{color:var(--hero-sec)}
+.hero h2{font-size:30px;margin:6px 0 6px;line-height:1.05}
+.hero p{margin:0;color:var(--hero-sec);font-size:15.5px;line-height:1.4}
+.hero p b{color:var(--hero-ink);font-weight:600}
+.hero .acts{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.hero .acts button,.hero .acts a{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.28);color:#fff;padding:9px 15px;border-radius:999px;font-weight:600;font-size:15px}
+.hero .acts .solid{background:#fff;color:var(--hero1);border-color:#fff}
+.hero .live{display:flex;align-items:center;gap:8px;margin-top:6px}
+.hero .live .dot{width:8px;height:8px;border-radius:50%;background:#ffd089;box-shadow:0 0 0 4px rgba(255,208,137,.25)}
+
+/* grouped list */
+.group{background:var(--card);border-radius:16px;overflow:hidden;box-shadow:0 1px 0 var(--line)}
+.row{display:flex;align-items:center;gap:12px;width:100%;padding:13px 14px 13px 16px;border-top:1px solid var(--line);min-height:60px}
+.group .row:first-child{border-top:0}
+.row .time{width:58px;flex:none}
+.row .time .t{font-weight:600;font-size:16px;line-height:1.1}
+.row .time .t small{font-size:11px;font-weight:500;color:var(--sec);margin-left:2px;text-transform:uppercase}
+.row .time .u{color:var(--sec);font-size:12.5px;margin-top:2px}
+.row .main{flex:1;min-width:0}
+.row .ttl{font-weight:600;font-size:16px;line-height:1.25;text-wrap:balance}
+.row .sub{display:flex;align-items:center;gap:7px;color:var(--sec);font-size:13.5px;margin-top:3px;line-height:1.3}
+.row .sub .d{width:7px;height:7px;border-radius:50%;flex:none;background:var(--grey)}
+.d.key{background:var(--red)}.d.lab{background:var(--blue)}.d.sess{background:var(--ink)}.d.demo{background:var(--grey)}.d.eve{background:var(--teal)}.d.travel{background:var(--purple)}
+.row .chev{color:var(--ter);flex:none;width:9px;height:14px}
+.row .ic{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;color:#fff;flex:none}
+.row .ic svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.row.live{background:var(--now-bg)}
+.row.live .ttl::after{content:"Now";font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--now-ink);margin-left:8px;vertical-align:1px}
+.row.past .ttl,.row.past .time{opacity:.5}
+.row.done .ttl{text-decoration:line-through;text-decoration-color:var(--done);opacity:.6}
+.gaprow{padding:10px 16px 10px 86px;color:var(--sec);font-size:13.5px;line-height:1.35;border-top:1px solid var(--line);background:var(--card2)}
+.gaprow b{color:var(--ink);font-weight:600}
+
+/* segmented */
+.seg{display:flex;background:var(--pill);border-radius:12px;padding:3px;margin-bottom:14px}
+.seg button{flex:1;text-align:center;padding:9px 6px;border-radius:10px;font-weight:500;font-size:15px;color:var(--sec)}
+.seg button[aria-selected="true"]{background:var(--pill-on);color:var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.12);font-weight:600}
+.daynote{color:var(--sec);font-size:14.5px;margin:0 2px 12px;line-height:1.4}
+.daynote b{color:var(--ink);font-weight:600}
+
+/* map */
+.mapcard{background:var(--card);border-radius:16px;padding:12px 10px 6px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;color:var(--sec);font-size:12.5px;margin:10px 6px 4px}
+.legend i{display:inline-block;width:18px;height:8px;border-radius:4px;vertical-align:middle;margin-right:5px}
+.pn{width:28px;height:28px;border-radius:50%;background:var(--ink);color:var(--bg);display:flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;flex:none}
+.pn.q{background:var(--ter)}.pn.h{background:var(--purple);color:#fff}
+
+/* people */
+.pav{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;font-size:14px;flex:none;letter-spacing:.02em}
+
+/* tab bar */
+.tabs{position:fixed;left:0;right:0;bottom:calc(14px + env(safe-area-inset-bottom));z-index:30;display:flex;justify-content:center;gap:10px;padding:0 16px;pointer-events:none}
+.tabs .bar,.tabs .srch{pointer-events:auto;background:var(--tabbar);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);box-shadow:var(--shadow);border-radius:999px}
+.tabs .bar{display:flex;padding:5px}
+.tabs .bar button{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 14px 7px;border-radius:999px;font-size:11px;font-weight:500;color:var(--sec);min-width:72px}
+.tabs .bar button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.tabs .bar button[aria-selected="true"]{background:var(--tab-on);color:var(--tab-on-ink)}
+.tabs .srch{width:64px;display:flex;align-items:center;justify-content:center;color:var(--ink)}
+.tabs .srch svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round}
+@media (max-width:380px){.tabs .bar button{min-width:60px;padding:8px 10px 7px}}
+
+/* sheet */
+.scrim{position:fixed;inset:0;background:rgba(10,10,12,.45);z-index:40;opacity:0;pointer-events:none;transition:opacity .22s}
+.scrim.open{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:41;max-width:600px;margin:0 auto;height:min(92vh,100dvh - 24px);background:var(--bg);border-radius:22px 22px 0 0;box-shadow:var(--sheet-shadow);transform:translateY(104%);transition:transform .3s cubic-bezier(.2,.8,.2,1);display:flex;flex-direction:column}
+.sheet.open{transform:none}
+@media (prefers-reduced-motion:reduce){.sheet,.scrim{transition:none}}
+.sheet .grab{width:38px;height:5px;border-radius:3px;background:var(--line2);margin:8px auto 0;flex:none}
+.sheet .x{position:absolute;top:14px;right:14px;width:38px;height:38px;border-radius:50%;background:var(--card);box-shadow:0 1px 4px rgba(0,0,0,.14);display:flex;align-items:center;justify-content:center;font-size:18px;line-height:1}
+.sheet .sb{overflow:auto;padding:10px 18px calc(24px + env(safe-area-inset-bottom));-webkit-overflow-scrolling:touch}
+.sheet h3{font-size:30px;line-height:1.08;margin:6px 48px 10px 0;text-wrap:balance}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.chip{font-size:13px;font-weight:600;padding:5px 11px;border-radius:999px;background:var(--pill);color:var(--ink)}
+.chip.red{background:var(--red);color:#fff}.chip.green{background:#e4f3e7;color:#1f7a3a}.chip.blue{background:var(--blue);color:#fff}.chip.teal{background:var(--teal);color:#fff}.chip.purple{background:var(--purple);color:#fff}
+:root[data-theme="dark"] .chip.green,:root:not([data-theme="light"]) .chip.green{}
+.card{background:var(--card);border-radius:16px;padding:14px 16px;margin-bottom:12px}
+.card .eyebrow{display:block;margin-bottom:6px}
+.card p{margin:0;font-size:16px;line-height:1.45}
+.card p+p{margin-top:8px}
+.card ul{margin:0;padding-left:18px;font-size:15.5px;line-height:1.45}
+.card ul li+li{margin-top:6px}
+.loc{display:flex;align-items:center;gap:12px}
+.loc .main{flex:1;min-width:0}
+.loc .nm{font-weight:600;font-size:17px}
+.loc .sb2{color:var(--sec);font-size:14px;margin-top:1px}
+.loc .mapbtn{background:var(--pill);padding:9px 15px;border-radius:999px;font-weight:600;font-size:15px;flex:none}
+.note{display:inline-block;background:var(--now-bg);color:var(--now-ink);font-size:13.5px;font-weight:500;padding:5px 11px;border-radius:999px;margin-top:10px}
+.sheet h4{font-size:22px;margin:18px 0 8px;line-height:1.1}
+.pchip{display:flex;align-items:center;gap:10px;width:100%;padding:10px 0;border-top:1px solid var(--line)}
+.pchip:first-of-type{border-top:0}
+.pchip .pav{width:34px;height:34px;font-size:12.5px}
+.pchip .n{font-weight:600}
+.pchip .r{color:var(--sec);font-size:13.5px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 2px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:11px 18px;border-radius:999px;background:var(--card);font-weight:600;font-size:15.5px;color:var(--ink);box-shadow:0 1px 0 var(--line)}
+.btn.primary{background:var(--accent);color:#fff}
+.btn.done{background:var(--done);color:#fff}
+.srchbox{display:flex;align-items:center;gap:10px;background:var(--card);border-radius:14px;padding:12px 14px;margin-bottom:12px}
+.srchbox input{flex:1;border:0;background:none;font:inherit;font-size:17px;color:var(--ink);outline:none}
+.srchbox svg{width:20px;height:20px;stroke:var(--sec);fill:none;stroke-width:2;stroke-linecap:round}
+.kv{display:grid;grid-template-columns:1fr 1fr;gap:12px 14px}
+.kv .eyebrow{display:block;margin-bottom:3px}
+.kv b{font-weight:600;font-size:16px}
+.kv small{display:block;color:var(--sec);font-size:13px;line-height:1.3;margin-top:2px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <!-- TODAY -->
+  <section class="view" id="v-today">
+    <div class="ph"><div><span class="eyebrow">Andrés's agenda · Nov 9 to 12</span><h1 class="serif">Adobe MAX <span style="color:var(--sec)">2026</span></h1></div><div class="avatar">AA</div></div>
+    <div class="hero" id="hero"></div>
+    <div class="secrow"><h2 class="serif" id="todayTitle">Today</h2><button id="seeAll">See all</button></div>
+    <div class="group" id="todayList"></div>
+    <p class="hint" id="todayHint"></p>
+    <h2 class="sec serif">Good to know</h2>
+    <div class="group" id="gtk"></div>
+    <p class="hint">Built from your My Schedule on reg.adobe.com, read Oct 16. Miami time. Final rooms post in the MAX app the week before. Not produced by Adobe.</p>
+  </section>
+
+  <!-- AGENDA -->
+  <section class="view" id="v-agenda" hidden>
+    <div class="ph"><div><span class="eyebrow">Nov 9 to 12 · Miami Beach</span><h1 class="serif">Agenda</h1></div></div>
+    <div class="seg" id="dayseg" role="tablist"></div>
+    <p class="daynote" id="daynote"></p>
+    <div class="group" id="agendaList"></div>
+    <p class="hint">Tap a session for the brief. Seats are held until 3 minutes before start.</p>
+  </section>
+
+  <!-- MAP -->
+  <section class="view" id="v-map" hidden>
+    <div class="ph"><div><span class="eyebrow">Miami Beach Convention Center</span><h1 class="serif">Map</h1></div></div>
+    <div class="mapcard"><svg viewBox="0 0 700 470" width="100%" style="display:block;max-width:100%;height:auto" xmlns="http://www.w3.org/2000/svg"><defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="#fff5f7"/><line x1="0" y1="0" x2="0" y2="6" stroke="#f1c9d3" stroke-width="1"/></pattern><pattern id="dock" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="#efebe4"/><line x1="0" y1="0" x2="0" y2="6" stroke="#dcd6cc" stroke-width="1"/></pattern></defs><text x="40" y="22" font-family="Plex" font-size="7.5" font-weight="600" fill="#1a1a1a">&#9664; North</text><text x="170" y="22" font-family="PlexMono" font-size="6.3" letter-spacing="0.9" fill="#6f6a63" text-anchor="middle">WASHINGTON AVE · EAST SIDE</text><text x="350" y="462" font-family="PlexMono" font-size="6.3" letter-spacing="0.9" fill="#6f6a63" text-anchor="middle">CONVENTION CENTER DR · WEST SIDE</text><rect x="40" y="36" width="620" height="412" rx="10" fill="#f4f0ea" stroke="#d9d2c7"/><rect x="100" y="46" width="500" height="26" fill="#ebe6de"/><text x="350" y="63" font-family="PlexMono" font-size="6.3" letter-spacing="0.9" fill="#6f6a63" text-anchor="middle">EAST LOBBY</text><rect x="52" y="90" width="38" height="250" fill="url(#dock)"/><text transform="translate(71,215) rotate(-90)" font-family="PlexMono" font-size="6.3" letter-spacing="0.9" fill="#6f6a63" text-anchor="middle">NORTH DOCK</text><rect x="610" y="90" width="38" height="250" fill="url(#dock)"/><text transform="translate(629,215) rotate(-90)" font-family="PlexMono" font-size="6.3" letter-spacing="0.9" fill="#6f6a63" text-anchor="middle">SOUTH DOCK</text><path d="M60 350 L640 350 L640 440 Q350 456 60 440 Z" fill="#ebe6de"/><text x="350" y="420" font-family="News" font-size="11" font-weight="600" fill="#1a1a1a" text-anchor="middle">Grand Lobby</text><text x="350" y="434" font-family="Plex" font-size="7.2" fill="#555555" text-anchor="middle">Faces Convention Center Dr</text><rect x="100" y="90" width="118" height="250" fill="#fdf1f1" stroke="#d2222d" stroke-width="1.4"/><circle cx="118" cy="108" r="8" fill="#1a1a1a"/><text x="118" y="111.2" font-family="Plex" font-size="8.5" font-weight="600" fill="#ffffff" text-anchor="middle">1</text><text x="159" y="205" font-family="News" font-size="17" fill="#1a1a1a" text-anchor="middle">Hall A</text><text x="159" y="220" font-family="Plex" font-size="7.2" fill="#555555" text-anchor="middle">Keynotes, Sneaks</text><rect x="114" y="232" width="26" height="11" rx="5.5" fill="#1d8a7a"/><text x="127" y="240" font-family="PlexMono" font-size="6" text-anchor="middle" fill="#ffffff">Tue</text><rect x="144" y="232" width="26" height="11" rx="5.5" fill="#c2185b"/><text x="157" y="240" font-family="PlexMono" font-size="6" text-anchor="middle" fill="#ffffff">Wed</text><rect x="174" y="232" width="26" height="11" rx="5.5" fill="#eeeae4"/><text x="187" y="240" font-family="PlexMono" font-size="6" text-anchor="middle" fill="#b9b3aa">Thu</text><rect x="218" y="90" width="372" height="250" fill="url(#hatch)" stroke="#d2222d" stroke-width="1.4"/><line x1="342" y1="90" x2="342" y2="340" stroke="#e7b7c3" stroke-width="1"/><line x1="466" y1="90" x2="466" y2="340" stroke="#e7b7c3" stroke-width="1"/><text x="280" y="332" font-family="PlexMono" font-size="6.3" letter-spacing="0.9" fill="#6f6a63" text-anchor="middle">HALL B</text><text x="404" y="332" font-family="PlexMono" font-size="6.3" letter-spacing="0.9" fill="#6f6a63" text-anchor="middle">HALL C</text><text x="528" y="332" font-family="PlexMono" font-size="6.3" letter-spacing="0.9" fill="#6f6a63" text-anchor="middle">HALL D</text><circle cx="236" cy="108" r="8" fill="#1a1a1a"/><text x="236" y="111.2" font-family="Plex" font-size="8.5" font-weight="600" fill="#ffffff" text-anchor="middle">2</text><text x="404" y="170" font-family="News" font-size="17" fill="#1a1a1a" text-anchor="middle">Creative Park</text><text x="404" y="186" font-family="Plex" font-size="7.2" fill="#555555" text-anchor="middle">Discovery Stage · Creator Stage · Demo Theater</text><text x="404" y="198" font-family="Plex" font-size="7.2" fill="#555555" text-anchor="middle">Session Rooms 1 to 6 · booths · Braindate · Reception</text><rect x="359" y="208" width="26" height="11" rx="5.5" fill="#1d8a7a"/><text x="372" y="216" font-family="PlexMono" font-size="6" text-anchor="middle" fill="#ffffff">Tue</text><rect x="389" y="208" width="26" height="11" rx="5.5" fill="#eeeae4"/><text x="402" y="216" font-family="PlexMono" font-size="6" text-anchor="middle" fill="#b9b3aa">Wed</text><rect x="419" y="208" width="26" height="11" rx="5.5" fill="#1a4fa3"/><text x="432" y="216" font-family="PlexMono" font-size="6" text-anchor="middle" fill="#ffffff">Thu</text><text x="404" y="240" font-family="Plex" font-style="italic" font-size="6.8" fill="#8a5a66" text-anchor="middle">MAX has not published which hall or the stage layout.</text><text x="404" y="252" font-family="Plex" font-style="italic" font-size="6.8" fill="#8a5a66" text-anchor="middle">Drawn across Halls B to D as an assumption.</text><rect x="108" y="352" width="120" height="68" rx="3" fill="#fdf1f1" stroke="#d2222d" stroke-width="1.2"/><circle cx="118" cy="362" r="8" fill="#1a1a1a"/><text x="118" y="365.2" font-family="Plex" font-size="8.5" font-weight="600" fill="#ffffff" text-anchor="middle">3</text><text x="168" y="376" font-family="News" font-size="11" font-weight="600" fill="#1a1a1a" text-anchor="middle">Ocean Drive</text><text x="168" y="389" font-family="Plex" font-size="7.2" fill="#555555" text-anchor="middle">Rooms A to H</text><rect x="123.5" y="399.5" width="25" height="10" rx="5" fill="none" stroke="#1d8a7a" stroke-width="1" stroke-dasharray="2 1.5"/><text x="136" y="407" font-family="PlexMono" font-size="6" text-anchor="middle" fill="#1d8a7a">Tue</text><rect x="153" y="399" width="26" height="11" rx="5.5" fill="#eeeae4"/><text x="166" y="407" font-family="PlexMono" font-size="6" text-anchor="middle" fill="#b9b3aa">Wed</text><rect x="183.5" y="399.5" width="25" height="10" rx="5" fill="none" stroke="#1a4fa3" stroke-width="1" stroke-dasharray="2 1.5"/><text x="196" y="407" font-family="PlexMono" font-size="6" text-anchor="middle" fill="#1a4fa3">Thu</text><rect x="470" y="352" width="120" height="68" rx="3" fill="#fdf1f1" stroke="#d2222d" stroke-width="1.2"/><circle cx="480" cy="362" r="8" fill="#1a1a1a"/><text x="480" y="365.2" font-family="Plex" font-size="8.5" font-weight="600" fill="#ffffff" text-anchor="middle">4</text><text x="530" y="376" font-family="News" font-size="11" font-weight="600" fill="#1a1a1a" text-anchor="middle">Lincoln Road</text><text x="530" y="389" font-family="Plex" font-size="7.2" fill="#555555" text-anchor="middle">Rooms A to H</text><rect x="485.5" y="399.5" width="25" height="10" rx="5" fill="none" stroke="#1d8a7a" stroke-width="1" stroke-dasharray="2 1.5"/><text x="498" y="407" font-family="PlexMono" font-size="6" text-anchor="middle" fill="#1d8a7a">Tue</text><rect x="515" y="399" width="26" height="11" rx="5.5" fill="#eeeae4"/><text x="528" y="407" font-family="PlexMono" font-size="6" text-anchor="middle" fill="#b9b3aa">Wed</text><rect x="545.5" y="399.5" width="25" height="10" rx="5" fill="none" stroke="#1a4fa3" stroke-width="1" stroke-dasharray="2 1.5"/><text x="558" y="407" font-family="PlexMono" font-size="6" text-anchor="middle" fill="#1a4fa3">Thu</text><rect x="486" y="50" width="96" height="48" rx="3" fill="#fff" stroke="#d2222d" stroke-width="1.2"/><circle cx="486" cy="50" r="8" fill="#1a1a1a"/><text x="486" y="53.2" font-family="Plex" font-size="8.5" font-weight="600" fill="#ffffff" text-anchor="middle">5</text><text x="534" y="68" font-family="News" font-size="11" font-weight="600" fill="#1a1a1a" text-anchor="middle">Room 232</text><text x="534" y="79" font-family="PlexMono" font-size="5.6" letter-spacing="0.8" fill="#d2222d" text-anchor="middle">LEVEL 2</text><rect x="489.5" y="85.5" width="25" height="10" rx="5" fill="none" stroke="#1d8a7a" stroke-width="1" stroke-dasharray="2 1.5"/><text x="502" y="93" font-family="PlexMono" font-size="6" text-anchor="middle" fill="#1d8a7a">Tue</text><rect x="519.5" y="85.5" width="25" height="10" rx="5" fill="none" stroke="#c2185b" stroke-width="1" stroke-dasharray="2 1.5"/><text x="532" y="93" font-family="PlexMono" font-size="6" text-anchor="middle" fill="#c2185b">Wed</text><rect x="549" y="85" width="26" height="11" rx="5.5" fill="#eeeae4"/><text x="562" y="93" font-family="PlexMono" font-size="6" text-anchor="middle" fill="#b9b3aa">Thu</text><rect x="598" y="44" width="98" height="60" rx="3" fill="#fff" stroke="#c2185b" stroke-width="1.2"/><circle cx="598" cy="44" r="8" fill="#1a1a1a"/><text x="598" y="47.2" font-family="Plex" font-size="8.5" font-weight="600" fill="#ffffff" text-anchor="middle">8</text><text x="647" y="62" font-family="News" font-size="11" font-weight="600" fill="#1a1a1a" text-anchor="middle">Bash venue</text><text x="647" y="73" font-family="Plex" font-size="7.2" fill="#555555" text-anchor="middle">Off site, not yet named</text><text x="647" y="82" font-family="Plex" font-size="7.2" fill="#555555" text-anchor="middle">Wed 7:30 pm after Sneaks</text><rect x="602" y="89" width="26" height="11" rx="5.5" fill="#eeeae4"/><text x="615" y="97" font-family="PlexMono" font-size="6" text-anchor="middle" fill="#b9b3aa">Tue</text><rect x="632" y="89" width="26" height="11" rx="5.5" fill="#c2185b"/><text x="645" y="97" font-family="PlexMono" font-size="6" text-anchor="middle" fill="#ffffff">Wed</text><rect x="662" y="89" width="26" height="11" rx="5.5" fill="#eeeae4"/><text x="675" y="97" font-family="PlexMono" font-size="6" text-anchor="middle" fill="#b9b3aa">Thu</text><line x1="598" y1="74" x2="588" y2="74" stroke="#c2185b" stroke-dasharray="2 2"/><rect x="596" y="246" width="96" height="48" rx="3" fill="#fff" stroke="#d2222d" stroke-width="1.2"/><circle cx="596" cy="246" r="8" fill="#1a1a1a"/><text x="596" y="249.2" font-family="Plex" font-size="8.5" font-weight="600" fill="#ffffff" text-anchor="middle">6</text><text x="644" y="264" font-family="News" font-size="11" font-weight="600" fill="#1a1a1a" text-anchor="middle">Room 222</text><text x="644" y="275" font-family="PlexMono" font-size="5.6" letter-spacing="0.8" fill="#d2222d" text-anchor="middle">LEVEL 2</text><rect x="599.5" y="281.5" width="25" height="10" rx="5" fill="none" stroke="#1d8a7a" stroke-width="1" stroke-dasharray="2 1.5"/><text x="612" y="289" font-family="PlexMono" font-size="6" text-anchor="middle" fill="#1d8a7a">Tue</text><rect x="629.5" y="281.5" width="25" height="10" rx="5" fill="none" stroke="#c2185b" stroke-width="1" stroke-dasharray="2 1.5"/><text x="642" y="289" font-family="PlexMono" font-size="6" text-anchor="middle" fill="#c2185b">Wed</text><rect x="659" y="281" width="26" height="11" rx="5.5" fill="#eeeae4"/><text x="672" y="289" font-family="PlexMono" font-size="6" text-anchor="middle" fill="#b9b3aa">Thu</text><rect x="600" y="334" width="48" height="84" rx="3" fill="#fff" stroke="#d2222d" stroke-width="1.2"/><circle cx="600" cy="334" r="8" fill="#1a1a1a"/><text x="600" y="337.2" font-family="Plex" font-size="8.5" font-weight="600" fill="#ffffff" text-anchor="middle">7</text><text x="624" y="352" font-family="News" font-size="11" font-weight="600" fill="#1a1a1a" text-anchor="middle">105</text><text x="624" y="362" font-family="PlexMono" font-size="5.6" letter-spacing="0.8" fill="#d2222d" text-anchor="middle">LEVEL 1</text><rect x="611.5" y="368.5" width="25" height="10" rx="5" fill="none" stroke="#1d8a7a" stroke-width="1" stroke-dasharray="2 1.5"/><text x="624" y="376" font-family="PlexMono" font-size="6" text-anchor="middle" fill="#1d8a7a">Tue</text><rect x="611.5" y="382.5" width="25" height="10" rx="5" fill="none" stroke="#c2185b" stroke-width="1" stroke-dasharray="2 1.5"/><text x="624" y="390" font-family="PlexMono" font-size="6" text-anchor="middle" fill="#c2185b">Wed</text><rect x="611" y="396" width="26" height="11" rx="5.5" fill="#eeeae4"/><text x="624" y="404" font-family="PlexMono" font-size="6" text-anchor="middle" fill="#b9b3aa">Thu</text><rect x="268" y="4" width="214" height="26" rx="3" fill="#fff" stroke="#6b3fa0" stroke-width="1.2"/><circle cx="268" cy="4" r="8" fill="#1a1a1a"/><text x="268" y="7.2" font-family="Plex" font-size="8.5" font-weight="600" fill="#ffffff" text-anchor="middle">9</text><text x="375" y="15" font-family="News" font-size="11" font-weight="600" fill="#1a1a1a" text-anchor="middle">Casa Faena · 3500 Collins Ave</text><text x="375" y="25" font-family="Plex" font-size="7.2" fill="#555555" text-anchor="middle">Your hotel, 1.5 mi north · leave Tue 8:15 · Wed 9:15 · Thu 7:45</text><line x1="375" y1="30" x2="375" y2="36" stroke="#6b3fa0" stroke-dasharray="2 2"/></svg>
+      <div class="legend"><span><i style="background:#1d8a7a"></i>Tue</span><span><i style="background:#c2185b"></i>Wed</span><span><i style="background:#1a4fa3"></i>Thu</span><span>Dashed = possible, not posted yet</span></div>
+    </div>
+    <h2 class="sec serif">Places</h2>
+    <div class="group" id="placeList"></div>
+    <p class="hint">Schematic from the venue's Level 1 and 2 floor plans, not to scale.</p>
+  </section>
+
+  <!-- PEOPLE -->
+  <section class="view" id="v-people" hidden>
+    <div class="ph"><div><span class="eyebrow" id="peopleCount"></span><h1 class="serif">People</h1></div></div>
+    <h2 class="sec serif" style="margin-top:6px">First priority</h2>
+    <div class="group" id="people1"></div>
+    <h2 class="sec serif">Worth a hello</h2>
+    <div class="group" id="people0"></div>
+    <p class="hint">Speakers from your own sessions. Socials only where the MAX speaker profile lists them.</p>
+  </section>
+</div>
+
+<nav class="tabs" role="tablist" aria-label="Sections">
+  <div class="bar">
+    <button role="tab" data-v="today" aria-selected="true"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/><circle cx="12" cy="15.5" r="1.4" fill="currentColor" stroke="none"/></svg>Today</button>
+    <button role="tab" data-v="agenda" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13"/><circle cx="4" cy="6" r="1" fill="currentColor"/><circle cx="4" cy="12" r="1" fill="currentColor"/><circle cx="4" cy="18" r="1" fill="currentColor"/></svg>Agenda</button>
+    <button role="tab" data-v="map" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M3 6.5l6-2.5 6 2.5 6-2.5v13l-6 2.5-6-2.5-6 2.5z"/><path d="M9 4v15M15 6.5v15"/></svg>Map</button>
+    <button role="tab" data-v="people" aria-selected="false"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><circle cx="17" cy="9" r="2.5"/><path d="M16.5 14.5c3 0 5 2 5 5"/></svg>People</button>
+  </div>
+  <button class="srch" id="searchBtn" aria-label="Search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg></button>
+</nav>
+
+<div class="scrim" id="scrim"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true"><div class="grab"></div><button class="x" id="sheetX" aria-label="Close">×</button><div class="sb" id="sb"></div></div>
+
+<script>
+const DATA = {"days": [{"key": "mon", "name": "Monday", "date": "Nov 9", "iso": "2026-11-09", "sub": "Travel day. Check in at Casa Faena, no sessions on your agenda.", "items": [{"kind": "travel", "code": "HOTEL", "title": "Check in at Casa Faena Miami Beach", "start": "15:00", "end": "23:59", "tdisp": "", "udisp": "", "type": "Hotel", "where": "Casa Faena", "wsub": "3500 Collins Ave · Mid-Beach", "who": "", "why": "Your base for the week, about 1.5 miles north of the convention center. Settle in, charge the laptop for Tuesday's labs, and set an alarm: leave by 8:15 am for the Opening Keynote.", "note": "", "notes": ["Standard hotel check-in is usually mid-afternoon; confirm your time with the hotel.", "Badge pickup is at the convention center. If registration is open Monday evening, collecting it tonight saves the Tuesday morning line."], "status": ""}]}, {"key": "tue", "name": "Tuesday", "date": "Nov 10", "iso": "2026-11-10", "sub": "Keynote, then two labs back to back. Creative Park 11:00 am to 8:00 pm.", "items": [{"kind": "key", "code": "GS1", "title": "Opening Keynote", "start": "09:00", "end": "11:00", "tdisp": "9:00", "ap": "am", "udisp": "11:00", "type": "Keynote", "kindtxt": "", "status": "Scheduled", "where": "Hall A", "wshort": "Hall A", "wsub": "Main exhibit hall · 11,000 seats", "level": "Level 1", "place": "1", "who": "Shantanu Narayen, Anil Chakravarthy, Forest Key (VP, Agentic Firefly), Paul Trani, Elise Swopes, Anna McNaught and Adobe product teams", "why": "Adobe's product year in one sitting: workflow demos from creative pros and creators, plus the executive view on where Firefly, Photoshop and the agentic tools are heading.", "note": "", "notes": ["Doors open early for 11,000 people. Your seat is held until 8:57, after that it is the door line.", "No parallel session. Also streamed on MAX Online if you are stuck in registration."]}, {"gap": true, "label": "11:00 am to 12:30 pm", "text": "Open window. Creative Park opens at 11:00: walk the Adobe Experience Booth, grab lunch, and find your lab room on Level 2 before 12:30."}, {"kind": "lab", "code": "L6315", "title": "Photoshop & Firefly Boards: From Concept to Creation", "start": "12:30", "end": "14:00", "tdisp": "12:30", "ap": "pm", "udisp": "2:00", "type": "Lab", "kindtxt": "How To · Intermediate · Mac", "status": "Scheduled", "where": "Lab room, Level 2", "wshort": "Lab room", "wsub": "exact room in the MAX app", "level": "Level 2", "place": "L", "who": "Rob de Winter, Author, Expert Trainer and Adobe Community Expert, DWM Trainingen", "why": "Hands-on: sketches and ideas become images in Firefly Boards, then get refined in Photoshop into finished artwork. Covers which AI model to use when, and keeping creative control end to end.", "note": "Lab credit 1 of 3", "notes": ["Laptop and charger. Lab machines may be provided, but bring yours in case.", "Other runs: Tue 3:00 (waitlist), Wed 3:30, Thu 10:45, if anything moves."]}, {"gap": true, "label": "2:00 pm to 3:00 pm", "text": "One hour between labs. Stay on Level 2, or drop to Creative Park for coffee."}, {"kind": "lab", "code": "L6318", "title": "From Static Layers to Cinematic Motion: Photoshop + Firefly", "start": "15:00", "end": "16:30", "tdisp": "3:00", "ap": "pm", "udisp": "4:30", "type": "Lab", "kindtxt": "How To · Cross-app · Mac", "status": "Scheduled", "where": "Lab room, Level 2", "wshort": "Lab room", "wsub": "exact room in the MAX app", "level": "Level 2", "place": "L", "who": "Chris Converse, Partner, Designer and Developer, Codify Design Studio", "why": "Prepare Photoshop files for motion, learn the video specs that matter, and turn static campaign layers into production-ready video in minutes. Covers Rotate Object, Harmonize and Firefly editing inside Photoshop.", "note": "Lab credit 2 of 3", "notes": ["Directly relevant to turning still Guest assets into motion.", "Other runs: Wed 1:00 (clashes with your L6105), Wed 3:30, Thu 1:30."]}, {"kind": "sess", "code": "S6003", "title": "Build Worlds Faster: A Hybrid AI Workflow in Photoshop", "start": "17:15", "end": "18:00", "tdisp": "5:15", "ap": "pm", "udisp": "6:00", "type": "Session", "kindtxt": "Thought Leadership", "status": "Scheduled", "where": "Session room", "wshort": "Session room", "wsub": "room in the MAX app", "level": "Level TBD", "place": "?", "who": "Don Allen Stevenson III, Director of Asteria Research and Tech, Creative Technologist", "why": "A hand sketch becomes a full concept scene with Firefly and Nano Banana Pro in Photoshop, flat art splits into named layers in seconds, 3D rotation set-dresses the scene, and a labeled file hands off to After Effects.", "note": "", "notes": ["45 minutes after the lab ends. Enough time to walk from Level 2 and find the room.", "Ends 6:00, Reception starts 6:30 on the show floor."]}, {"kind": "eve", "code": "GS4", "title": "Welcome Reception", "start": "18:30", "end": "20:00", "tdisp": "6:30", "ap": "pm", "udisp": "8:00", "type": "Evening", "kindtxt": "Conference Event", "status": "No booking", "where": "Creative Park", "wshort": "Creative Park", "wsub": "show floor", "level": "Level 1", "place": "2", "who": "Adobe teams, sponsors and MAX attendees", "why": "Food and drinks with the whole conference. Easiest place to follow up with the day's lab instructors.", "note": "", "notes": ["Badge is your ticket. Nothing to reserve."]}]}, {"key": "wed", "name": "Wednesday", "date": "Nov 11", "iso": "2026-11-11", "sub": "Inspiration, your animation lab, then the big night. Creative Park 11:30 am to 5:30 pm.", "items": [{"gap": true, "label": "Morning", "text": "Nothing booked before 10:00. Sleep in, or get to Hall A early for a good seat."}, {"kind": "key", "code": "GS2", "title": "Inspiration Keynote", "start": "10:00", "end": "11:30", "tdisp": "10:00", "ap": "am", "udisp": "11:30", "type": "Keynote", "kindtxt": "Inspiration", "status": "Scheduled", "where": "Hall A", "wshort": "Hall A", "wsub": "Main exhibit hall · 11,000 seats", "level": "Level 1", "place": "1", "who": "Jonathan Anderson (Creative Director & Designer), Drex Lee (Viral Filmmaker), Siobhán Maroney (They Are Creative), Omar S. Kamara (Writer/Director), Jason Levine (Adobe)", "why": "Top creatives on process, passion and why human creativity stays at the center. Light on product, high on energy.", "note": "", "notes": ["Only thing running in this slot. Also on MAX Online."]}, {"gap": true, "label": "11:30 am to 1:00 pm", "text": "Lunch is provided. Creative Park opens at 11:30, a good window for booths or a Braindate. Head up to Level 2 by 12:50."}, {"kind": "lab", "code": "L6105", "title": "You, Animated: Bring Your Story to Life with Adobe Firefly", "start": "13:00", "end": "14:30", "tdisp": "1:00", "ap": "pm", "udisp": "2:30", "type": "Lab", "kindtxt": "Accelerating Creativity with AI", "status": "Scheduled", "where": "Lab room, Level 2", "wshort": "Lab room", "wsub": "exact room in the MAX app", "level": "Level 2", "place": "L", "who": "Kris Kashtanova, Principal Creative AI Evangelist, Adobe · Gaetan Desimone, Sr. Creative Technologist, Adobe", "why": "Build a 20 to 30 second animation starring a real person, start to finish on the Firefly platform: storyboard with AI Assistant and Boards, polish with Generative Fill and Expand, consistent characters across several image and video models, final cut in Express or Firefly Video.", "note": "Lab credit 3 of 3 · the closest thing at MAX to Magic Reimagined", "notes": ["Bring a few photos you would want animated, the advanced path remixes the template with your own images.", "Kris Kashtanova is worth a hello after. She leads Adobe's consistent-character work."]}, {"gap": true, "label": "2:30 pm to 5:30 pm", "text": "Your biggest open window. Three hours for Creative Park, the Adobe Experience Booth demos, partner booths, or a drop-in talk. Be at Hall A by 5:15."}, {"kind": "key", "code": "GS3", "title": "MAX Sneaks", "start": "17:30", "end": "19:00", "tdisp": "5:30", "ap": "pm", "udisp": "7:00", "type": "Sneaks", "kindtxt": "Inspiration", "status": "Scheduled", "where": "Hall A", "wshort": "Hall A", "wsub": "Main exhibit hall · 11,000 seats", "level": "Level 1", "place": "1", "who": "Hosted by Terry Crews · Adobe Labs researchers: Alberto Tono, Hyeonho Jeong, Yiwei Hu, Ansh Gupta, Hugo Flores Garcia, Iliyan Georgiev, Gabi Duncombe, Kelsey Slay", "why": "First look at Adobe Labs research that may become product. Watch for video, identity consistency and photorealism.", "note": "", "notes": ["Most popular event of the week. Arrive early for a seat.", "Also on MAX Online."]}, {"kind": "eve", "code": "GS5", "title": "MAX Bash", "start": "19:30", "end": "22:30", "tdisp": "7:30", "ap": "pm", "udisp": "10:30", "type": "Evening", "kindtxt": "Conference Event", "status": "No booking", "where": "Bash venue", "wshort": "Bash venue", "wsub": "not yet named in the catalog", "level": "Off site", "place": "8", "who": "The Black Keys", "why": "Food, drinks and a live set, right after Sneaks. The most informal time with Adobe teams all week.", "note": "", "notes": ["Thursday starts at 8:30 am. Pace accordingly."]}]}, {"key": "thu", "name": "Thursday", "date": "Nov 12", "iso": "2026-11-12", "sub": "Motion, 3D and the show floor. Creative Park 9:00 am to 3:00 pm.", "items": [{"kind": "sess", "code": "S6704", "title": "AI-Powered 3D Storytelling for In-House Creatives", "start": "08:30", "end": "09:15", "tdisp": "8:30", "ap": "am", "udisp": "9:15", "type": "Session", "kindtxt": "", "status": "Scheduled", "where": "Session room", "wshort": "Session room", "wsub": "room in the MAX app", "level": "Level TBD", "place": "?", "who": "Robert Hranitzky, Sr. Professional Video Evangelist, Adobe", "why": "One product photo and a 3D model become an animated, photoreal 3D scene live, using native 3D in After Effects, Firefly, and Substance 3D for texturing and image-to-material.", "note": "", "notes": ["Early start the morning after the Bash. Coffee first."]}, {"gap": true, "label": "9:15 am to 10:00 am", "text": "Creative Park opens at 9:00. Walk over to the Discovery Stage."}, {"kind": "demo", "code": "CP6843", "title": "From Idea to Motion: Kling's Latest Model Accelerates Creative Production", "start": "10:00", "end": "10:30", "tdisp": "10:00", "ap": "am", "udisp": "10:30", "type": "Creative Park Talk", "kindtxt": "", "status": "Scheduled", "where": "Creative Park stage", "wshort": "Discovery Stage · Creative Park", "wsub": "stage in the MAX app", "level": "Level 1", "place": "2", "who": "Kling AI team", "why": "Kling introduces its newest generative video model, with use cases across film, advertising, social, e-commerce and brand storytelling. A quick read on where third-party video models stand.", "note": "", "notes": ["Stages seat about 250. Arrive a few minutes early."]}, {"gap": true, "label": "10:30 am to 11:30 am", "text": "Open hour on the show floor. The next two are at the Adobe Experience Booth Demo Theater."}, {"kind": "demo", "code": "AB6480", "title": "Creator POV: Level Up Your Creative Grind With Boards", "start": "11:30", "end": "11:50", "tdisp": "11:30", "ap": "am", "udisp": "11:50", "type": "Demo Spotlight", "kindtxt": "How To", "status": "Scheduled", "where": "Demo Theater", "wshort": "Demo Theater · Adobe Experience Booth", "wsub": "Adobe Experience Booth, Creative Park", "level": "Level 1", "place": "2", "who": "Lucas O'Keefe, Social Media Specialist & Content Creator, Creator Juice", "why": "Firefly Boards from ideation to storyboard to production, so the tracking of everything that goes into a piece stops eating the time to make it.", "note": "", "notes": ["20 minutes. Stay in the booth area, the next one is 40 minutes later in the same theater."]}, {"gap": true, "label": "11:50 am to 12:30 pm", "text": "Grab lunch nearby. Lunch is provided on the floor."}, {"kind": "demo", "code": "AB6481", "title": "Creative POV: Firefly, Ignite & Empower Imagination", "start": "12:30", "end": "12:50", "tdisp": "12:30", "ap": "pm", "udisp": "12:50", "type": "Demo Spotlight", "kindtxt": "How To", "status": "Scheduled", "where": "Demo Theater", "wshort": "Demo Theater · Adobe Experience Booth", "wsub": "Adobe Experience Booth, Creative Park", "level": "Level 1", "place": "2", "who": "Harry Allsop, Founder & Content Creator", "why": "First spark to finished asset with Image Generation, Premiere Mobile and Generate Video, while keeping full creative direction.", "note": "", "notes": ["Ends 12:50. An hour and forty minutes until your last session."]}, {"gap": true, "label": "12:50 pm to 2:30 pm", "text": "Last open window of the week. Final booth visits, headshots, or a drop-in talk. Find the S6601 room by 2:20."}, {"kind": "sess", "code": "S6601", "title": "AI for Motion Design: Integrating Gen AI into After Effects", "start": "14:30", "end": "15:15", "tdisp": "2:30", "ap": "pm", "udisp": "3:15", "type": "Session", "kindtxt": "", "status": "Scheduled", "where": "Session room", "wshort": "Session room", "wsub": "room in the MAX app", "level": "Level TBD", "place": "?", "who": "Eran Stern, Motion Design Educator and Adobe Community Expert, Stern FX", "why": "Generative AI inside the After Effects workflow: rough ideas to polished style frames in minutes, AI visuals fused with classic compositing, and knowing when speed wins versus when precision still matters.", "note": "", "notes": ["Your last session. Nothing booked after 3:15, so plan travel from here."]}]}], "people": [{"p": 1, "name": "Kris Kashtanova", "role": "Principal Creative AI Evangelist", "org": "Adobe", "blurb": "Leads the lab on consistent characters from real photos across image and video models. The person at MAX closest to the Magic Reimagined problem.", "when": [{"t": "Wed 1:00", "code": "L6105", "place": "Lab room, Level 2"}], "socials": [{"n": "LinkedIn", "v": "in/kris-kashtanova"}, {"n": "Instagram", "v": "@kris.kashtanova"}, {"n": "X", "v": "@icreatelife"}]}, {"p": 1, "name": "Gaetan Desimone", "role": "Sr. Creative Technologist, Creators", "org": "Adobe", "blurb": "Co-leads the You, Animated lab. Builds the Firefly template the lab runs on, so he knows where the character-consistency seams are.", "when": [{"t": "Wed 1:00", "code": "L6105", "place": "Lab room, Level 2"}], "socials": []}, {"p": 1, "name": "Forest Key", "role": "Vice President, Agentic Firefly", "org": "Adobe", "blurb": "Runs the agentic side of Firefly. On the Opening Keynote stage, and the executive to know for automated creative pipelines.", "when": [{"t": "Tue 9:00", "code": "GS1", "place": "Hall A"}], "socials": []}, {"p": 1, "name": "Chris Converse", "role": "Partner, Designer and Developer", "org": "Codify Design Studio", "blurb": "Teaches the still-to-motion lab. Practical on video specs, file prep and Firefly inside Photoshop for campaign assets.", "when": [{"t": "Tue 3:00", "code": "L6318", "place": "Lab room, Level 2"}], "socials": []}, {"p": 0, "name": "Rob de Winter", "role": "Author, Expert Trainer, Adobe Community Expert", "org": "DWM Trainingen", "blurb": "Your first lab instructor. Deep on Photoshop plus Firefly Boards and on choosing the right model for the job.", "when": [{"t": "Tue 12:30", "code": "L6315", "place": "Lab room, Level 2"}], "socials": []}, {"p": 0, "name": "Don Allen Stevenson III", "role": "Director of Asteria Research and Tech", "org": "Creative Technologist", "blurb": "Hybrid AI pipeline builder. Sketch to concept scene with Firefly and Nano Banana Pro, then layered hand-off to After Effects.", "when": [{"t": "Tue 5:15", "code": "S6003", "place": "Session room"}], "socials": []}, {"p": 0, "name": "Robert Hranitzky", "role": "Sr. Professional Video Evangelist", "org": "Adobe", "blurb": "Adobe's video evangelist. Live 3D scene builds from a product photo across After Effects, Firefly and Substance 3D.", "when": [{"t": "Thu 8:30", "code": "S6704", "place": "Session room"}], "socials": []}, {"p": 0, "name": "Eran Stern", "role": "Motion Design Educator, Adobe Community Expert", "org": "Stern FX", "blurb": "Veteran After Effects educator. The clearest voice at MAX on where generative AI belongs in a motion pipeline, and where it does not.", "when": [{"t": "Thu 2:30", "code": "S6601", "place": "Session room"}], "socials": []}, {"p": 0, "name": "Lucas O'Keefe", "role": "Social Media Specialist and Content Creator", "org": "Creator Juice", "blurb": "Creator view on Firefly Boards for ideation, storyboarding and production tracking.", "when": [{"t": "Thu 11:30", "code": "AB6480", "place": "Demo Theater"}], "socials": []}, {"p": 0, "name": "Harry Allsop", "role": "Founder and Content Creator", "org": "Self-employed", "blurb": "Image Generation to Generate Video to Premiere Mobile in one flow, keeping creative direction throughout.", "when": [{"t": "Thu 12:30", "code": "AB6481", "place": "Demo Theater"}], "socials": []}, {"p": 0, "name": "Paul Trani", "role": "Principal Director Evangelist", "org": "Adobe", "blurb": "Long-time Creative Cloud evangelist, on the Opening Keynote stage. Good connector into Adobe's evangelism team.", "when": [{"t": "Tue 9:00", "code": "GS1", "place": "Hall A"}], "socials": []}, {"p": 0, "name": "Elise Swopes", "role": "Principal Creator Evangelist", "org": "Adobe", "blurb": "Adobe's bridge to the creator community, presenting at the Opening Keynote. Useful for creator-side partnerships.", "when": [{"t": "Tue 9:00", "code": "GS1", "place": "Hall A"}], "socials": []}], "places": [{"id": "1", "name": "Hall A", "sub": "Level 1 · keynote hall · 11,000 seats", "desc": "The main exhibit hall at the north end of Level 1. Opening Keynote Tuesday, Inspiration Keynote and Sneaks Wednesday. Doors open early; your seat is held until 3 minutes before start.", "match": ["Hall A"]}, {"id": "2", "name": "Creative Park", "sub": "Level 1 · Halls B to D · stages, Demo Theater, Session Rooms 1 to 6", "desc": "The show floor. Discovery and Creator Stages, the Adobe Experience Booth with its Demo Theater, Session Rooms 1 to 6, sponsor booths, Braindate and the Welcome Reception. MAX has not published the exact hall; drawn across B to D as an assumption.", "match": ["Creative Park", "Creative Park stage", "Demo Theater"]}, {"id": "3", "name": "Ocean Drive Room", "sub": "Level 1 · NW corner, off the Grand Lobby", "desc": "Rooms A to H. A likely home for one of your session-room talks once MAX posts rooms.", "match": []}, {"id": "4", "name": "Lincoln Road Room", "sub": "Level 1 · SW corner, off the Grand Lobby", "desc": "Rooms A to H. A likely home for one of your session-room talks once MAX posts rooms.", "match": []}, {"id": "L", "name": "Lab rooms", "sub": "Level 2 · Rooms 232 and 222 · Room 105 on Level 1", "desc": "Your three labs run in the lab rooms. Rooms 232 (east side) and 222 (south side) are on Level 2; Room 105 is Level 1, SW corner. The exact room for each lab posts in the MAX app the week before. Arrive 10 minutes early with your laptop and charger.", "match": ["Lab room, Level 2"]}, {"id": "?", "name": "Session room", "sub": "Not yet posted", "desc": "S6003, S6704 and S6601 run in session rooms that MAX has not assigned yet. Check the MAX app the week before; Session Rooms 1 to 6 are in Creative Park, Ocean Drive and Lincoln Road are off the Grand Lobby.", "match": ["Session room"]}, {"id": "8", "name": "Bash venue", "sub": "Off site · Wednesday 7:30 pm", "desc": "Not yet named in the catalog. The party follows Sneaks, with food, drinks and The Black Keys.", "match": ["Bash venue"]}, {"id": "9", "name": "Casa Faena Miami Beach", "sub": "3500 Collins Ave · your hotel, Nov 9 to 12", "desc": "About 1.5 miles north of the convention center in the Faena District: 8 to 12 minutes by car, about 30 minutes on foot down Collins Ave. Leave by Tue 8:15, Wed 9:15, Thu 7:45.", "match": ["Casa Faena"]}]};
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let store = {}; try { store = JSON.parse(localStorage.getItem('max26v2') || '{}'); } catch (e) {}
+const save = () => { try { localStorage.setItem('max26v2', JSON.stringify(store)); } catch (e) {} };
+store.done = store.done || {};
+
+const CHEV = '<svg class="chev" viewBox="0 0 9 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 1.5l6 5.5-6 5.5"/></svg>';
+const COLORS = ['#1a4fa3','#1d8a7a','#6b3fa0','#b9730a','#c2185b','#2e7d32','#00838f','#5d4037','#455a64','#d84315','#283593','#6a1b9a'];
+const initials = n => n.split(/\s|\+/).filter(Boolean).filter(w=>/^[A-Z]/.test(w)).map(w=>w[0]).slice(0,2).join('');
+const pcolor = n => COLORS[[...n].reduce((a,c)=>a+c.charCodeAt(0),0)%COLORS.length];
+
+function miami(){
+  const p = new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',hour12:false,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}).formatToParts(new Date());
+  const g = t => p.find(x=>x.type===t).value; const hh = g('hour')==='24'?'00':g('hour');
+  return { iso:`${g('year')}-${g('month')}-${g('day')}`, mins:+hh*60 + +g('minute') };
+}
+const mins = t => +t.slice(0,2)*60 + +t.slice(3);
+const fmt = m => { let h=Math.floor(m/60), mm=m%60, ap=h>=12?'pm':'am'; h=h%12||12; return `${h}:${String(mm).padStart(2,'0')} ${ap}`; };
+const sessions = DATA.days.flatMap(d=>d.items.filter(i=>!i.gap).map(i=>({...i, day:d})));
+const byCode = Object.fromEntries(sessions.map(s=>[s.code,s]));
+const dayByIso = Object.fromEntries(DATA.days.map(d=>[d.iso,d]));
+
+/* ---------- rows ---------- */
+function sessionRow(s, opts={}){
+  const n = miami(); const isToday = s.day.iso===n.iso;
+  const live = isToday && mins(s.start)<=n.mins && n.mins<mins(s.end);
+  const past = s.day.iso<n.iso || (isToday && n.mins>=mins(s.end));
+  const done = store.done[s.code];
+  const time = s.tdisp ? `<div class="time num"><div class="t">${s.tdisp}<small>${s.ap}</small></div><div class="u">${s.udisp}</div></div>` : `<div class="time"><div class="t" style="font-size:13px;color:var(--sec)">Arrive</div></div>`;
+  return `<button class="row${live?' live':''}${past&&!live?' past':''}${done?' done':''}" data-code="${s.code}">${time}<div class="main"><div class="ttl">${esc(s.title)}</div><div class="sub"><span class="d ${s.kind}"></span><span>${esc(s.wshort||s.where)}${s.level?' · '+esc(s.level):''}</span></div></div>${CHEV}</button>`;
+}
+const gapRow = g => `<div class="gaprow"><b>${esc(g.label)}</b> ${esc(g.text)}</div>`;
+function iconRow(color, svg, title, sub, data){ return `<button class="row" ${data}><span class="ic" style="background:${color}">${svg}</span><div class="main"><div class="ttl">${title}</div><div class="sub">${sub}</div></div>${CHEV}</button>`; }
+const I = {
+  check:'<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>', bed:'<svg viewBox="0 0 24 24"><path d="M3 18V8M3 14h18v4M7 11a2 2 0 1 1 4 0v3H7z"/><path d="M11 14V11h8a2 2 0 0 1 2 2v1"/></svg>',
+  seat:'<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>', lab:'<svg viewBox="0 0 24 24"><path d="M9 3h6M10 3v6l-5.5 9A2 2 0 0 0 6.2 21h11.6a2 2 0 0 0 1.7-3L14 9V3"/></svg>',
+  pin:'<svg viewBox="0 0 24 24"><path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>', info:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>'
+};
+
+/* ---------- today ---------- */
+function renderToday(){
+  const n = miami(); const day = dayByIso[n.iso];
+  const first = byCode['GS1'];
+  let hero;
+  if(!day){
+    const d0 = DATA.days[1];
+    const daysTo = Math.round((new Date(d0.iso+'T12:00:00')-new Date(n.iso+'T12:00:00'))/86400000);
+    hero = daysTo>0
+      ? `<span class="eyebrow">Trip countdown</span><h2 class="serif">${daysTo} day${daysTo===1?'':'s'} to go</h2><p>Check in at <b>Casa Faena</b> on <b>Mon, Nov 9</b>. Opening Keynote <b>Tue at 9:00 am</b>, Hall A. Leave the hotel by <b>8:15</b>.</p><div class="acts"><button class="solid" data-open="HOTEL">Hotel</button><button data-open="GS1">Opening Keynote</button><button data-tab="agenda">Full agenda</button></div>`
+      : `<span class="eyebrow">That's a wrap</span><h2 class="serif">MAX 2026 is done</h2><p>14 sessions, 3 labs, 2 keynotes and Sneaks. Your notes and checkmarks stay on this phone.</p><div class="acts"><button data-tab="agenda">Look back</button><button data-tab="people">Follow-ups</button></div>`;
+    $('#todayTitle').textContent = 'Monday, Nov 9'; renderList('#todayList', DATA.days[0]); $('#todayHint').textContent = DATA.days[0].sub;
+  } else {
+    const todays = day.items.filter(i=>!i.gap && i.tdisp);
+    const live = todays.find(i=>mins(i.start)<=n.mins && n.mins<mins(i.end));
+    const next = todays.find(i=>mins(i.start)>n.mins);
+    if(live){ const left = mins(live.end)-n.mins;
+      hero = `<div class="live"><span class="dot"></span><span class="eyebrow">Happening now · ${left} min left</span></div><h2 class="serif">${esc(live.title)}</h2><p><b>${esc(live.wshort||live.where)}</b> · ends ${fmt(mins(live.end))}${next?`. Next: <b>${esc(next.title)}</b> at ${fmt(mins(next.start))}.`:''}</p><div class="acts"><button class="solid" data-open="${live.code}">Open brief</button>${next?`<button data-open="${next.code}">What's next</button>`:''}</div>`;
+    } else if(next){ const u = mins(next.start)-n.mins; const cd = u>=60?`${Math.floor(u/60)}h ${u%60}m`:`${u} min`;
+      hero = `<span class="eyebrow">Up next · in ${cd}</span><h2 class="serif">${esc(next.title)}</h2><p><b>${fmt(mins(next.start))}</b> at <b>${esc(next.wshort||next.where)}</b>${next.level?' · '+esc(next.level):''}. Seat held until ${fmt(mins(next.start)-3)}.</p><div class="acts"><button class="solid" data-open="${next.code}">Open brief</button><button data-place="${next.place}">Where is it</button></div>`;
+    } else {
+      hero = `<span class="eyebrow">${day.name}</span><h2 class="serif">That's the day</h2><p>Nothing else booked. ${day.key==='thu'?'Safe travels home.':'Rest up, tomorrow starts at '+(day.key==='tue'?'10:00 am':'8:30 am')+'.'}</p><div class="acts"><button data-tab="agenda">Tomorrow</button><button data-open="HOTEL">Back to hotel</button></div>`;
+    }
+    $('#todayTitle').textContent = `${day.name}, ${day.date}`; renderList('#todayList', day); $('#todayHint').textContent = day.sub;
+  }
+  $('#hero').innerHTML = hero;
+  wire($('#hero'));
+  $('#gtk').innerHTML =
+    iconRow('var(--green)', I.check, 'Your seats', '14 scheduled · nothing waitlisted', 'data-info="seats"') +
+    iconRow('var(--purple)', I.bed, 'Hotel', 'Casa Faena · 3500 Collins Ave · Nov 9 to 12', 'data-open="HOTEL"') +
+    iconRow('var(--red)', I.seat, 'Seat rules', 'Held until 3 min before start', 'data-info="rules"') +
+    iconRow('var(--amber)', I.lab, 'Labs and evenings', '3 lab credits, Reception, Sneaks, Bash', 'data-info="labs"') +
+    iconRow('var(--blue)', I.pin, 'Where things are', 'Halls, rooms and levels', 'data-tab="map"') +
+    iconRow('var(--grey)', I.info, 'About', 'Data as of Oct 16 · Miami time', 'data-info="about"');
+  wire($('#gtk'));
+}
+function renderList(sel, day){ $(sel).innerHTML = day.items.map(i=>i.gap?gapRow(i):sessionRow({...i, day})).join(''); wire($(sel)); }
+
+/* ---------- agenda ---------- */
+let dayKey = store.day || (dayByIso[miami().iso]||DATA.days[1]).key;
+if(dayByIso[miami().iso]) dayKey = dayByIso[miami().iso].key;
+function renderAgenda(){
+  $('#dayseg').innerHTML = DATA.days.map(d=>`<button role="tab" aria-selected="${d.key===dayKey}" data-day="${d.key}">${d.name.slice(0,3)} ${d.date.split(' ')[1]}</button>`).join('');
+  $('#dayseg').querySelectorAll('button').forEach(b=>b.onclick=()=>{dayKey=b.dataset.day; store.day=dayKey; save(); renderAgenda();});
+  const d = DATA.days.find(x=>x.key===dayKey);
+  const parts = d.sub.split('. '); $('#daynote').innerHTML = `<b>${esc(parts[0])}.</b> ${esc(parts.slice(1).join('. '))}`;
+  renderList('#agendaList', d);
+}
+
+/* ---------- map ---------- */
+function renderPlaces(){
+  $('#placeList').innerHTML = DATA.places.map(pl=>{
+    const here = sessions.filter(s=>pl.match.includes(s.where));
+    const cls = pl.id==='9'?' h':(pl.id==='L'||pl.id==='?')?' q':'';
+    return `<button class="row" data-place="${pl.id}"><span class="pn${cls}">${pl.id}</span><div class="main"><div class="ttl">${esc(pl.name)}</div><div class="sub">${esc(pl.sub)}${here.length?' · '+here.length+' of yours':''}</div></div>${CHEV}</button>`;
+  }).join('');
+  wire($('#placeList'));
+}
+
+/* ---------- people ---------- */
+function personRow(p){
+  return `<button class="row" data-person="${esc(p.name)}"><span class="pav" style="background:${pcolor(p.name)}">${initials(p.name)}</span><div class="main"><div class="ttl">${esc(p.name)}</div><div class="sub">${esc(p.org)} · ${p.when.map(w=>w.t).join(', ')}</div></div>${CHEV}</button>`;
+}
+function renderPeople(){
+  $('#peopleCount').textContent = `${DATA.people.length} people, where to find them`;
+  $('#people1').innerHTML = DATA.people.filter(p=>p.p).map(personRow).join('');
+  $('#people0').innerHTML = DATA.people.filter(p=>!p.p).map(personRow).join('');
+  wire($('#people1')); wire($('#people0'));
+}
+
+/* ---------- sheets ---------- */
+function openSheet(html){ $('#sb').innerHTML = html; $('#sb').scrollTop = 0; $('#sheet').classList.add('open'); $('#scrim').classList.add('open'); document.body.style.overflow='hidden'; wire($('#sb')); }
+function closeSheet(){ $('#sheet').classList.remove('open'); $('#scrim').classList.remove('open'); document.body.style.overflow=''; }
+$('#scrim').onclick = closeSheet; $('#sheetX').onclick = closeSheet;
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeSheet(); });
+let ty=null; $('#sheet').addEventListener('touchstart',e=>{ty=e.touches[0].clientY},{passive:true});
+$('#sheet').addEventListener('touchend',e=>{ if(ty!==null && e.changedTouches[0].clientY-ty>80 && $('#sb').scrollTop<4) closeSheet(); ty=null; });
+
+const kindChip = s => ({key:'red',lab:'blue',sess:'',demo:'',eve:'teal',travel:'purple'})[s.kind];
+function openSession(code){
+  const s = byCode[code]; if(!s) return;
+  const pl = DATA.places.find(p=>p.match.includes(s.where)) || (code==='HOTEL'?DATA.places.find(p=>p.id==='9'):null);
+  const ppl = DATA.people.filter(p=>p.when.some(w=>w.code===code));
+  const when = s.tdisp ? `${s.day.name} · ${s.tdisp} ${s.ap} to ${s.udisp}` : `${s.day.name}, ${s.day.date}`;
+  openSheet(`
+    <span class="eyebrow">${esc(when)}</span>
+    <h3 class="serif">${esc(s.title)}</h3>
+    <div class="chips"><span class="chip ${kindChip(s)}">${esc(s.type)}</span>${s.status==='Scheduled'?'<span class="chip green">Seat held</span>':s.status?'<span class="chip">'+esc(s.status)+'</span>':''}${s.code!=='HOTEL'?`<span class="chip">${esc(s.kindtxt?s.kindtxt+' · ':'')}${s.code}</span>`:''}</div>
+    <div class="card loc"><span class="pn${s.place==='L'||s.place==='?'?' q':''}${code==='HOTEL'?' h':''}">${code==='HOTEL'?'9':esc(s.place)}</span><div class="main"><div class="nm">${esc(s.where)}</div><div class="sb2">${esc(s.wsub)}${s.level&&s.level!=='Off site'?' · '+esc(s.level):''}</div></div>${pl?`<button class="mapbtn" data-place="${pl.id}">Map</button>`:''}</div>
+    ${s.who?`<div class="card"><span class="eyebrow">Who</span><p>${esc(s.who)}</p></div>`:''}
+    <div class="card"><span class="eyebrow">Why it matters to you</span><p>${esc(s.why)}</p>${s.note?`<span class="note">${esc(s.note)}</span>`:''}</div>
+    ${s.notes.length?`<div class="card"><span class="eyebrow">Notes</span><ul>${s.notes.map(n=>`<li>${esc(n)}</li>`).join('')}</ul></div>`:''}
+    ${ppl.length?`<h4 class="serif">People to meet here</h4><div class="card" style="padding:4px 16px">${ppl.map(p=>`<button class="pchip" data-person="${esc(p.name)}"><span class="pav" style="background:${pcolor(p.name)}">${initials(p.name)}</span><div><div class="n">${esc(p.name)}</div><div class="r">${esc(p.role)} · ${esc(p.org)}</div></div></button>`).join('')}</div>`:''}
+    <div class="actions">${code==='HOTEL'
+      ?`<a class="btn primary" href="https://maps.apple.com/?daddr=3500+Collins+Ave,+Miami+Beach,+FL+33140">Directions to hotel</a><a class="btn" href="https://maps.apple.com/?saddr=3500+Collins+Ave,+Miami+Beach,+FL+33140&daddr=1901+Convention+Center+Dr,+Miami+Beach,+FL+33139">Hotel to venue</a>`
+      :`<button class="btn ${store.done[code]?'done':'primary'}" data-toggle="${code}">${store.done[code]?'Done ✓':'Mark done'}</button>`}</div>`);
+}
+function openPerson(name){
+  const p = DATA.people.find(x=>x.name===name); if(!p) return;
+  openSheet(`
+    <span class="eyebrow">${p.p?'First priority':'Worth a hello'}</span>
+    <div style="display:flex;align-items:center;gap:14px;margin:8px 0 12px"><span class="pav" style="width:56px;height:56px;font-size:19px;background:${pcolor(p.name)}">${initials(p.name)}</span><div><h3 class="serif" style="margin:0 0 2px;font-size:28px">${esc(p.name)}</h3><div style="color:var(--sec);font-size:14.5px">${esc(p.role)} · <b style="color:var(--ink)">${esc(p.org)}</b></div></div></div>
+    <div class="card"><span class="eyebrow">Why</span><p>${esc(p.blurb)}</p></div>
+    <h4 class="serif">Where to find ${esc(p.name.split(' ')[0])}</h4>
+    <div class="group" style="margin-bottom:12px">${p.when.map(w=>{const s=byCode[w.code]; return s?sessionRow(s):'';}).join('')}</div>
+    <div class="card"><span class="eyebrow">Socials</span>${p.socials.length?p.socials.map(s=>`<p><span class="eyebrow" style="display:inline;margin-right:8px">${s.n}</span><b>${esc(s.v)}</b></p>`).join(''):`<p style="color:var(--sec)">None listed on the MAX speaker profile.</p>`}</div>
+    <div class="actions"><a class="btn primary" href="https://www.linkedin.com/search/results/people/?keywords=${encodeURIComponent(p.name+' '+p.org)}">Find on LinkedIn</a></div>`);
+}
+function openPlace(id){
+  const pl = DATA.places.find(x=>x.id===id); if(!pl) return;
+  const here = sessions.filter(s=>pl.match.includes(s.where));
+  openSheet(`
+    <span class="eyebrow">Place ${esc(pl.id)}</span>
+    <h3 class="serif">${esc(pl.name)}</h3>
+    <div class="chips"><span class="chip">${esc(pl.sub)}</span></div>
+    <div class="card"><p>${esc(pl.desc)}</p></div>
+    <h4 class="serif">Yours here</h4>
+    ${here.length?`<div class="group" style="margin-bottom:12px">${here.map(s=>sessionRow(s)).join('')}</div>`:'<div class="card"><p style="color:var(--sec)">Nothing booked here.</p></div>'}
+    ${pl.id==='9'?`<div class="actions"><a class="btn primary" href="https://maps.apple.com/?daddr=3500+Collins+Ave,+Miami+Beach,+FL+33140">Open in Maps</a></div>`:`<div class="actions"><button class="btn" data-tab="map">See on the map</button></div>`}`);
+}
+const INFO = {
+  seats:['Your seats','<div class="card"><p>All <b>14</b> items on your My Schedule show as <b>Scheduled</b>. Nothing is waitlisted. The Welcome Reception and MAX Bash need no booking.</p></div><div class="card"><span class="eyebrow">Labs</span><p>L6315 Tue 12:30 · L6318 Tue 3:00 · L6105 Wed 1:00. That is all three lab credits.</p></div>'],
+  rules:['Seat rules','<div class="card"><p><b>Your pass covers entry, not a seat.</b> A seat is held only for sessions in My Schedule, until <b>3 minutes before start</b>. After that the seat is released and the door line is let in.</p></div><div class="card"><p><b>Waitlists closed Tue, Oct 20.</b> A full session now only has the door line, opened 2 minutes before start.</p></div><div class="card"><p>Keynotes and Sneaks are in Hall A for 11,000 people. Arrive early for a good seat.</p></div>'],
+  labs:['Labs and evenings','<div class="card"><span class="eyebrow">Labs</span><p>Three hands-on labs, Mac-based. Bring your laptop and charger in case machines are not provided. Rooms post in the MAX app the week before.</p></div><div class="card"><span class="eyebrow">Evenings</span><p><b>Tue 6:30</b> Welcome Reception on the show floor. <b>Wed 5:30</b> Sneaks with Terry Crews in Hall A, then the <b>Bash at 7:30</b> with The Black Keys.</p></div><div class="card"><span class="eyebrow">Open windows</span><p>Wed 2:30 to 5:30 and Thu after 3:15 are free for Creative Park, booths and Braindates.</p></div>'],
+  about:['About','<div class="card"><p>Built from Andrés Aranguibel\'s My Schedule on reg.adobe.com, read Oct 16, 2026. Times are Miami (Eastern). Session rooms and the Bash venue were not yet published; this app says so wherever that applies.</p></div><div class="card"><p>Checkmarks and your last tab are saved on this phone only. Not produced by Adobe.</p></div><div class="card"><span class="eyebrow">Keep it on your phone</span><p>In Safari tap Share, then <b>Add to Home Screen</b>. On Android use the browser menu.</p></div>'],
+};
+function openInfo(k){ const [t,h]=INFO[k]; openSheet(`<h3 class="serif" style="margin-top:14px">${t}</h3>${h}`); }
+
+/* ---------- search ---------- */
+function openSearch(){
+  openSheet(`<h3 class="serif" style="margin-top:14px">Search</h3><div class="srchbox"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input id="q" type="search" placeholder="Sessions, people, places, codes" autocomplete="off"></div><div id="qres"></div>`);
+  const q = $('#q'); q.focus();
+  const run = () => {
+    const v = q.value.trim().toLowerCase(); const out = $('#qres');
+    if(!v){ out.innerHTML = '<p class="hint">Try "lab", "Hall A", "Kris", or a code like L6105.</p>'; return; }
+    const ss = sessions.filter(s=>[s.title,s.code,s.where,s.who,s.why,s.type].join(' ').toLowerCase().includes(v));
+    const pp = DATA.people.filter(p=>[p.name,p.role,p.org,p.blurb].join(' ').toLowerCase().includes(v));
+    const pl = DATA.places.filter(p=>[p.name,p.sub,p.desc].join(' ').toLowerCase().includes(v));
+    out.innerHTML = (ss.length?`<h4 class="serif">Sessions</h4><div class="group">${ss.map(s=>sessionRow(s)).join('')}</div>`:'') + (pp.length?`<h4 class="serif">People</h4><div class="group">${pp.map(personRow).join('')}</div>`:'') + (pl.length?`<h4 class="serif">Places</h4><div class="group">${pl.map(p=>`<button class="row" data-place="${p.id}"><span class="pn">${p.id}</span><div class="main"><div class="ttl">${esc(p.name)}</div><div class="sub">${esc(p.sub)}</div></div>${CHEV}</button>`).join('')}</div>`:'') || '<p class="hint">Nothing matched.</p>';
+    wire(out);
+  };
+  q.oninput = run; run();
+}
+$('#searchBtn').onclick = openSearch;
+
+/* ---------- wiring ---------- */
+function showTab(v){
+  document.querySelectorAll('.tabs .bar button').forEach(b=>b.setAttribute('aria-selected', b.dataset.v===v));
+  document.querySelectorAll('.view').forEach(x=>x.hidden = x.id!=='v-'+v);
+  window.scrollTo(0,0); store.tab=v; save();
+}
+function wire(root){
+  root.querySelectorAll('[data-code]').forEach(b=>b.onclick=()=>openSession(b.dataset.code));
+  root.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>openSession(b.dataset.open));
+  root.querySelectorAll('[data-person]').forEach(b=>b.onclick=()=>openPerson(b.dataset.person));
+  root.querySelectorAll('[data-place]').forEach(b=>b.onclick=()=>openPlace(b.dataset.place));
+  root.querySelectorAll('[data-info]').forEach(b=>b.onclick=()=>openInfo(b.dataset.info));
+  root.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{ closeSheet(); showTab(b.dataset.tab); });
+  root.querySelectorAll('[data-toggle]').forEach(b=>b.onclick=()=>{ const c=b.dataset.toggle; store.done[c]=!store.done[c]; save(); renderAll(); openSession(c); });
+}
+document.querySelectorAll('.tabs .bar button').forEach(b=>b.onclick=()=>showTab(b.dataset.v));
+$('#seeAll').onclick=()=>showTab('agenda');
+
+function renderAll(){ renderToday(); renderAgenda(); renderPlaces(); renderPeople(); }
+renderAll();
+if(store.tab) showTab(store.tab);
+setInterval(renderToday, 30000);
+</script>
+<script>
+if ('serviceWorker' in navigator) { window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(()=>{})); }
+</script>
+</body>
+</html>
