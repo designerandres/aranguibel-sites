@@ -224,6 +224,20 @@
   }
   document.getElementById("count").textContent =
     SITES.length + (SITES.length === 1 ? " site" : " sites");
+
+  // Keep navigation inside the home-screen app window on iOS: a plain link
+  // tap would otherwise bounce out to Safari, header and footer and all.
+  if (window.navigator.standalone) {
+    document.addEventListener("click", function (e) {
+      const a = e.target.closest("a");
+      if (!a) return;
+      const url = new URL(a.href, window.location.href);
+      if (url.origin === window.location.origin) {
+        e.preventDefault();
+        window.location.href = a.href;
+      }
+    });
+  }
 </script>
 </body>
 </html>
