@@ -2,6 +2,14 @@
 
 A single-page, dependency-free web app. Everything it needs is in this folder.
 
+> **Hosted copy is password-encrypted (added Oct 19, 2026).** In this repo, `index.html`
+> is an encrypted gate page: the app itself is stored as AES-256-GCM ciphertext
+> (PBKDF2-SHA256, 600k iterations) inside it and only decrypts in the browser after
+> the password is entered. The unencrypted source is NOT in this repo — it lives with
+> Mumu (`~/workspace/private-sources/max-pocket-agenda/`) and in the original zip.
+> To update the schedule: edit the source, re-encrypt/republish, and bump `CACHE`
+> in `sw.js` again so phones pick up the new version.
+
 ```
 index.html              the whole app (HTML, CSS, JS and the schedule data)
 manifest.webmanifest    Add-to-Home-Screen metadata (name, icons, colors)
