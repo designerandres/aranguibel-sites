@@ -28,3 +28,4 @@ Static microsites published with GitHub Pages at **https://sites.aranguibel.com*
 - Static files only — no server code, databases, or logins.
 - Nothing confidential: anyone with a link can view a page.
 - Use unguessable folder names for anything not meant to be found from the root.
+- `assets/headshot.jpg` and `apple-touch-icon.png` are binary files uploaded outside the text snapshot flow — don't expect them in text-only pushes. Both are exact-square crops so the photo never stretches in icons, thumbnails, or the page avatar (the page also uses `object-fit: cover`).
