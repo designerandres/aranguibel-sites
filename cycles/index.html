@@ -1,0 +1,447 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Cycles — Andrés Aranguibel's recurring chores and to-dos, each on its own cadence.">
+<meta name="theme-color" content="#F5F9FC" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0E2A52" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Cycles">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poiret+One&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+<title>Cycles</title>
+<style>
+:root{
+  --bg:#F5F9FC;--card:rgba(255,255,255,.78);--card-line:rgba(255,255,255,.9);
+  --card-shadow:0 10px 30px rgba(14,54,92,.10),0 1px 2px rgba(14,54,92,.06);
+  --navy:#0E2A52;--navy-2:#153A6B;--sea:#1F7FA8;--sky:#5CC6DF;--mint:#8FE1E6;--foam:#CFF0F3;
+  --gold:#C9A14A;--gold-2:#E8C979;--coral:#E25B4A;--coral-2:#F08A6E;
+  --ink:#132238;--ink-2:#44536A;--ink-3:#7B879A;--line:rgba(14,42,82,.08);
+  --grad-sea:linear-gradient(135deg,#1F7FA8,#5CC6DF);--grad-navy:linear-gradient(135deg,#0E2A52,#1F5F8F);
+  --grad-gold:linear-gradient(135deg,#C9A14A,#E8C979);--grad-coral:linear-gradient(135deg,#E25B4A,#F08A6E);
+  --grad-hero:linear-gradient(150deg,#0E2A52 0%,#1F5F8F 38%,#1F7FA8 68%,#5CC6DF 100%);
+  --display:'Poiret One',Georgia,serif;--body:'Plus Jakarta Sans',-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;--r:22px;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);background-image:radial-gradient(900px 500px at 10% -10%,#DDF2F7 0%,transparent 60%),radial-gradient(700px 500px at 110% 10%,#E6F0FA 0%,transparent 60%);font:16px/1.5 var(--body);color:var(--ink);min-height:100vh}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;margin:0;cursor:pointer}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--sky);outline-offset:2px;border-radius:12px}
+.wrap{max-width:560px;margin:0 auto;padding:calc(16px + env(safe-area-inset-top)) 20px calc(110px + env(safe-area-inset-bottom))}
+.num{font-variant-numeric:tabular-nums}
+.kick{font-size:11.5px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:var(--sea)}
+.ph{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:16px}
+.ph h1{font-family:var(--display);font-weight:400;font-size:46px;line-height:.95;letter-spacing:.02em;color:var(--navy);margin:6px 0 0}
+.ph .kick{display:block}
+.dateline{font-size:13.5px;color:var(--ink-3);font-weight:600;text-align:right;padding-bottom:6px}
+h2.sec{font-family:var(--display);font-weight:400;font-size:30px;line-height:1;color:var(--navy);margin:30px 0 12px}
+.hint{color:var(--ink-3);font-size:12.5px;margin:12px 4px 0;line-height:1.5}
+h3{font-size:13px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);margin:26px 0 10px}
+
+/* hero */
+.hero{position:relative;overflow:hidden;background:var(--grad-hero);color:#fff;border-radius:26px;padding:22px 20px 20px;box-shadow:0 18px 40px rgba(14,42,82,.28)}
+.hero .kick{color:rgba(255,255,255,.78)}
+.hero h2{font-family:var(--display);font-weight:400;font-size:34px;line-height:1.02;letter-spacing:.02em;margin:8px 0 8px}
+.hero p{margin:0;color:rgba(255,255,255,.88);font-size:15.5px;line-height:1.45}
+.hero p b{color:#fff}
+.hero .ringart{position:absolute;right:-34px;top:-34px;width:170px;height:170px;opacity:.20;pointer-events:none}
+
+/* grouped glass list */
+.group{background:var(--card);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--card-line);border-radius:var(--r);box-shadow:var(--card-shadow);overflow:hidden}
+.cyc{display:grid;grid-template-columns:auto 1fr auto;gap:13px;align-items:center;width:100%;padding:13px 12px 13px 16px;border-top:1px solid var(--line);min-height:70px;position:relative}
+.group .cyc:first-child{border-top:0}
+.cyc .tile{width:46px;height:46px;position:relative;flex:none}
+.cyc .tile svg.ring{position:absolute;inset:0;transform:rotate(-90deg)}
+.cyc .tile .glyph{position:absolute;inset:6px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff}
+.cyc .tile .glyph svg{width:19px;height:19px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.cyc .m{min-width:0;text-align:left}
+.cyc .ttl{font-size:16px;font-weight:700;color:var(--navy);line-height:1.25}
+.cyc .sl{font-size:13px;color:var(--ink-2);margin-top:2px;line-height:1.4}
+.cyc .sl b{color:var(--ink);font-weight:700}
+.cyc .cad{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);margin-top:3px}
+.pill{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.04em;padding:3px 9px;border-radius:999px;vertical-align:1px;margin-left:7px;white-space:nowrap}
+.pill.over{background:#FBE3DE;color:#B33E2F}
+.pill.today{background:var(--grad-coral);color:#fff}
+.pill.soon{background:#F7ECCF;color:#7A5A16}
+.pill.ok{background:var(--foam);color:var(--navy)}
+.checkbtn{width:46px;height:46px;border-radius:50%;border:2px solid rgba(31,127,168,.35);display:flex;align-items:center;justify-content:center;flex:none;transition:transform .12s,background .15s,border-color .15s}
+.checkbtn svg{width:22px;height:22px;stroke:var(--sea);fill:none;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;opacity:.55}
+.checkbtn:active{transform:scale(.92)}
+.cyc.due .checkbtn{border-color:var(--coral);background:#FBE3DE}
+.cyc.due .checkbtn svg{stroke:var(--coral);opacity:1}
+.cyc.flash{background:rgba(143,225,230,.35)}
+.empty{padding:20px 18px;color:var(--ink-2);font-size:14.5px}
+
+/* buttons + forms */
+.bigbtn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;background:var(--grad-navy);color:#fff;font-weight:700;font-size:15.5px;padding:14px 18px;border-radius:999px;box-shadow:var(--card-shadow);margin-top:14px;min-height:50px}
+.bigbtn.ghost{background:var(--card);color:var(--navy);border:1px solid var(--card-line);backdrop-filter:blur(16px)}
+.sheet{position:fixed;inset:0;z-index:40;display:flex;align-items:flex-end;justify-content:center}
+.sheet[hidden]{display:none}
+.sheet .scrim{position:absolute;inset:0;background:rgba(14,32,56,.42);backdrop-filter:blur(3px)}
+.sheet .panel{position:relative;background:#FBFDFE;border-radius:26px 26px 0 0;width:100%;max-width:560px;max-height:88vh;overflow:auto;padding:22px 20px calc(22px + env(safe-area-inset-bottom));box-shadow:0 -12px 40px rgba(14,42,82,.25)}
+.sheet h2{font-family:var(--display);font-weight:400;font-size:30px;color:var(--navy);margin:2px 0 4px}
+.sheet .sub{color:var(--ink-2);font-size:14px;margin:0 0 16px}
+label.fl{display:block;font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);margin:16px 0 6px}
+input[type=text],input[type=number],input[type=date],select{width:100%;font:inherit;font-size:16px;color:var(--ink);background:#fff;border:1.5px solid rgba(14,42,82,.14);border-radius:14px;padding:11px 13px;min-height:48px}
+.rowbtns{display:flex;gap:10px;margin-top:20px}
+.rowbtns button{flex:1;padding:13px;border-radius:999px;font-weight:700;font-size:15px;min-height:48px}
+.btn-primary{background:var(--grad-sea);color:#fff}
+.btn-plain{background:rgba(14,42,82,.06);color:var(--navy)}
+.btn-danger{background:#FBE3DE;color:#B33E2F}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(22px + env(safe-area-inset-bottom));z-index:60;background:var(--navy);color:#fff;border-radius:999px;padding:11px 12px 11px 18px;display:flex;align-items:center;gap:14px;box-shadow:0 14px 34px rgba(14,42,82,.35);font-size:14.5px;font-weight:600;max-width:calc(100vw - 32px)}
+.toast[hidden]{display:none}
+.toast button{color:var(--sky);font-weight:800;padding:6px 10px}
+.foot{margin-top:34px;text-align:center}
+.foot button{color:var(--ink-3);font-size:13px;font-weight:600;text-decoration:underline;text-underline-offset:3px}
+@media (prefers-reduced-motion:no-preference){.cyc{transition:background .3s}.sheet .panel{animation:up .22s ease-out}@keyframes up{from{transform:translateY(16px);opacity:.4}to{transform:none;opacity:1}}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="ph">
+    <div>
+      <span class="kick">Recurring rhythms</span>
+      <h1>Cycles</h1>
+    </div>
+    <div class="dateline" id="dateline"></div>
+  </header>
+
+  <section class="hero" id="hero">
+    <svg class="ringart" viewBox="0 0 100 100" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round">
+      <path d="M50 8 a42 42 0 1 1 -29.7 12.3"/><path d="M14 6v16h16" stroke-linejoin="round"/>
+      <path d="M50 92 a42 42 0 0 1 29.7 -12.3" opacity=".65"/><path d="M86 94V78H70" stroke-linejoin="round" opacity=".65"/>
+    </svg>
+    <span class="kick">Today</span>
+    <h2 id="hero-title">All clear</h2>
+    <p id="hero-body">Nothing is due today.</p>
+  </section>
+
+  <div id="lists"></div>
+
+  <button class="bigbtn" id="addbtn" type="button">+ Add a cycle</button>
+  <p class="hint">Tap the circle when you've done a chore — the cycle resets itself for the next round. Everything saves on this device.</p>
+
+  <div class="foot"><button id="resetall" type="button">Restore the original cycles</button></div>
+</div>
+
+<div class="sheet" id="sheet" hidden>
+  <div class="scrim" id="scrim"></div>
+  <div class="panel" role="dialog" aria-modal="true" id="panel"></div>
+</div>
+
+<div class="toast" id="toast" hidden><span id="toast-msg"></span><button id="toast-undo" type="button">Undo</button></div>
+
+<script>
+"use strict";
+/* ============ date helpers (local time, ISO yyyy-mm-dd) ============ */
+const DAY = 86400000;
+function dstr(d){ return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+function parseD(s){ if(!s) return null; const p=s.split("-").map(Number); return new Date(p[0],p[1]-1,p[2]); }
+function todayD(){ const n=new Date(); return new Date(n.getFullYear(),n.getMonth(),n.getDate()); }
+function addDays(d,n){ return new Date(d.getFullYear(),d.getMonth(),d.getDate()+n); }
+function addMonths(d,n){ const day=d.getDate(); const t=new Date(d.getFullYear(),d.getMonth()+n,1); const last=new Date(t.getFullYear(),t.getMonth()+1,0).getDate(); t.setDate(Math.min(day,last)); return t; }
+function diffDays(a,b){ return Math.round((a-b)/DAY); }
+function fmtDate(d){ return d.toLocaleDateString(undefined,{month:"short",day:"numeric"}); }
+function fmtDateFull(d){ return d.toLocaleDateString(undefined,{weekday:"short",month:"short",day:"numeric"}); }
+const WD = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+
+/* ============ cadence engine ============ */
+function monthlyOccurrence(year, month, day){ const last=new Date(year,month+1,0).getDate(); return new Date(year,month,Math.min(day,last)); }
+function nextDue(item){
+  const t = todayD();
+  if(item.type==="days"){
+    if(!item.lastDone) return t;
+    return addDays(parseD(item.lastDone), item.every);
+  }
+  if(item.type==="months"){
+    if(!item.lastDone) return t;
+    return addMonths(parseD(item.lastDone), item.every);
+  }
+  if(item.type==="monthsWeekday"){
+    // every N months, done on a set weekday (e.g. Saturday morning)
+    if(!item.lastDone){ let d = t; while(d.getDay() !== item.weekday) d = addDays(d, 1); return d; }
+    let d = addMonths(parseD(item.lastDone), item.every);
+    while(d.getDay() !== item.weekday) d = addDays(d, 1);
+    return d;
+  }
+  if(item.type==="monthlyDay"){
+    const done = item.doneThrough ? parseD(item.doneThrough) : null;
+    let cand = monthlyOccurrence(t.getFullYear(), t.getMonth(), item.day);
+    if(done){
+      if(cand <= done) cand = monthlyOccurrence(t.getFullYear(), t.getMonth()+1, item.day);
+      return cand; // upcoming, or this month's occurrence still outstanding (overdue)
+    }
+    if(cand < t) cand = monthlyOccurrence(t.getFullYear(), t.getMonth()+1, item.day);
+    return cand;
+  }
+  if(item.type==="weeklyDay"){
+    const done = item.doneThrough ? parseD(item.doneThrough) : null;
+    const o = addDays(t, (item.weekday - t.getDay() + 7) % 7); // next occurrence, today if it matches
+    const inPlay = diffDays(o, t) === 0 ? o : addDays(o, -7); // most recent occurrence on/before today
+    if(done && done >= inPlay) return addDays(inPlay, 7);
+    if(done) return inPlay; // most recent occurrence not yet done: due today or overdue
+    return o; // never tracked: never show a past occurrence as overdue
+  }
+  return t;
+}
+function prevOccurrence(item, due){
+  if(item.type==="days") return addDays(due, -item.every);
+  if(item.type==="months") return addMonths(due, -item.every);
+  if(item.type==="monthsWeekday"){ let d = addMonths(due, -item.every); while(d.getDay() !== item.weekday) d = addDays(d, -1); return d; }
+  if(item.type==="monthlyDay") return monthlyOccurrence(due.getFullYear(), due.getMonth()-1, item.day);
+  if(item.type==="weeklyDay") return addDays(due, -7);
+  return due;
+}
+function cadenceLabel(item){
+  if(item.type==="days") return item.every===1 ? "Every day" : "Every "+item.every+" days";
+  if(item.type==="months") return item.every===1 ? "Every month" : "Every "+item.every+" months";
+  if(item.type==="monthsWeekday") return "Every "+item.every+" months · "+WD[item.weekday]+" mornings";
+  if(item.type==="monthlyDay") return "Monthly · on the "+item.day+th(item.day);
+  if(item.type==="weeklyDay") return WD[item.weekday]+"s · "+(item.at ? item.at : "night");
+  return "";
+}
+function th(n){ const s=["th","st","nd","rd"], v=n%100; return s[(v-20)%10] || s[v] || s[0]; }
+function statusOf(item){
+  const due = nextDue(item), t = todayD(), diff = diffDays(due, t);
+  let label, cls;
+  if(diff < 0){ label = diff===-1 ? "Overdue · yesterday" : "Overdue · "+(-diff)+" days"; cls="over"; }
+  else if(diff===0){ label = item.type==="weeklyDay" ? (item.at ? "Today · "+item.at : "Tonight") : (item.type==="monthsWeekday" ? "This morning" : "Due today"); cls="today"; }
+  else if(diff===1){ label = item.type==="weeklyDay" ? (item.at ? "Tomorrow · "+item.at : "Tomorrow night") : "Tomorrow"; cls="soon"; }
+  else if(diff<=7){ label = "In "+diff+" days"; cls="soon"; }
+  else { label = fmtDate(due); cls="ok"; }
+  let progress = 0;
+  const prev = prevOccurrence(item, due);
+  const span = diffDays(due, prev), elapsed = diffDays(t, prev);
+  if(span>0) progress = Math.max(0, Math.min(1, elapsed/span));
+  if(diff<0) progress = 1;
+  return { due, diff, label, cls, progress };
+}
+
+/* ============ seed data ============ */
+const GLYPHS = {
+  litter:'<svg viewBox="0 0 24 24"><path d="M4 20h16M6 20v-4a6 6 0 0 1 12 0v4"/><path d="M9 10.5c-1-1.8.5-3.5 2-3 .3-1.2 2.3-1.6 3-.3 1.4-.3 2.7 1.4 1.9 3"/></svg>',
+  filter:'<svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/><path d="M7 4v4M12 10v4M17 16v4"/></svg>',
+  card:'<svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2.5"/><path d="M3 10.5h18"/></svg>',
+  oil:'<svg viewBox="0 0 24 24"><path d="M12 3.5c2.8 3.6 5 6.6 5 9.5a5 5 0 0 1-10 0c0-2.9 2.2-5.9 5-9.5z"/></svg>',
+  recycle:'<svg viewBox="0 0 24 24"><path d="M8 7.5 10.5 4 13 7.5M10.5 4v9"/><path d="M16.5 9.5 21 10l-1.6 3.8M21 10l-7-1"/><path d="M14 17.5 11.5 21 9 17.5M11.5 21v-8"/></svg>',
+  trash:'<svg viewBox="0 0 24 24"><path d="M5 7h14M10 7V5a1.5 1.5 0 0 1 1.5-1.5h1A1.5 1.5 0 0 1 14 5v2M7 7l1 12a1.5 1.5 0 0 0 1.5 1.4h5A1.5 1.5 0 0 0 16 19l1-12"/></svg>',
+  cart:'<svg viewBox="0 0 24 24"><circle cx="9.5" cy="20" r="1.3"/><circle cx="17" cy="20" r="1.3"/><path d="M3 4h2.2l2.3 11.2a1.5 1.5 0 0 0 1.5 1.2h7.9a1.5 1.5 0 0 0 1.5-1.2L20 8H6"/></svg>',
+  wind:'<svg viewBox="0 0 24 24"><path d="M3 8h9.5a2.5 2.5 0 1 0-2.4-3.2M2 12.5h14.5a2.5 2.5 0 1 1-2.4 3.2M3 17h6"/></svg>',
+  dot:'<svg viewBox="0 0 24 24"><path d="M20 7a8.5 8.5 0 1 0 2.5 6"/><path d="M22.5 4v5h-5"/></svg>'
+};
+const GRADS = ["var(--grad-sea)","var(--grad-navy)","var(--grad-gold)","var(--grad-coral)"];
+const DEFAULTS = [
+  { id:"cat-litter",   name:"Clean Cat Litter",    glyph:"litter",  grad:0, type:"days",       every:2 },
+  { id:"ac-filter",    name:"Change AC Filter",    glyph:"filter",  grad:1, type:"months",     every:2 },
+  { id:"robinhood",    name:"Pay Robinhood Card",  glyph:"card",    grad:2, type:"monthlyDay", day:8 },
+  { id:"chase",        name:"Pay Chase Card",      glyph:"card",    grad:3, type:"monthlyDay", day:27 },
+  { id:"kia-oil",      name:"Change Kia Oil",      glyph:"oil",     grad:0, type:"months",     every:2 },
+  { id:"camry-oil",    name:"Change Camry Oil",    glyph:"oil",     grad:1, type:"months",     every:4 },
+  { id:"recycling",    name:"Take Out Recycling",  glyph:"recycle", grad:2, type:"weeklyDay",  weekday:3 },
+  { id:"trash",        name:"Take Out Trash",      glyph:"trash",   grad:3, type:"weeklyDay",  weekday:4 },
+  { id:"grocery-order", name:"Grocery Order",      glyph:"cart",    grad:2, type:"weeklyDay",  weekday:0, at:"7 PM" },
+  { id:"shopvac-ac",   name:"ShopVac the AC",      glyph:"wind",    grad:0, type:"monthsWeekday", every:2, weekday:6 }
+];
+
+/* ============ state ============ */
+const KEY = "cycles.v1.state";
+let state = load();
+function load(){
+  try{
+    const raw = localStorage.getItem(KEY);
+    if(raw){ const s = JSON.parse(raw); if(s && Array.isArray(s.items) && s.items.length) return s; }
+  }catch(e){}
+  return { items: DEFAULTS.map(d => Object.assign({}, d, { lastDone:null, doneThrough:null, custom:false })) };
+}
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
+function findItem(id){ return state.items.find(i => i.id===id); }
+
+/* ============ rendering ============ */
+const $lists = document.getElementById("lists");
+function ringSVG(pct, overdue){
+  const r = 20, c = 2*Math.PI*r, off = c*(1-pct);
+  const col = overdue ? "#E25B4A" : "#1F7FA8";
+  return '<svg class="ring" width="46" height="46" viewBox="0 0 46 46">'
+    + '<circle cx="23" cy="23" r="'+r+'" stroke="rgba(14,42,82,.10)" stroke-width="3" fill="none"/>'
+    + '<circle cx="23" cy="23" r="'+r+'" stroke="'+col+'" stroke-width="3" fill="none" stroke-linecap="round" stroke-dasharray="'+c.toFixed(1)+'" stroke-dashoffset="'+off.toFixed(1)+'"/></svg>';
+}
+function render(){
+  const now = new Date();
+  document.getElementById("dateline").innerHTML =
+    now.toLocaleDateString(undefined,{weekday:"long"})+"<br>"+now.toLocaleDateString(undefined,{month:"long",day:"numeric"});
+  const rows = state.items.map(item => ({ item, st: statusOf(item) }))
+    .sort((a,b) => a.st.diff - b.st.diff || a.item.name.localeCompare(b.item.name));
+  const dueNow = rows.filter(r => r.st.diff <= 0);
+  const week = rows.filter(r => r.st.diff >= 1 && r.st.diff <= 7);
+  const later = rows.filter(r => r.st.diff > 7);
+  const ht = document.getElementById("hero-title"), hb = document.getElementById("hero-body");
+  if(dueNow.length){
+    const over = dueNow.filter(r => r.st.diff < 0).length;
+    ht.textContent = dueNow.length === 1 ? "One thing needs you" : dueNow.length+" things need you";
+    hb.innerHTML = dueNow.map(r => "<b>"+escapeHtml(r.item.name)+"</b> — "+(r.st.diff<0 ? "overdue" : (r.item.type==="weeklyDay" ? (r.item.at ? "today at "+r.item.at : "tonight") : "due today"))).join("<br>")
+      + (over ? "" : "");
+  } else {
+    const nxt = rows[0];
+    ht.textContent = "All clear today";
+    hb.innerHTML = nxt ? "Next up: <b>"+escapeHtml(nxt.item.name)+"</b>, "+(nxt.st.diff===1 ? (nxt.item.type==="weeklyDay" ? (nxt.item.at ? "tomorrow at "+nxt.item.at : "tomorrow night") : "tomorrow") : "in "+nxt.st.diff+" days")+" ("+fmtDate(nxt.st.due)+")." : "Nothing on the calendar.";
+  }
+  $lists.innerHTML = "";
+  [["Due now", dueNow], ["This week", week], ["Later", later]].forEach(([title, group]) => {
+    if(!group.length) return;
+    const h = document.createElement("h2"); h.className="sec"; h.textContent = title; $lists.appendChild(h);
+    const g = document.createElement("div"); g.className="group";
+    group.forEach(({item, st}) => g.appendChild(rowEl(item, st)));
+    $lists.appendChild(g);
+  });
+  if(!rows.length) $lists.innerHTML = '<div class="group"><div class="empty">No cycles yet — add your first one below.</div></div>';
+}
+function escapeHtml(s){ const d=document.createElement("div"); d.textContent=s; return d.innerHTML; }
+function rowEl(item, st){
+  const el = document.createElement("div");
+  el.className = "cyc" + (st.diff<=0 ? " due" : "");
+  const lastLine = (item.type==="days" || item.type==="months" || item.type==="monthsWeekday")
+    ? (item.lastDone ? "Last done <b>"+fmtDate(parseD(item.lastDone))+"</b> · next <b>"+fmtDate(st.due)+"</b>"
+                     : (item.type==="monthsWeekday" ? "First round <b>"+fmtDateFull(st.due)+"</b> · tap ✓ when done"
+                                                    : "Not tracked yet · tap ✓ when done to start the clock"))
+    : "Next due <b>"+fmtDateFull(st.due)+"</b>";
+  el.innerHTML =
+    '<div class="tile">'+ringSVG(st.progress, st.diff<0)
+    + '<div class="glyph" style="background:'+GRADS[item.grad % GRADS.length]+'">'+(GLYPHS[item.glyph] || GLYPHS.dot)+'</div></div>'
+    + '<button class="m" type="button" aria-label="Edit '+escapeHtml(item.name)+'"><div class="ttl">'+escapeHtml(item.name)
+    + '<span class="pill '+st.cls+'">'+st.label+'</span></div>'
+    + '<div class="sl">'+lastLine+'</div>'
+    + '<div class="cad">'+cadenceLabel(item)+'</div></button>'
+    + '<button class="checkbtn" type="button" aria-label="Mark '+escapeHtml(item.name)+' done"><svg viewBox="0 0 24 24"><path d="M4.5 12.5 10 18 19.5 6.5"/></svg></button>';
+  el.querySelector(".checkbtn").addEventListener("click", () => markDone(item.id, el));
+  el.querySelector(".m").addEventListener("click", () => openEdit(item.id));
+  return el;
+}
+
+/* ============ actions ============ */
+let toastTimer = null, lastAction = null;
+function snapshot(){ return JSON.stringify(state); }
+function markDone(id, el){
+  const item = findItem(id); if(!item) return;
+  const st = statusOf(item);
+  lastAction = snapshot();
+  if(item.type==="days" || item.type==="months" || item.type==="monthsWeekday"){ item.lastDone = dstr(todayD()); }
+  else { item.doneThrough = dstr(st.due); }
+  if(el) el.classList.add("flash");
+  save(); render();
+  showToast("Done — "+item.name+" resets to "+fmtDate(statusOf(item).due)+".");
+}
+function showToast(msg){
+  const t = document.getElementById("toast");
+  document.getElementById("toast-msg").textContent = msg;
+  t.hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.hidden = true; }, 6000);
+}
+document.getElementById("toast-undo").addEventListener("click", () => {
+  if(lastAction){ state = JSON.parse(lastAction); save(); render(); }
+  document.getElementById("toast").hidden = true;
+});
+
+/* ============ sheets (add / edit) ============ */
+const sheet = document.getElementById("sheet"), panel = document.getElementById("panel");
+function closeSheet(){ sheet.hidden = true; panel.innerHTML = ""; }
+document.getElementById("scrim").addEventListener("click", closeSheet);
+function cadenceFields(prefix, item){
+  const type = item ? item.type : "days";
+  return '<label class="fl">Cadence</label>'
+    + '<select id="'+prefix+'-type">'
+    + '<option value="days"'+(type==="days"?" selected":"")+'>Every N days</option>'
+    + '<option value="months"'+(type==="months"?" selected":"")+'>Every N months</option>'
+    + '<option value="monthsWeekday"'+(type==="monthsWeekday"?" selected":"")+'>Every N months, on a set morning</option>'
+    + '<option value="monthlyDay"'+(type==="monthlyDay"?" selected":"")+'>Monthly, on a set day</option>'
+    + '<option value="weeklyDay"'+(type==="weeklyDay"?" selected":"")+'>Weekly, on a set night</option>'
+    + '</select>'
+    + '<div id="'+prefix+'-n-wrap"><label class="fl" id="'+prefix+'-n-label">Every how many?</label><input type="number" id="'+prefix+'-n" min="1" max="24" value="'+(item && item.every ? item.every : 1)+'"></div>'
+    + '<div id="'+prefix+'-day-wrap" hidden><label class="fl">Day of the month</label><input type="number" id="'+prefix+'-day" min="1" max="31" value="'+(item && item.day ? item.day : 1)+'"></div>'
+    + '<div id="'+prefix+'-wd-wrap" hidden><label class="fl" id="'+prefix+'-wd-label">Night of the week</label><select id="'+prefix+'-wd">'
+    + WD.map((w,i) => '<option value="'+i+'"'+(item && item.weekday===i ? " selected":"")+'>'+w+" night</option>").join("")
+    + '</select></div>';
+}
+function wireCadence(prefix){
+  const sel = document.getElementById(prefix+"-type");
+  const sync = () => {
+    const v = sel.value;
+    document.getElementById(prefix+"-n-wrap").hidden = !(v==="days" || v==="months" || v==="monthsWeekday");
+    document.getElementById(prefix+"-n-label").textContent = v==="days" ? "Every how many days?" : "Every how many months?";
+    document.getElementById(prefix+"-day-wrap").hidden = v!=="monthlyDay";
+    document.getElementById(prefix+"-wd-wrap").hidden = !(v==="weeklyDay" || v==="monthsWeekday");
+    document.getElementById(prefix+"-wd-label").textContent = v==="monthsWeekday" ? "Morning of the week" : "Night of the week";
+    const wd = document.getElementById(prefix+"-wd"), cur = wd.value, suf = v==="monthsWeekday" ? " morning" : " night";
+    wd.innerHTML = WD.map((w,i) => '<option value="'+i+'">'+w+suf+"</option>").join("");
+    wd.value = cur;
+  };
+  sel.addEventListener("change", sync); sync();
+}
+function readCadence(prefix, base){
+  const type = document.getElementById(prefix+"-type").value;
+  base.type = type;
+  delete base.every; delete base.day; delete base.weekday;
+  if(type==="days" || type==="months" || type==="monthsWeekday") base.every = Math.max(1, parseInt(document.getElementById(prefix+"-n").value || "1", 10));
+  if(type==="monthlyDay") base.day = Math.min(31, Math.max(1, parseInt(document.getElementById(prefix+"-day").value || "1", 10)));
+  if(type==="weeklyDay" || type==="monthsWeekday") base.weekday = parseInt(document.getElementById(prefix+"-wd").value, 10);
+  return base;
+}
+document.getElementById("addbtn").addEventListener("click", () => {
+  panel.innerHTML = '<h2>Add a cycle</h2><p class="sub">A chore with its own rhythm.</p>'
+    + '<label class="fl">Name</label><input type="text" id="a-name" placeholder="e.g. Water the plants" autocomplete="off">'
+    + cadenceFields("a", null)
+    + '<div class="rowbtns"><button class="btn-plain" id="a-cancel" type="button">Cancel</button><button class="btn-primary" id="a-save" type="button">Add cycle</button></div>';
+  sheet.hidden = false; wireCadence("a");
+  document.getElementById("a-cancel").addEventListener("click", closeSheet);
+  document.getElementById("a-save").addEventListener("click", () => {
+    const name = document.getElementById("a-name").value.trim();
+    if(!name){ document.getElementById("a-name").focus(); return; }
+    const item = readCadence("a", { id:"c"+Date.now().toString(36), name, glyph:"dot", grad: state.items.length % GRADS.length, lastDone:null, doneThrough:null, custom:true });
+    state.items.push(item); save(); closeSheet(); render();
+    showToast("Added — "+name+".");
+  });
+});
+function openEdit(id){
+  const item = findItem(id); if(!item) return;
+  const st = statusOf(item);
+  const lastField = (item.type==="days" || item.type==="months" || item.type==="monthsWeekday")
+    ? '<label class="fl">Last done</label><input type="date" id="e-last" value="'+(item.lastDone || "")+'">'
+    : '<p class="sub" style="margin-top:14px">Next due: <b>'+fmtDateFull(st.due)+'</b>. Tapping ✓ on the list marks this round done.</p>';
+  panel.innerHTML = '<h2>'+escapeHtml(item.name)+'</h2><p class="sub">'+cadenceLabel(item)+' · '+st.label.toLowerCase()+'</p>'
+    + '<label class="fl">Name</label><input type="text" id="e-name" value="'+escapeHtml(item.name)+'" autocomplete="off">'
+    + cadenceFields("e", item) + lastField
+    + '<div class="rowbtns"><button class="btn-danger" id="e-del" type="button">Delete</button><button class="btn-plain" id="e-cancel" type="button">Cancel</button><button class="btn-primary" id="e-save" type="button">Save</button></div>';
+  sheet.hidden = false; wireCadence("e");
+  document.getElementById("e-cancel").addEventListener("click", closeSheet);
+  document.getElementById("e-del").addEventListener("click", () => {
+    lastAction = snapshot();
+    state.items = state.items.filter(i => i.id !== id);
+    save(); closeSheet(); render(); showToast("Deleted — "+item.name+".");
+  });
+  document.getElementById("e-save").addEventListener("click", () => {
+    const name = document.getElementById("e-name").value.trim();
+    if(name) item.name = name;
+    readCadence("e", item);
+    const lf = document.getElementById("e-last");
+    if(lf) item.lastDone = lf.value || null;
+    save(); closeSheet(); render(); showToast("Saved — "+item.name+".");
+  });
+}
+document.getElementById("resetall").addEventListener("click", () => {
+  lastAction = snapshot();
+  state = { items: DEFAULTS.map(d => Object.assign({}, d, { lastDone:null, doneThrough:null, custom:false })) };
+  save(); render(); showToast("Restored the original cycles.");
+});
+
+/* ============ go ============ */
+render();
+if("serviceWorker" in navigator){ navigator.serviceWorker.register("sw.js").catch(() => {}); }
+</script>
+</body>
+</html>
