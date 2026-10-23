@@ -4,7 +4,7 @@
 import { requireAccessUser, ensureSchema, listCycles, json } from "../../_lib/cyclesApi.js";
 
 async function guard(request, env) {
-  const email = await requireAccessUser(request);
+  const email = await requireAccessUser(env, request);
   if (!email) return { error: json({ error: "unauthorized" }, 401) };
   if (!env.DB) return { error: json({ error: "db not bound" }, 500) };
   await ensureSchema(env.DB);

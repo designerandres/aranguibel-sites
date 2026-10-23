@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b1026">
+<title>Sign in — Aranguibel Apps</title>
+<link rel="icon" href="/assets/icons/cycles.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600&display=swap" rel="stylesheet">
+<style>
+  :root{ --ink:#eef1ff; --ink2:#aab3d6; --line:rgba(255,255,255,.14); --card:rgba(255,255,255,.07);
+         --accent:#7cc4ff; --accent2:#b79cff; --danger:#ff9d9d; --radius:22px;
+         --safe-b:env(safe-area-inset-bottom,0px); }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{min-height:100%}
+  body{ font-family:"Outfit",system-ui,sans-serif; color:var(--ink); padding:28px 18px calc(28px + var(--safe-b));
+        background:
+          radial-gradient(1200px 600px at 85% -10%, rgba(124,196,255,.22), transparent 60%),
+          radial-gradient(900px 500px at -10% 110%, rgba(183,156,255,.18), transparent 55%),
+          linear-gradient(180deg,#0b1026,#101736 55%,#0b1026);
+        display:flex; align-items:flex-start; justify-content:center; }
+  .wrap{ width:100%; max-width:430px; margin-top:6vh; }
+  h1{ font-family:"Fraunces",serif; font-weight:600; font-size:30px; letter-spacing:.2px; }
+  .sub{ color:var(--ink2); font-size:15px; margin-top:6px; line-height:1.45; }
+  .card{ margin-top:20px; background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+         padding:20px; backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+         box-shadow:0 18px 50px rgba(0,0,0,.35); }
+  .card h2{ font-size:17px; font-weight:600; margin-bottom:6px; }
+  .card p{ color:var(--ink2); font-size:14px; line-height:1.5; }
+  button{ font:inherit; font-weight:600; font-size:16px; color:#0b1026; border:0; border-radius:14px;
+          padding:13px 18px; width:100%; margin-top:14px; cursor:pointer;
+          background:linear-gradient(135deg,var(--accent),var(--accent2)); }
+  button.secondary{ background:rgba(255,255,255,.1); color:var(--ink); border:1px solid var(--line); }
+  button:active{ transform:scale(.99); }
+  button[disabled]{ opacity:.55; }
+  label{ display:block; font-size:13px; color:var(--ink2); margin-top:14px; }
+  input{ font:inherit; font-size:16px; color:var(--ink); width:100%; margin-top:6px; padding:12px 14px;
+         background:rgba(0,0,0,.25); border:1px solid var(--line); border-radius:12px; outline:none; }
+  input:focus{ border-color:var(--accent); }
+  .error{ color:var(--danger); font-size:14px; margin-top:12px; min-height:18px; line-height:1.4; }
+  .divider{ display:flex; align-items:center; gap:12px; margin:20px 0 4px; color:var(--ink2); font-size:12.5px; }
+  .divider::before,.divider::after{ content:""; flex:1; height:1px; background:var(--line); }
+  .inviteurl{ word-break:break-all; font-size:13.5px; background:rgba(0,0,0,.25); border:1px solid var(--line);
+              border-radius:12px; padding:10px 12px; margin-top:10px; color:var(--ink); }
+  .who{ font-size:15px; } .who b{ font-weight:600; }
+  [hidden]{ display:none !important; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Aranguibel Apps</h1>
+  <p class="sub">Sign in once with Face ID — your passkey lives on your devices, never a typed password.</p>
+
+  <div class="card" id="panel-loading"><p>Checking your sign-in…</p></div>
+
+  <div class="card" id="panel-in" hidden>
+    <p class="who">Signed in as <b id="in-email"></b></p>
+    <button id="btn-apps">Open Apps</button>
+    <button class="secondary" id="btn-addpasskey">Add a passkey for this device</button>
+    <button class="secondary" id="btn-logout">Sign out</button>
+    <div id="admin-zone" hidden>
+      <div class="divider">INVITE SOMEONE</div>
+      <label for="inv-email">Their email</label>
+      <input id="inv-email" type="email" autocomplete="off" placeholder="name@example.com">
+      <button class="secondary" id="btn-invite">Create invite link</button>
+      <div class="inviteurl" id="inv-url" hidden></div>
+      <button class="secondary" id="btn-copy" hidden>Copy invite link</button>
+      <p style="margin-top:8px">Send them the link yourself (Messages, in person…). It works once, for that email, for 7 days.</p>
+    </div>
+  </div>
+
+  <div class="card" id="panel-out" hidden>
+    <h2 id="out-title">Welcome back</h2>
+    <p id="out-text">Use the passkey you created for this site.</p>
+    <button id="btn-login">Sign in with Face ID</button>
+    <div id="register-zone" hidden>
+      <div class="divider">NEW HERE?</div>
+      <p id="reg-text">Create your passkey — you'll sign in with Face ID from now on.</p>
+      <label for="reg-email">Your email</label>
+      <input id="reg-email" type="email" autocomplete="email" placeholder="name@example.com">
+      <label for="reg-invite" id="reg-invite-label">Invite code</label>
+      <input id="reg-invite" type="text" autocomplete="off" placeholder="Paste your invite code">
+      <button id="btn-register">Create passkey with Face ID</button>
+    </div>
+    <button class="secondary" id="btn-show-register">I have an invite / first setup</button>
+  </div>
+
+  <p class="error" id="error"></p>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const params = new URLSearchParams(location.search);
+const next = params.get("next") && params.get("next").startsWith("/") ? params.get("next") : "/";
+let inviteFromLink = "";
+if (location.hash.startsWith("#invite=")) inviteFromLink = decodeURIComponent(location.hash.slice(8));
+
+function showError(msg){ $("error").textContent = msg || ""; }
+function b64urlToBuf(s){ const b = atob(s.replace(/-/g,"+").replace(/_/g,"/") + "=".repeat((4 - s.length % 4) % 4)); const u = new Uint8Array(b.length); for (let i=0;i<b.length;i++) u[i]=b.charCodeAt(i); return u.buffer; }
+function bufToB64url(buf){ const u = new Uint8Array(buf); let s=""; for (let i=0;i<u.length;i++) s += String.fromCharCode(u[i]); return btoa(s).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,""); }
+async function api(method, path, body){
+  const r = await fetch(path, { method, headers: body ? {"Content-Type":"application/json"} : undefined, body: body ? JSON.stringify(body) : undefined });
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(data.error || ("request failed (" + r.status + ")"));
+  return data;
+}
+
+async function register(){
+  showError("");
+  const email = $("reg-email").value.trim();
+  const inviteCode = $("reg-invite").value.trim() || inviteFromLink;
+  if (!email) { showError("Enter your email first."); return; }
+  const btn = $("btn-register"); btn.disabled = true;
+  try {
+    const options = await api("POST", "/api/auth/register/options", { email, inviteCode: inviteCode || undefined });
+    options.user.id = b64urlToBuf(options.user.id);
+    options.challenge = b64urlToBuf(options.challenge);
+    const cred = await navigator.credentials.create({ publicKey: options });
+    const payload = { credential: {
+      id: bufToB64url(cred.rawId), rawId: bufToB64url(cred.rawId), type: cred.type,
+      response: { attestationObject: bufToB64url(cred.response.attestationObject), clientDataJSON: bufToB64url(cred.response.clientDataJSON) },
+    }};
+    await api("POST", "/api/auth/register/verify", payload);
+    location.href = next;
+  } catch (e) { showError(e.message); btn.disabled = false; }
+}
+
+async function login(){
+  showError("");
+  const btn = $("btn-login"); btn.disabled = true;
+  try {
+    const options = await api("POST", "/api/auth/login/options", {});
+    options.challenge = b64urlToBuf(options.challenge);
+    const cred = await navigator.credentials.get({ publicKey: options });
+    const payload = { credential: {
+      id: bufToB64url(cred.rawId), rawId: bufToB64url(cred.rawId), type: cred.type,
+      response: { authenticatorData: bufToB64url(cred.response.authenticatorData), clientDataJSON: bufToB64url(cred.response.clientDataJSON), signature: bufToB64url(cred.response.signature), userHandle: cred.response.userHandle ? bufToB64url(cred.response.userHandle) : null },
+    }};
+    await api("POST", "/api/auth/login/verify", payload);
+    location.href = next;
+  } catch (e) { showError(e.message); btn.disabled = false; }
+}
+
+async function init(){
+  let me = null;
+  try { me = await api("GET", "/api/auth/me"); } catch { me = null; }
+  $("panel-loading").hidden = true;
+  if (me && me.signedIn && me.via === "session") {
+    $("panel-in").hidden = false;
+    $("in-email").textContent = me.email;
+    if (me.role === "admin") $("admin-zone").hidden = false;
+    return;
+  }
+  $("panel-out").hidden = false;
+  if (me && me.signedIn && me.via === "access" && !me.registered) {
+    $("out-title").textContent = "One-time setup";
+    $("out-text").textContent = "You're signed in via Cloudflare as " + me.email + ". Create your passkey now and Face ID replaces that sign-in.";
+    $("register-zone").hidden = false;
+    $("btn-show-register").hidden = true;
+    $("reg-email").value = me.email;
+    $("reg-invite-label").hidden = true; $("reg-invite").hidden = true;
+  } else if (inviteFromLink) {
+    $("register-zone").hidden = false;
+    $("btn-show-register").hidden = true;
+    $("reg-text").textContent = "You've been invited. Enter the email the invite was sent to, then create your passkey.";
+    $("reg-invite").value = inviteFromLink;
+    $("reg-invite-label").hidden = true; $("reg-invite").hidden = true;
+  }
+}
+
+$("btn-login").addEventListener("click", login);
+$("btn-register").addEventListener("click", register);
+$("btn-addpasskey").addEventListener("click", async () => {
+  $("panel-in").hidden = true; $("panel-out").hidden = false;
+  $("register-zone").hidden = false; $("btn-show-register").hidden = true;
+  try { const me = await api("GET", "/api/auth/me"); if (me.email) $("reg-email").value = me.email; } catch {}
+  $("reg-invite-label").hidden = true; $("reg-invite").hidden = true;
+  $("reg-text").textContent = "Add a passkey for this device (you're already signed in, so no invite is needed — registration options accept your Access/session identity on the server).";
+});
+$("btn-show-register").addEventListener("click", () => { $("register-zone").hidden = false; $("btn-show-register").hidden = true; });
+$("btn-apps").addEventListener("click", () => location.href = "/");
+$("btn-logout").addEventListener("click", async () => { await api("POST", "/api/auth/logout", {}).catch(() => {}); location.reload(); });
+$("btn-invite").addEventListener("click", async () => {
+  showError("");
+  const email = $("inv-email").value.trim();
+  if (!email) { showError("Enter their email first."); return; }
+  try {
+    const inv = await api("POST", "/api/auth/invite", { email });
+    $("inv-url").hidden = false; $("inv-url").textContent = inv.url;
+    $("btn-copy").hidden = false;
+    $("btn-copy").onclick = () => navigator.clipboard && navigator.clipboard.writeText(inv.url);
+  } catch (e) { showError(e.message); }
+});
+init();
+</script>
+</body>
+</html>

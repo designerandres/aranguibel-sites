@@ -1,48 +1,18 @@
-// Shared helpers for the Cycles API (Phase 6).
-// Auth model: Cloudflare Access already gates sites.aranguibel.com, and Access only
-// issues a JWT to users who pass the Household policy. Each Function additionally
-// verifies that JWT (RS256 against the team certs, audience + expiry) so the API
-// also stays closed on aranguibel-sites.pages.dev, where no Access app exists.
+// Shared helpers for the Cycles API (Phases 6–7).
+// Auth model (Phase 7): identity comes from _lib/auth.js — our own passkey
+// session cookie, or (during the transition) a verified Cloudflare Access JWT.
+// Either way the API also stays closed on aranguibel-sites.pages.dev.
 // No email addresses are stored in this (public) repo on purpose.
 
-const TEAM_DOMAIN = "https://proud-pond-ecf3.cloudflareaccess.com";
-const ACCESS_AUD = "b1ce97501af24a60af32ffa0ded77272107a3f9835ac873f5a84e26c9edb60ef";
+import { requireIdentity } from "./auth.js";
 
-let jwksCache = { at: 0, keys: [] };
-async function getKeys() {
-  if (Date.now() - jwksCache.at < 3600e3 && jwksCache.keys.length) return jwksCache.keys;
-  const r = await fetch(TEAM_DOMAIN + "/cdn-cgi/access/certs");
-  if (!r.ok) throw new Error("certs fetch failed");
-  const j = await r.json();
-  jwksCache = { at: Date.now(), keys: j.keys || [] };
-  return jwksCache.keys;
-}
-const b64uToBytes = (s) => Uint8Array.from(atob(s.replace(/-/g, "+").replace(/_/g, "/").padEnd(Math.ceil(s.length / 4) * 4, "=")), (c) => c.charCodeAt(0));
-const b64uToJson = (s) => JSON.parse(new TextDecoder().decode(b64uToBytes(s)));
-
-export async function requireAccessUser(request) {
-  const jwt = request.headers.get("Cf-Access-Jwt-Assertion");
-  if (!jwt) return null;
-  const parts = jwt.split(".");
-  if (parts.length !== 3) return null;
-  let header, payload;
-  try { header = b64uToJson(parts[0]); payload = b64uToJson(parts[1]); } catch (e) { return null; }
-  const keys = await getKeys();
-  const jwk = keys.find((k) => k.kid === header.kid) || keys[0];
-  if (!jwk) return null;
-  const key = await crypto.subtle.importKey("jwk", jwk, { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" }, false, ["verify"]);
-  const ok = await crypto.subtle.verify("RSASSA-PKCS1-v1_5", key, b64uToBytes(parts[2]), new TextEncoder().encode(parts[0] + "." + parts[1]));
-  if (!ok) return null;
-  const auds = Array.isArray(payload.aud) ? payload.aud : [payload.aud];
-  if (!auds.includes(ACCESS_AUD)) return null;
-  if (!payload.exp || payload.exp * 1000 < Date.now()) return null;
-  if (!payload.email) return null;
-  return payload.email;
+// Historical name kept for the route files: returns the caller's email or null.
+export async function requireAccessUser(env, request) {
+  const identity = await requireIdentity(env, request);
+  return identity ? identity.email : null;
 }
 
-export function json(data, status = 200) {
-  return new Response(JSON.stringify(data), { status, headers: { "Content-Type": "application/json", "Cache-Control": "no-store" } });
-}
+export { json } from "./auth.js";
 
 // Seed = the 12 cycles with completion state as last synced by Mumu (Oct 22, 2026,
 // plus Trash's Oct 23 round). INSERT OR IGNORE: only fills an empty database.

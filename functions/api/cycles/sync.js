@@ -8,7 +8,7 @@ import { requireAccessUser, ensureSchema, listCycles, upsertCycle, json } from "
 const later = (a, b) => (!a ? b : !b ? a : (a > b ? a : b));
 
 export async function onRequestPost({ request, env }) {
-  const email = await requireAccessUser(request);
+  const email = await requireAccessUser(env, request);
   if (!email) return json({ error: "unauthorized" }, 401);
   if (!env.DB) return json({ error: "db not bound" }, 500);
   await ensureSchema(env.DB);
