@@ -62,8 +62,10 @@
   }
   .wrap { max-width: 72rem; margin: 0 auto; padding: 0 1.5rem; }
 
-  /* Header bar, after aranguibel.com */
+  /* Header bar, after aranguibel.com — sticky: stays pinned while the page scrolls */
   .topbar {
+    position: sticky; top: 0; z-index: 50;
+    background: var(--bg);
     display: flex; align-items: center; justify-content: space-between; gap: 1rem;
     padding: max(1.1rem, env(safe-area-inset-top)) 0 1.1rem;
     border-bottom: 1px solid var(--edge);
