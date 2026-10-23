@@ -119,7 +119,8 @@ export async function verifyAccessJWT(request) {
     if (parts.length !== 3) return null;
     const header = JSON.parse(new TextDecoder().decode(b64urlDecode(parts[0])));
     const payload = JSON.parse(new TextDecoder().decode(b64urlDecode(parts[1])));
-    if (payload.aud !== ACCESS_AUD) return null;
+    const auds = Array.isArray(payload.aud) ? payload.aud : [payload.aud];
+    if (!auds.includes(ACCESS_AUD)) return null;
     if (!payload.exp || payload.exp * 1000 < Date.now()) return null;
     if (!payload.email) return null;
     const key = await fetchAccessKey(header.kid);
