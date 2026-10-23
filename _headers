@@ -1,0 +1,8 @@
+# The Apps index must revalidate on every load so a newly published site
+# shows up without a hard refresh; the page's own script also self-checks
+# its app list whenever it becomes visible again.
+/index.html
+  Cache-Control: no-cache
+
+/
+  Cache-Control: no-cache

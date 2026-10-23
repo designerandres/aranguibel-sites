@@ -239,6 +239,35 @@
   document.getElementById("count").textContent =
     SITES.length + (SITES.length === 1 ? " site" : " sites");
 
+  // Freshness: this page is often resumed from the home-screen app without a
+  // real reload, which can leave a stale app list on screen (a newly added
+  // site missing until the app is fully closed and reopened). On load, and
+  // whenever the page becomes visible again, re-fetch the page bypassing
+  // caches and compare the app list; if it changed, reload once to show it.
+  (function () {
+    const grabSites = s => { const m = /const SITES = \[[\s\S]*?\];/.exec(s || ""); return m ? m[0] : ""; };
+    let lastCheck = 0;
+    async function checkForNewApps() {
+      const now = Date.now();
+      if (now - lastCheck < 30000) return;
+      lastCheck = now;
+      try {
+        const res = await fetch(window.location.pathname, { cache: "no-store" });
+        if (!res.ok) return;
+        const fresh = grabSites(await res.text());
+        const mine = grabSites(document.documentElement.outerHTML);
+        if (fresh && mine && fresh !== mine) {
+          if (sessionStorage.getItem("appsIdxReloadedFor") === fresh) return; // already tried for this version — never loop
+          sessionStorage.setItem("appsIdxReloadedFor", fresh);
+          window.location.reload();
+        }
+      } catch (e) { /* offline or blocked — stay on this copy */ }
+    }
+    window.addEventListener("load", () => setTimeout(checkForNewApps, 800));
+    document.addEventListener("visibilitychange", () => { if (!document.hidden) checkForNewApps(); });
+    window.addEventListener("pageshow", checkForNewApps);
+  })();
+
   // Keep navigation inside the home-screen app window on iOS: a plain link
   // tap would otherwise bounce out to Safari, header and footer and all.
   if (window.navigator.standalone) {
