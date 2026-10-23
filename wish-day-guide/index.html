@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0E2A52">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Wish Day">
+<meta name="description" content="Day-of guide for the DPI Product Design visit to the Disney Wish at Port Canaveral, October 30, 2026.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230E2A52'/%3E%3Cpath d='M10 44h44l-6 8H16z' fill='%23F5F9FC'/%3E%3Crect x='18' y='30' width='28' height='12' rx='2' fill='%23F5F9FC'/%3E%3Cpath d='M24 30l2-10h6l2 10z' fill='%23E25B4A'/%3E%3C/svg%3E">
+<style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Wish Day Guide</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poiret+One&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap">
+</head>
+<body>
+<style>
+  :root{
+    --bg:#F5F9FC; --bg-2:#EAF3F8;
+    --card:rgba(255,255,255,.78); --card-solid:#FFFFFF; --card-line:rgba(255,255,255,.9); --card-shadow:0 10px 30px rgba(14,54,92,.10), 0 1px 2px rgba(14,54,92,.06);
+    --navy:#0E2A52; --navy-2:#153A6B; --sea:#1F7FA8; --sky:#5CC6DF; --mint:#8FE1E6; --foam:#CFF0F3;
+    --gold:#C9A14A; --gold-2:#E8C979; --coral:#E25B4A; --coral-2:#F08A6E;
+    --ink:#132238; --ink-2:#44536A; --ink-3:#7B879A; --line:rgba(14,42,82,.08);
+    --grad-hero:linear-gradient(160deg,#0E2A52 0%,#1B4E86 38%,#1F8FB4 72%,#5CC6DF 100%);
+    --grad-sea:linear-gradient(135deg,#1F7FA8,#5CC6DF);
+    --grad-navy:linear-gradient(135deg,#0E2A52,#1F5F8F);
+    --grad-gold:linear-gradient(135deg,#C9A14A,#E8C979);
+    --grad-coral:linear-gradient(135deg,#E25B4A,#F08A6E);
+    --display:'Poiret One',Georgia,serif;
+    --body:'Plus Jakarta Sans',-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;
+    --r:22px; --r-sm:14px;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);background-image:radial-gradient(900px 500px at 10% -10%,#DDF2F7 0%,transparent 60%),radial-gradient(700px 500px at 110% 10%,#E6F0FA 0%,transparent 60%);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55}
+  a{color:var(--sea)}
+  h1,h2,h3,h4{margin:0;text-wrap:balance}
+  .wrap{max-width:560px;margin:0 auto;padding:0 0 120px}
+
+  /* ---------- Hero ---------- */
+  .hero{position:relative;overflow:hidden;background:var(--grad-hero);color:#fff;padding:34px 24px 0;border-radius:0 0 34px 34px;box-shadow:0 18px 40px rgba(14,42,82,.22)}
+  .hero .rays{position:absolute;right:-90px;top:-110px;width:380px;height:380px;opacity:.28;pointer-events:none}
+  .hero .cloud{position:absolute;pointer-events:none;opacity:.35}
+  .eyebrow{font-size:11.5px;font-weight:600;letter-spacing:.24em;text-transform:uppercase;color:var(--gold-2)}
+  .hero h1{font-family:var(--display);font-size:58px;line-height:.95;margin:12px 0 8px;letter-spacing:.02em}
+  .hero .sub{font-size:16px;color:rgba(255,255,255,.85);margin:0;font-weight:500}
+  .ship-stage{position:relative;margin:18px -24px 0;height:170px}
+  .ship-stage svg{position:absolute;left:0;right:0;bottom:0;width:100%;height:auto;display:block}
+
+  /* ---------- Fact tiles ---------- */
+  .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:0 20px;margin:-26px 0 0;position:relative;z-index:2}
+  .tile{background:var(--card);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--card-line);border-radius:var(--r-sm);box-shadow:var(--card-shadow);padding:14px 10px 12px;text-align:center}
+  .tile .k{font-size:10.5px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-3)}
+  .tile .v{font-size:19px;font-weight:700;color:var(--navy);font-variant-numeric:tabular-nums;line-height:1.1;margin-top:4px}
+
+  /* ---------- Sections ---------- */
+  section.tab{display:none;padding:28px 20px 10px}
+  section.tab.on{display:block}
+  .sec-head{margin:0 0 6px}
+  .sec-head span{display:block;font-size:11.5px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:var(--sea);margin-bottom:6px}
+  .sec-head h2{font-family:var(--display);font-size:40px;color:var(--navy);letter-spacing:.02em;line-height:1}
+  .lede{font-size:16.5px;color:var(--ink-2);margin:10px 0 22px}
+  h3{font-size:13px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);margin:30px 0 12px}
+  p{margin:0 0 12px}
+
+  .card{background:var(--card);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--card-line);border-radius:var(--r);box-shadow:var(--card-shadow);padding:18px;margin:0 0 16px}
+  .card.pad0{padding:0;overflow:hidden}
+  .card.navy{background:var(--grad-navy);color:#fff;border:0}
+  .card.sea{background:var(--grad-sea);color:#fff;border:0}
+  .card.coral{background:var(--grad-coral);color:#fff;border:0}
+  .card.gold{background:var(--grad-gold);color:var(--navy);border:0}
+  .callout{display:grid;grid-template-columns:44px 1fr;gap:14px;align-items:start}
+  .callout .ico{width:44px;height:44px;border-radius:14px;background:rgba(255,255,255,.18);display:grid;place-items:center}
+  .callout .ico svg{width:24px;height:24px;fill:none;stroke:#fff;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .callout h4{font-size:16px;font-weight:700;margin-bottom:4px}
+  .callout p{margin:0;font-size:14.5px;opacity:.92}
+  .callout p b{font-weight:700}
+
+  /* ---------- Row lists (tap for sheet) ---------- */
+  .rows{display:flex;flex-direction:column;gap:10px;margin:0;padding:0;list-style:none}
+  .row{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;background:var(--card);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--card-line);border-radius:18px;box-shadow:var(--card-shadow);padding:14px 14px 14px 16px;width:100%;text-align:left;font:inherit;color:inherit;cursor:pointer;transition:transform .15s ease,box-shadow .15s ease}
+  .row:active{transform:scale(.985)}
+  .row:focus-visible{outline:3px solid var(--sky);outline-offset:2px}
+  .row .lead{min-width:54px}
+  .row .time{font-size:17px;font-weight:700;color:var(--navy);font-variant-numeric:tabular-nums;line-height:1.1}
+  .row .time small{display:block;font-size:10.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3);margin-top:2px}
+  .row .num{width:38px;height:38px;border-radius:12px;background:var(--grad-sea);color:#fff;display:grid;place-items:center;font-weight:700;font-size:15px}
+  .row .num.gold{background:var(--grad-gold);color:var(--navy)}
+  .row .num.coral{background:var(--grad-coral)}
+  .row .deckno{width:46px;height:46px;border-radius:14px;background:var(--grad-navy);color:#fff;display:grid;place-items:center;font-weight:700;font-size:16px;line-height:1;text-align:center}
+  .row .deckno small{display:block;font-size:9px;font-weight:600;letter-spacing:.12em;opacity:.8;margin-bottom:2px}
+  .row .deckno.hi{background:var(--grad-sea)}
+  .row .main b{display:block;font-weight:700;color:var(--navy);font-size:15.5px;line-height:1.3}
+  .row .main span{display:block;font-size:13.5px;color:var(--ink-2);margin-top:2px}
+  .row .chev{width:22px;height:22px;color:var(--ink-3);flex:none}
+  .row.major{border-left:4px solid var(--gold)}
+  .row.hold{border-left:4px solid var(--coral)}
+  .row.now .main b::after{content:"Now";font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;background:var(--grad-coral);color:#fff;padding:3px 7px;border-radius:999px;margin-left:8px;vertical-align:middle}
+  .pill{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:4px 9px;border-radius:999px;background:var(--foam);color:var(--navy);margin-top:6px}
+  .pill.coral{background:#FBE3DE;color:#B33E2F}
+  .pill.gold{background:#F7ECCF;color:#7A5A16}
+
+  /* ---------- Map cards ---------- */
+  .map{padding:12px 8px 8px}
+  .map svg{display:block;width:100%;height:auto}
+  .map-cap{font-size:12.5px;color:var(--ink-3);margin:8px 10px 2px}
+  .btns{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 6px}
+  .btn{flex:1 1 140px;display:flex;align-items:center;justify-content:center;gap:8px;min-height:50px;padding:10px 14px;border-radius:999px;background:var(--grad-navy);color:#fff;text-decoration:none;font-size:14px;font-weight:700;letter-spacing:.02em;box-shadow:0 8px 20px rgba(14,42,82,.22)}
+  .btn.alt{background:var(--card-solid);color:var(--navy);box-shadow:var(--card-shadow);border:1px solid var(--line)}
+  .btn:focus-visible,button:focus-visible,.tabbar a:focus-visible{outline:3px solid var(--sky);outline-offset:2px}
+
+  /* ---------- Details bits ---------- */
+  .check{list-style:none;margin:0;padding:0}
+  .check li{display:flex;align-items:flex-start;gap:14px;padding:12px 0;border-bottom:1px solid var(--line)}
+  .check li:last-child{border-bottom:0;padding-bottom:0}
+  .check li:first-child{padding-top:0}
+  .check input{width:24px;height:24px;margin:0;accent-color:var(--sea);flex:none;border-radius:8px}
+  .check label{flex:1;font-weight:600;color:var(--navy);font-size:15px}
+  .check label small{display:block;color:var(--ink-3);font-size:13px;font-weight:500;margin-top:1px}
+  .check .must{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;background:#FBE3DE;color:#B33E2F;padding:2px 7px;border-radius:999px;margin-left:6px;vertical-align:middle}
+  .kv{margin:0}
+  .kv div{display:grid;grid-template-columns:96px 1fr;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+  .kv div:first-child{padding-top:0}.kv div:last-child{border-bottom:0;padding-bottom:0}
+  .kv dt{font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);padding-top:4px}
+  .kv dd{margin:0;color:var(--ink);font-size:15px}
+  .kv dd a{word-break:break-all;font-weight:600}
+  .roster{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0;padding:0;list-style:none}
+  .roster li{padding:12px 14px;background:var(--card);border:1px solid var(--card-line);border-radius:16px;box-shadow:var(--card-shadow);font-size:14.5px;font-weight:600;color:var(--navy);display:flex;gap:10px;align-items:center}
+  .roster .av{width:34px;height:34px;border-radius:50%;background:var(--grad-sea);color:#fff;display:grid;place-items:center;font-size:12px;font-weight:700;flex:none}
+  .roster li small{display:block;color:var(--ink-3);font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-top:2px}
+  .roster li.host{grid-column:1/-1;background:var(--grad-navy);color:#fff;border:0}
+  .roster li.host .av{background:var(--grad-gold);color:var(--navy)}
+  .roster li.host small{color:var(--gold-2)}
+  .vault p{font-size:14px;opacity:.9;margin:0 0 14px}
+  .vault button.rev{width:100%;min-height:50px;border-radius:999px;background:rgba(255,255,255,.16);color:#fff;border:1px solid rgba(255,255,255,.45);font-family:var(--body);font-size:14px;font-weight:700;letter-spacing:.04em;cursor:pointer}
+  .vault .codes{display:none}
+  .vault.open .codes{display:block}
+  .vault.open .rev{display:none}
+  .codes div{display:grid;grid-template-columns:1fr auto;align-items:baseline;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.2)}
+  .codes div:last-of-type{border-bottom:0}
+  .codes span{font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;opacity:.85}
+  .codes code{font-family:var(--body);font-size:26px;font-weight:700;color:var(--gold-2);letter-spacing:.06em}
+  .codes .hide{margin-top:10px;font-size:12.5px;color:#fff;opacity:.8;text-decoration:underline;background:none;border:0;min-height:30px;padding:0;cursor:pointer;font-family:var(--body)}
+
+  .foot{padding:30px 20px 10px;text-align:center;color:var(--ink-3);font-size:12.5px}
+
+  /* ---------- Tab bar ---------- */
+  .tabbar{position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;justify-content:center;padding:0 12px calc(10px + env(safe-area-inset-bottom));pointer-events:none}
+  .tabbar nav{pointer-events:auto;display:flex;width:100%;max-width:536px;background:rgba(255,255,255,.82);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,.9);border-radius:28px;box-shadow:0 12px 36px rgba(14,42,82,.18);padding:6px}
+  .tabbar a{position:relative;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:58px;border-radius:22px;color:var(--ink-3);text-decoration:none;font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;transition:background .2s,color .2s}
+  .tabbar a svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .tabbar a.on{color:#fff;background:var(--grad-navy);box-shadow:0 6px 16px rgba(14,42,82,.28)}
+
+  /* ---------- Bottom sheet ---------- */
+  .scrim{position:fixed;inset:0;background:rgba(10,30,60,.45);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity .25s;z-index:30}
+  .sheet{position:fixed;left:0;right:0;bottom:0;z-index:31;margin:0 auto;max-width:560px;background:#fff;border-radius:28px 28px 0 0;box-shadow:0 -12px 40px rgba(14,42,82,.25);transform:translateY(105%);transition:transform .32s cubic-bezier(.2,.8,.2,1);max-height:88vh;display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom)}
+  body.sheet-open .scrim{opacity:1;pointer-events:auto}
+  body.sheet-open .sheet{transform:translateY(0)}
+  body.sheet-open{overflow:hidden}
+  .sheet .grab{width:44px;height:5px;border-radius:999px;background:#D5DEE8;margin:10px auto 0}
+  .sheet header{display:flex;align-items:flex-start;gap:12px;padding:14px 20px 8px}
+  .sheet header .meta{flex:1}
+  .sheet header .kick{font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--sea)}
+  .sheet header h3{font-family:var(--display);font-size:30px;letter-spacing:.02em;text-transform:none;color:var(--navy);margin:4px 0 0;line-height:1.05}
+  .sheet header .x{width:38px;height:38px;border-radius:50%;border:0;background:#EEF3F8;color:var(--navy);font-size:20px;cursor:pointer;display:grid;place-items:center;flex:none}
+  .sheet .content{overflow-y:auto;padding:6px 20px 28px;font-size:15.5px;color:var(--ink-2)}
+  .sheet .content p{margin:0 0 12px}
+  .sheet .content b{color:var(--navy);font-weight:700}
+  .sheet .content ul{margin:0 0 12px;padding-left:20px}
+  .sheet .content li{margin-bottom:6px}
+  .sheet .content .pill{margin:0 6px 8px 0}
+  .sheet .content .btns{margin-top:6px}
+  template{display:none}
+
+  @media (prefers-reduced-motion:reduce){ .sheet,.scrim,.row{transition:none} }
+  @media (prefers-reduced-motion:no-preference){ section.tab.on{animation:fade .25s ease} @keyframes fade{from{opacity:.5;transform:translateY(6px)}to{opacity:1;transform:none}} }
+</style>
+
+<div class="wrap">
+
+  <!-- ===================== HERO ===================== -->
+  <header class="hero">
+    <svg class="rays" viewBox="0 0 320 320" aria-hidden="true">
+      <g stroke="#fff" stroke-width="1" fill="none">
+        <circle cx="160" cy="160" r="40"/><circle cx="160" cy="160" r="64"/><circle cx="160" cy="160" r="92"/>
+        <g id="ray"><line x1="160" y1="20" x2="160" y2="110"/></g>
+        <use href="#ray" transform="rotate(30 160 160)"/><use href="#ray" transform="rotate(60 160 160)"/><use href="#ray" transform="rotate(90 160 160)"/><use href="#ray" transform="rotate(120 160 160)"/><use href="#ray" transform="rotate(150 160 160)"/><use href="#ray" transform="rotate(180 160 160)"/><use href="#ray" transform="rotate(210 160 160)"/><use href="#ray" transform="rotate(240 160 160)"/><use href="#ray" transform="rotate(270 160 160)"/><use href="#ray" transform="rotate(300 160 160)"/><use href="#ray" transform="rotate(330 160 160)"/>
+      </g>
+    </svg>
+    <div class="eyebrow">DPI Product Design · Site Visit</div>
+    <h1>Wish Day</h1>
+    <p class="sub">Friday, October 30, 2026 · Disney Wish at Port Canaveral</p>
+    <div class="ship-stage">
+      <svg viewBox="0 0 560 170" aria-label="Stylized Disney Wish on the water">
+        <defs>
+          <linearGradient id="hull" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1B3A66"/><stop offset="1" stop-color="#0B1E3E"/></linearGradient>
+          <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5CC6DF" stop-opacity=".0"/><stop offset="1" stop-color="#8FE1E6" stop-opacity=".55"/></linearGradient>
+          <linearGradient id="fun" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F08A6E"/><stop offset="1" stop-color="#D9483A"/></linearGradient>
+        </defs>
+        <!-- clouds -->
+        <g fill="#fff" opacity=".22"><ellipse cx="90" cy="46" rx="48" ry="14"/><ellipse cx="120" cy="38" rx="30" ry="16"/><ellipse cx="440" cy="30" rx="56" ry="13"/><ellipse cx="470" cy="22" rx="28" ry="14"/></g>
+        <!-- sea -->
+        <rect x="0" y="120" width="560" height="50" fill="url(#sea)"/>
+        <path d="M0 126 Q25 118 50 126 T100 126 T150 126 T200 126 T250 126 T300 126 T350 126 T400 126 T450 126 T500 126 T550 126 T600 126" fill="none" stroke="#fff" stroke-width="1.5" opacity=".55"/>
+        <path d="M0 142 Q25 134 50 142 T100 142 T150 142 T200 142 T250 142 T300 142 T350 142 T400 142 T450 142 T500 142 T550 142 T600 142" fill="none" stroke="#fff" stroke-width="1" opacity=".3"/>
+        <!-- hull -->
+        <path d="M70 124 L98 92 L480 92 L520 76 L506 124 Z" fill="url(#hull)"/>
+        <path d="M98 92 L480 92 L520 76 L512 84 L482 100 L100 100 Z" fill="#fff" opacity=".12"/>
+        <line x1="102" y1="104" x2="500" y2="104" stroke="#E8C979" stroke-width="1.5"/>
+        <g fill="#fff" opacity=".9"><circle cx="150" cy="112" r="2"/><circle cx="175" cy="112" r="2"/><circle cx="200" cy="112" r="2"/><circle cx="225" cy="112" r="2"/><circle cx="250" cy="112" r="2"/><circle cx="275" cy="112" r="2"/><circle cx="300" cy="112" r="2"/><circle cx="325" cy="112" r="2"/><circle cx="350" cy="112" r="2"/><circle cx="375" cy="112" r="2"/><circle cx="400" cy="112" r="2"/><circle cx="425" cy="112" r="2"/><circle cx="450" cy="112" r="2"/><circle cx="475" cy="112" r="2"/></g>
+        <!-- decks -->
+        <rect x="118" y="78" width="356" height="14" rx="3" fill="#fff"/>
+        <rect x="130" y="66" width="330" height="12" rx="3" fill="#fff"/>
+        <rect x="150" y="55" width="280" height="11" rx="3" fill="#fff"/>
+        <rect x="180" y="45" width="200" height="10" rx="3" fill="#fff"/>
+        <g fill="#5CC6DF" opacity=".7"><rect x="140" y="82" width="312" height="3" rx="1.5"/><rect x="150" y="70" width="290" height="3" rx="1.5"/><rect x="170" y="59" width="240" height="3" rx="1.5"/></g>
+        <!-- funnels -->
+        <path d="M218 45 L224 20 L254 20 L262 45 Z" fill="url(#fun)"/><rect x="223" y="20" width="32" height="5" rx="1" fill="#0B1E3E"/>
+        <path d="M322 45 L328 22 L358 22 L366 45 Z" fill="url(#fun)"/><rect x="327" y="22" width="32" height="5" rx="1" fill="#0B1E3E"/>
+        <!-- wake -->
+        <path d="M506 124 Q530 118 556 126" fill="none" stroke="#fff" stroke-width="2" opacity=".7"/>
+      </svg>
+    </div>
+  </header>
+
+  <div class="tiles">
+    <div class="tile"><div class="k">Meet</div><div class="v">7:00 AM</div></div>
+    <div class="tile"><div class="k">Aboard by</div><div class="v">9:00 AM</div></div>
+    <div class="tile"><div class="k">Tour</div><div class="v">9 AM – 1 PM</div></div>
+  </div>
+
+  <!-- ===================== PLAN ===================== -->
+  <section class="tab on" id="plan">
+    <div class="sec-head"><span>Itinerary</span><h2>The Plan</h2></div>
+    <p class="lede">One van, nine of us, a sunrise drive east, and four hours aboard the Wish with the photo crew who bring our work to life. Tap any step for the full detail.</p>
+
+    <div class="card coral">
+      <div class="callout">
+        <div class="ico"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
+        <div><h4>The math that matters</h4><p>Aboard by 9:00 means at the terminal door by <b>8:30</b> (30 min for clearance). The drive is 65–75 min, so wheels rolling at <b>7:15</b> is the target.</p></div>
+      </div>
+    </div>
+
+    <ul class="rows" id="timeline">
+      <li><button class="row" data-t="06:50" data-sheet="s-arrive"><div class="lead time">6:50<small>AM</small></div><div class="main"><b>Arrive backstage EPCOT (Andrés)</b><span>Partner trailer · Norway / Mexico</span></div><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></button></li>
+      <li><button class="row major" data-t="07:00" data-sheet="s-van"><div class="lead time">7:00<small>AM</small></div><div class="main"><b>Meet · pick up the van</b><span>Everyone here · codes in Details</span></div><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></button></li>
+      <li><button class="row" data-t="07:15" data-sheet="s-roll"><div class="lead time">7:15<small>AM</small></div><div class="main"><b>Wheels rolling</b><span>I-4 East → SR-528 East</span></div><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></button></li>
+      <li><button class="row" data-t="07:45" data-sheet="s-coffee"><div class="lead time">7:45<small>opt.</small></div><div class="main"><b>Coffee stop, if ahead</b><span>Narcoossee Rd · Lake Nona</span></div><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></button></li>
+      <li><button class="row major" data-t="08:30" data-sheet="s-ct8"><div class="lead time">8:30<small>AM</small></div><div class="main"><b>Arrive Cruise Terminal 8</b><span>IDs out · walk in together</span></div><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></button></li>
+      <li><button class="row" data-t="08:35" data-sheet="s-clear"><div class="lead time">8:35<small>AM</small></div><div class="main"><b>Clearance &amp; screening</b><span>ID check · metal detector · visitor pass</span></div><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></button></li>
+      <li><button class="row major" data-t="09:00" data-sheet="s-aboard"><div class="lead time">9:00<small>AM</small></div><div class="main"><b>Aboard · meet Kevin</b><span>Grand Hall, Deck 3</span></div><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></button></li>
+      <li><button class="row" data-t="09:15" data-sheet="s-tour"><div class="lead time">9–1<small>Tour</small></div><div class="main"><b>Ship tour</b><span>Backdrops · Magic Shots · props · photo base · crew</span></div><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></button></li>
+      <li><button class="row major" data-t="13:00" data-sheet="s-off"><div class="lead time">1:00<small>PM</small></div><div class="main"><b>Disembark</b><span>Return visitor passes</span></div><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></button></li>
+      <li><button class="row" data-t="13:15" data-sheet="s-lunch"><div class="lead time">1:15<small>PM</small></div><div class="main"><b>Lunch or straight back?</b><span>Group call · two options</span></div><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></button></li>
+      <li><button class="row hold" data-t="14:30" data-sheet="s-return"><div class="lead time">2:30<small>– 4 PM</small></div><div class="main"><b>Return the van</b><span>Back to the trailer at EPCOT</span></div><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></button></li>
+    </ul>
+  </section>
+
+  <!-- ===================== DRIVE ===================== -->
+  <section class="tab" id="drive">
+    <div class="sec-head"><span>EPCOT → CT8</span><h2>The Drive</h2></div>
+    <p class="lede">About 60 miles, almost all of it on the Beachline. 65–75 minutes on a Friday morning, with tolls.</p>
+
+    <div class="card pad0">
+      <div class="map">
+        <svg viewBox="0 0 560 300" role="img" aria-label="Schematic route map from EPCOT backstage to Port Canaveral Terminal 8">
+          <defs>
+            <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#1F7FA8"/></marker>
+            <linearGradient id="road" x1="0" x2="1"><stop offset="0" stop-color="#0E2A52"/><stop offset="1" stop-color="#1F7FA8"/></linearGradient>
+          </defs>
+          <path d="M470 0 C480 60 500 120 515 170 C525 210 530 260 532 300 L560 300 L560 0 Z" fill="#8FE1E6" opacity=".35"/>
+          <path d="M470 0 C480 60 500 120 515 170 C525 210 530 260 532 300" fill="none" stroke="#5CC6DF" stroke-width="1.5"/>
+          <text x="540" y="150" font-size="9" font-weight="700" letter-spacing="2" fill="#1F7FA8" transform="rotate(80 540 150)">ATLANTIC</text>
+          <path d="M440 110 C455 160 460 220 462 300" fill="none" stroke="#5CC6DF" stroke-width="6" opacity=".35"/>
+          <path d="M40 250 L95 190" fill="none" stroke="url(#road)" stroke-width="5" stroke-linecap="round"/>
+          <path d="M95 190 C150 150 200 150 255 150 L380 150 C420 150 445 150 470 150 L505 150" fill="none" stroke="url(#road)" stroke-width="5" stroke-linecap="round" marker-end="url(#arr)"/>
+          <path d="M505 150 L515 120 L518 95" fill="none" stroke="#1F7FA8" stroke-width="3" stroke-dasharray="4 4"/>
+          <path d="M200 150 L200 125" fill="none" stroke="#C9A14A" stroke-width="2" stroke-dasharray="3 3"/>
+          <text x="50" y="235" font-size="10.5" font-weight="700" fill="#0E2A52" transform="rotate(-47 50 235)">I-4 EAST</text>
+          <text x="290" y="140" font-size="11.5" font-weight="700" letter-spacing="1.5" fill="#0E2A52" text-anchor="middle">SR-528 BEACHLINE · TOLL</text>
+          <text x="300" y="168" font-size="9.5" font-weight="600" letter-spacing="1" fill="#7B879A" text-anchor="middle">≈ 45 MI · STRAIGHT EAST</text>
+          <g><circle cx="37" cy="250" r="8" fill="#0E2A52"/><circle cx="37" cy="250" r="3" fill="#fff"/>
+            <text x="52" y="268" font-size="12" font-weight="700" fill="#0E2A52">EPCOT backstage</text>
+            <text x="52" y="281" font-size="9.5" fill="#7B879A">Norway / Mexico · 7:15 AM</text></g>
+          <g><circle cx="95" cy="190" r="5" fill="#fff" stroke="#0E2A52" stroke-width="2"/>
+            <text x="106" y="186" font-size="9.5" font-weight="600" fill="#44536A">I-4 → 528 E</text><text x="106" y="197" font-size="9.5" fill="#7B879A">Exit 72</text></g>
+          <g><circle cx="200" cy="125" r="5" fill="#fff" stroke="#C9A14A" stroke-width="2"/>
+            <text x="200" y="112" font-size="9.5" font-weight="600" fill="#44536A" text-anchor="middle">Narcoossee Rd · coffee (optional)</text></g>
+          <g><circle cx="255" cy="150" r="3.5" fill="#1F7FA8"/><text x="255" y="188" font-size="9" fill="#7B879A" text-anchor="middle">SR-417</text></g>
+          <g><circle cx="380" cy="150" r="3.5" fill="#1F7FA8"/><text x="380" y="188" font-size="9" fill="#7B879A" text-anchor="middle">I-95</text></g>
+          <g><circle cx="505" cy="150" r="5" fill="#fff" stroke="#0E2A52" stroke-width="2"/>
+            <text x="498" y="175" font-size="9.5" font-weight="600" fill="#44536A" text-anchor="end">Exit 54A · A Terminals</text>
+            <text x="498" y="186" font-size="9.5" fill="#7B879A" text-anchor="end">SR-401 → Charles M. Rowland Dr</text></g>
+          <g><circle cx="518" cy="95" r="8" fill="#E25B4A"/><circle cx="518" cy="95" r="3" fill="#fff"/>
+            <text x="500" y="74" font-size="12" font-weight="700" fill="#0E2A52" text-anchor="end">Cruise Terminal 8</text>
+            <text x="500" y="87" font-size="9.5" fill="#7B879A" text-anchor="end">Disney Wish · 8:30 AM</text></g>
+          <g transform="translate(300 60)" stroke="#C9A14A" stroke-width="1.5" fill="none">
+            <path d="M-18 0 A18 18 0 0 1 18 0"/><line x1="-26" y1="0" x2="26" y2="0"/>
+            <line x1="0" y1="-26" x2="0" y2="-21"/><line x1="-17" y1="-17" x2="-13" y2="-13"/><line x1="17" y1="-17" x2="13" y2="-13"/></g>
+          <text x="300" y="80" font-size="9" font-weight="700" letter-spacing="1.5" fill="#C9A14A" text-anchor="middle">SUNRISE 7:36 AM</text>
+          <text x="12" y="294" font-size="8.5" fill="#7B879A">Schematic · not to scale</text>
+        </svg>
+        <p class="map-cap">Schematic for orientation. Use live navigation for traffic and lanes.</p>
+      </div>
+    </div>
+    <div class="btns">
+      <a class="btn" href="https://www.google.com/maps/dir/?api=1&origin=EPCOT,+Orlando,+FL&destination=9155+Charles+M+Rowland+Dr,+Cape+Canaveral,+FL+32920&travelmode=driving" target="_blank" rel="noopener">Google Maps</a>
+      <a class="btn alt" href="https://maps.apple.com/?daddr=9155+Charles+M+Rowland+Dr,+Cape+Canaveral,+FL+32920&dirflg=d" target="_blank" rel="noopener">Apple Maps</a>
+    </div>
+
+    <h3>Turn by turn</h3>
+    <ul class="rows">
+      <li><button class="row" data-sheet="d1"><div class="lead num">1</div><div class="main"><b>Leave backstage</b><span>≈3 mi · to Epcot Center Dr</span></div><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></button></li>
+      <li><button class="row" data-sheet="d2"><div class="lead num">2</div><div class="main"><b>I-4 East</b><span>≈10 mi · right lanes for Exit 72</span></div><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></button></li>
+      <li><button class="row" data-sheet="d3"><div class="lead num">3</div><div class="main"><b>SR-528 East · Beachline</b><span>≈45 mi · toll road</span></div><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></button></li>
+      <li><button class="row" data-sheet="d4"><div class="lead num">4</div><div class="main"><b>Exit 54A · A Terminals</b><span>≈2 mi · SR-401 → Rowland Dr</span></div><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></button></li>
+      <li><button class="row" data-sheet="d5"><div class="lead num coral">5</div><div class="main"><b>Arrive CT8 · 8:30</b><span>9155 Charles M. Rowland Dr</span></div><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></button></li>
+    </ul>
+
+    <h3>Along the way</h3>
+    <ul class="rows">
+      <li><button class="row" data-sheet="s-coffee"><div class="lead num gold">☕</div><div class="main"><b>Coffee options</b><span>Out: Lake Nona · Home: the Cove</span></div><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></button></li>
+      <li><button class="row" data-sheet="d-van"><div class="lead num gold">♫</div><div class="main"><b>In the van</b><span>Heidi's speaker and playlist</span></div><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></button></li>
+    </ul>
+  </section>
+
+  <!-- ===================== TERMINAL ===================== -->
+  <section class="tab" id="terminal">
+    <div class="sec-head"><span>Clearance</span><h2>Terminal 8</h2></div>
+    <p class="lede">Disney Cruise Line's home terminal at Port Canaveral. Thirty minutes, five steps, and we're aboard.</p>
+
+    <div class="card navy">
+      <div class="callout">
+        <div class="ico"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="12" r="2.5"/><path d="M14 10h4M14 14h4"/></svg></div>
+        <div><h4>Have in hand before you leave the van</h4><p>Government photo ID (license or passport) <b>and</b> your Disney blue badge. No exceptions at the ID check.</p></div>
+      </div>
+    </div>
+
+    <div class="card pad0">
+      <div class="map">
+        <svg viewBox="0 0 560 330" role="img" aria-label="Schematic of Cruise Terminal 8 arrival, parking, security and gangway">
+          <defs><marker id="arr2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#1F7FA8"/></marker>
+          <linearGradient id="hull2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1B3A66"/><stop offset="1" stop-color="#0B1E3E"/></linearGradient></defs>
+          <rect x="0" y="40" width="560" height="60" fill="#8FE1E6" opacity=".35"/>
+          <path d="M0 100 Q20 94 40 100 T80 100 T120 100 T160 100 T200 100 T240 100 T280 100 T320 100 T360 100 T400 100 T440 100 T480 100 T520 100 T560 100" fill="none" stroke="#5CC6DF" stroke-width="1.5"/>
+          <text x="20" y="62" font-size="9" font-weight="700" letter-spacing="2" fill="#1F7FA8">PORT CANAVERAL · NORTH BASIN</text>
+          <path d="M110 86 L130 54 L480 54 L500 46 L492 86 Z" fill="url(#hull2)"/>
+          <rect x="150" y="42" width="325" height="12" rx="3" fill="#fff"/>
+          <path d="M240 42 L244 32 L262 32 L266 42 Z" fill="#E25B4A"/><path d="M340 42 L344 32 L362 32 L366 42 Z" fill="#E25B4A"/>
+          <text x="305" y="74" font-size="9" font-weight="700" letter-spacing="3" fill="#E8C979" text-anchor="middle">DISNEY WISH</text>
+          <path d="M300 86 L300 118" stroke="#1F7FA8" stroke-width="3"/>
+          <text x="308" y="110" font-size="9.5" font-weight="600" fill="#44536A">Gangway → Deck 3 Grand Hall</text>
+          <rect x="150" y="118" width="300" height="80" rx="10" fill="#F5F9FC" stroke="#0E2A52" stroke-width="1.5"/>
+          <text x="300" y="138" font-size="12" font-weight="700" letter-spacing="2" fill="#0E2A52" text-anchor="middle">CRUISE TERMINAL 8</text>
+          <g font-size="9.5" fill="#44536A" font-weight="600">
+            <rect x="165" y="152" width="78" height="34" rx="8" fill="#fff" stroke="#5CC6DF" stroke-width="1.5"/>
+            <text x="204" y="166" text-anchor="middle">ID check</text><text x="204" y="178" text-anchor="middle" fill="#7B879A" font-weight="500">Gov ID + badge</text>
+            <path d="M243 169 L258 169" stroke="#1F7FA8" stroke-width="1.5" marker-end="url(#arr2)"/>
+            <rect x="261" y="152" width="78" height="34" rx="8" fill="#fff" stroke="#5CC6DF" stroke-width="1.5"/>
+            <text x="300" y="166" text-anchor="middle">Screening</text><text x="300" y="178" text-anchor="middle" fill="#7B879A" font-weight="500">Metal detector</text>
+            <path d="M339 169 L354 169" stroke="#1F7FA8" stroke-width="1.5" marker-end="url(#arr2)"/>
+            <rect x="357" y="152" width="78" height="34" rx="8" fill="#fff" stroke="#5CC6DF" stroke-width="1.5"/>
+            <text x="396" y="166" text-anchor="middle">Visitor pass</text><text x="396" y="178" text-anchor="middle" fill="#7B879A" font-weight="500">Wear it all day</text>
+          </g>
+          <path d="M300 230 L300 198" stroke="#1F7FA8" stroke-width="3" marker-end="url(#arr2)"/>
+          <text x="308" y="222" font-size="9.5" font-weight="600" fill="#44536A">Terminal entrance · 8:30</text>
+          <rect x="60" y="212" width="130" height="58" rx="10" fill="#EAF3F8" stroke="#0E2A52" stroke-width="1" stroke-dasharray="4 3"/>
+          <text x="125" y="236" font-size="10.5" font-weight="700" fill="#0E2A52" text-anchor="middle">CT8 Parking Garage</text>
+          <text x="125" y="250" font-size="9" fill="#7B879A" text-anchor="middle">Guest garage opens 10:15 AM —</text>
+          <text x="125" y="261" font-size="9" fill="#7B879A" text-anchor="middle">confirm van parking with Kevin</text>
+          <path d="M190 241 L290 241 L300 232" fill="none" stroke="#1F7FA8" stroke-width="1.5" stroke-dasharray="3 3"/>
+          <path d="M30 300 L530 300" stroke="#1F7FA8" stroke-width="5" stroke-linecap="round"/>
+          <path d="M300 300 L300 270" stroke="#1F7FA8" stroke-width="2"/>
+          <text x="280" y="318" font-size="10.5" font-weight="700" letter-spacing="2" fill="#0E2A52" text-anchor="middle">CHARLES M. ROWLAND DRIVE</text>
+          <text x="548" y="290" font-size="9" fill="#7B879A" text-anchor="end">← from SR-401 / Exit 54A</text>
+          <text x="12" y="326" font-size="8.5" fill="#7B879A">Schematic · not to scale</text>
+        </svg>
+        <p class="map-cap">Arrival flow, simplified. Building layout is schematic.</p>
+      </div>
+    </div>
+
+    <h3>What happens, in order</h3>
+    <ul class="rows">
+      <li><button class="row" data-sheet="t1"><div class="lead num">1</div><div class="main"><b>Park and walk in together</b><span>One group, one clearance</span></div><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></button></li>
+      <li><button class="row" data-sheet="t2"><div class="lead num">2</div><div class="main"><b>ID check</b><span>Government ID + blue badge</span></div><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></button></li>
+      <li><button class="row" data-sheet="t3"><div class="lead num">3</div><div class="main"><b>Security screening</b><span>Bags on the belt, metal detector</span></div><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></button></li>
+      <li><button class="row" data-sheet="t4"><div class="lead num">4</div><div class="main"><b>Visitor pass</b><span>Clip it on, keep it visible</span></div><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></button></li>
+      <li><button class="row" data-sheet="t5"><div class="lead num coral">5</div><div class="main"><b>Gangway to Deck 3</b><span>Kevin meets us in the Grand Hall</span></div><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></button></li>
+    </ul>
+
+    <h3>Good to know</h3>
+    <ul class="rows">
+      <li><button class="row" data-sheet="t-turn"><div class="lead num gold">!</div><div class="main"><b>It's likely a turnaround day</b><span>Expect the terminal in full motion</span></div><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></button></li>
+    </ul>
+  </section>
+
+  <!-- ===================== SHIP ===================== -->
+  <section class="tab" id="ship">
+    <div class="sec-head"><span>Aboard</span><h2>The Wish</h2></div>
+    <p class="lede">144,000 tons, 1,121 feet, 15 decks, 1,254 staterooms. In service since July 2022. For four hours, our studio.</p>
+
+    <div class="card pad0">
+      <div class="map">
+        <svg viewBox="0 0 560 300" role="img" aria-label="Side profile of the Disney Wish with deck callouts for the tour">
+          <defs><linearGradient id="hull3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1B3A66"/><stop offset="1" stop-color="#0B1E3E"/></linearGradient></defs>
+          <rect x="0" y="236" width="560" height="64" fill="#8FE1E6" opacity=".35"/>
+          <path d="M0 236 Q20 230 40 236 T80 236 T120 236 T160 236 T200 236 T240 236 T280 236 T320 236 T360 236 T400 236 T440 236 T480 236 T520 236 T560 236" fill="none" stroke="#5CC6DF" stroke-width="1.5"/>
+          <path d="M30 236 L60 160 L520 160 L548 140 L530 236 Z" fill="url(#hull3)"/>
+          <g stroke="#E8C979" stroke-width=".7" opacity=".7"><line x1="70" y1="175" x2="528" y2="175"/><line x1="66" y1="190" x2="526" y2="190"/><line x1="60" y1="205" x2="524" y2="205"/><line x1="54" y1="220" x2="522" y2="220"/></g>
+          <g fill="#fff" stroke="#CFD9E3" stroke-width=".8">
+            <rect x="90" y="150" width="400" height="10" rx="2"/><rect x="95" y="138" width="395" height="12" rx="2"/><rect x="100" y="126" width="388" height="12" rx="2"/><rect x="105" y="114" width="380" height="12" rx="2"/><rect x="110" y="102" width="368" height="12" rx="2"/><rect x="115" y="90" width="355" height="12" rx="2"/><rect x="140" y="78" width="310" height="12" rx="2"/><rect x="170" y="66" width="250" height="12" rx="2"/>
+          </g>
+          <path d="M205 66 L212 40 L246 40 L253 66 Z" fill="#E25B4A"/><path d="M340 66 L347 40 L381 40 L388 66 Z" fill="#E25B4A"/>
+          <path d="M260 66 C300 50 330 60 360 66" fill="none" stroke="#C9A14A" stroke-width="2"/>
+          <g font-size="8" font-weight="700" fill="#C9A14A" text-anchor="end">
+            <text x="50" y="232">1</text><text x="54" y="217">2</text><text x="58" y="202">3</text><text x="62" y="187">4</text><text x="66" y="172">5</text>
+            <text x="86" y="158">6</text><text x="91" y="146">7</text><text x="96" y="134">8</text><text x="101" y="122">9</text><text x="106" y="110">10</text><text x="111" y="98">11</text><text x="136" y="86">12</text><text x="166" y="74">13</text>
+          </g>
+          <g font-size="9.5" fill="#0E2A52">
+            <circle cx="300" cy="212" r="5" fill="#C9A14A"/><line x1="300" y1="212" x2="300" y2="262" stroke="#C9A14A" stroke-width="1.5"/>
+            <text x="300" y="276" text-anchor="middle" font-size="11" font-weight="700">Deck 3 · Grand Hall</text>
+            <text x="300" y="288" text-anchor="middle" fill="#44536A">Arrival · embarkation photos · Cinderella</text>
+            <circle cx="400" cy="167" r="5" fill="#C9A14A"/><line x1="400" y1="167" x2="440" y2="262" stroke="#C9A14A" stroke-width="1.5"/>
+            <text x="440" y="276" text-anchor="middle" font-size="11" font-weight="700">Deck 5 · Shutters</text>
+            <text x="440" y="288" text-anchor="middle" fill="#44536A">Portrait studio · kiosks</text>
+            <circle cx="180" cy="182" r="5" fill="#C9A14A"/><line x1="180" y1="182" x2="150" y2="262" stroke="#C9A14A" stroke-width="1.5"/>
+            <text x="150" y="276" text-anchor="middle" font-size="11" font-weight="700">Deck 4 · Guest Services</text>
+            <text x="150" y="288" text-anchor="middle" fill="#44536A">Luna · cinemas · balcony</text>
+            <circle cx="300" cy="84" r="5" fill="#C9A14A"/><line x1="300" y1="84" x2="300" y2="30" stroke="#C9A14A" stroke-width="1.5"/>
+            <text x="300" y="20" text-anchor="middle" font-size="11" font-weight="700">Decks 11–12 · Pool decks</text>
+            <text x="300" y="34" text-anchor="middle" fill="#44536A" font-size="9">AquaMouse · Festival of Fun stage · outdoor backdrops</text>
+            <circle cx="480" cy="225" r="5" fill="#E25B4A"/><line x1="480" y1="225" x2="520" y2="262" stroke="#E25B4A" stroke-width="1.5"/>
+            <text x="520" y="276" text-anchor="middle" font-size="11" font-weight="700" fill="#E25B4A">Photo base</text>
+            <text x="520" y="288" text-anchor="middle" fill="#44536A">Back of house</text>
+          </g>
+          <text x="60" y="258" font-size="8.5" fill="#7B879A">Aft ←</text>
+          <text x="548" y="258" font-size="8.5" fill="#7B879A" text-anchor="end">→ Forward</text>
+          <text x="12" y="298" font-size="8.5" fill="#7B879A">Schematic · callout positions approximate</text>
+        </svg>
+        <p class="map-cap">Where we'll likely spend time. Kevin sets the route; the photo base location is shared on the day.</p>
+      </div>
+    </div>
+
+    <h3>What we're there to see</h3>
+    <ul class="rows">
+      <li><button class="row" data-sheet="w1"><div class="lead num">1</div><div class="main"><b>Photo backdrop locations</b><span>Sightlines, light, how guests queue</span></div><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></button></li>
+      <li><button class="row" data-sheet="w2"><div class="lead num">2</div><div class="main"><b>Magic Shot locations</b><span>Marks, framing, what works at sea</span></div><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></button></li>
+      <li><button class="row" data-sheet="w3"><div class="lead num">3</div><div class="main"><b>Props</b><span>What's on hand, what wears out</span></div><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></button></li>
+      <li><button class="row" data-sheet="w4"><div class="lead num coral">4</div><div class="main"><b>Back-of-house photo base</b><span>Where the crew edits, prints, stages</span></div><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></button></li>
+      <li><button class="row" data-sheet="w5"><div class="lead num">5</div><div class="main"><b>The photo crew</b><span>Their day-to-day · come with questions</span></div><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></button></li>
+    </ul>
+
+    <h3>Deck by deck</h3>
+    <ul class="rows">
+      <li><button class="row" data-sheet="k3"><div class="lead deckno hi"><small>DECK</small>3</div><div class="main"><b>Grand Hall · 1923 · The Bayou</b><span>Where we board · Cinderella statue</span></div><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></button></li>
+      <li><button class="row" data-sheet="k4"><div class="lead deckno"><small>DECK</small>4</div><div class="main"><b>Guest Services · Worlds of Marvel · Luna</b><span>Atrium balcony level</span></div><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></button></li>
+      <li><button class="row" data-sheet="k5"><div class="lead deckno hi"><small>DECK</small>5</div><div class="main"><b>Shutters Portrait Studio · Arendelle</b><span>Top of the Grand Hall</span></div><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></button></li>
+      <li><button class="row" data-sheet="k6"><div class="lead deckno"><small>DECKS</small>6–10</div><div class="main"><b>Staterooms</b><span>Enchanted Art · Magical Portholes</span></div><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></button></li>
+      <li><button class="row" data-sheet="k11"><div class="lead deckno"><small>DECKS</small>11–12</div><div class="main"><b>Pool decks · AquaMouse · Marceline Market</b><span>Open-air backdrops, hard light</span></div><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></button></li>
+      <li><button class="row" data-sheet="k13"><div class="lead deckno"><small>DECKS</small>13–14</div><div class="main"><b>Hero Zone · Senses Spa · sun decks</b><span>Forward views over the bow</span></div><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></button></li>
+    </ul>
+  </section>
+
+  <!-- ===================== DETAILS ===================== -->
+  <section class="tab" id="details">
+    <div class="sec-head"><span>Everything else</span><h2>Details</h2></div>
+    <p class="lede">Packing list, van codes, contacts, the roster, and the questions you'd otherwise text Andrés about.</p>
+
+    <h3>Bring</h3>
+    <div class="card">
+      <ul class="check" id="checklist">
+        <li><input type="checkbox" id="c1"><label for="c1">Government photo ID<span class="must">Required</span><small>Driver's license or passport</small></label></li>
+        <li><input type="checkbox" id="c2"><label for="c2">Disney blue badge<span class="must">Required</span><small>On your person, not in the car</small></label></li>
+        <li><input type="checkbox" id="c3"><label for="c3">Phone, charged, this page open<small>Plus a cable for the van</small></label></li>
+        <li><input type="checkbox" id="c4"><label for="c4">Notebook or sketchbook<small>For the photo-crew conversations</small></label></li>
+        <li><input type="checkbox" id="c5"><label for="c5">Comfortable shoes<small>Four hours on foot across 15 decks</small></label></li>
+        <li><input type="checkbox" id="c6"><label for="c6">Small bag only<small>Everything goes through screening and stays with you</small></label></li>
+        <li><input type="checkbox" id="c7"><label for="c7">Sunglasses + a light layer<small>Open decks at midday; chilly A/C below</small></label></li>
+      </ul>
+    </div>
+
+    <h3>Van pickup</h3>
+    <div class="card navy vault" id="vault">
+      <div class="callout" style="margin-bottom:14px">
+        <div class="ico"><svg viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/><circle cx="12" cy="15" r="1.5"/></svg></div>
+        <div><h4>Access codes</h4><p>Trailer between Norway and Mexico, behind the Frozen area. Tap to reveal — please don't screenshot or forward; these belong to our partner team.</p></div>
+      </div>
+      <button type="button" class="rev" id="reveal">Reveal codes</button>
+      <div class="codes">
+        <div><span>Trailer door</span><code>1579</code></div>
+        <div><span>Key box</span><code>560-C</code></div>
+        <div><span>Van keys</span><code>#13786</code></div>
+        <button type="button" class="hide" id="hide">Hide codes</button>
+      </div>
+    </div>
+    <ul class="rows">
+      <li><button class="row" data-sheet="x-van"><div class="lead num coral">☎</div><div class="main"><b>Van or trailer trouble?</b><span>Partner after-hours line · 407-560-7466</span></div><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></button></li>
+    </ul>
+
+    <h3>Contacts</h3>
+    <div class="card">
+      <dl class="kv">
+        <div><dt>Host aboard</dt><dd><b>Kevin Daugherty</b><br><a href="mailto:Kevin.A.Daugherty@disney.com">Kevin.A.Daugherty@disney.com</a></dd></div>
+        <div><dt>Trip lead</dt><dd><b>Andrés Aranguibel</b><br><a href="mailto:andres.aranguibel@disney.com">andres.aranguibel@disney.com</a></dd></div>
+        <div><dt>Van partner</dt><dd>After-hours leader on duty<br><a href="tel:+14075607466">407-560-7466</a></dd></div>
+        <div><dt>Terminal</dt><dd>Cruise Terminal 8<br>9155 Charles M. Rowland Dr<br>Cape Canaveral, FL 32920</dd></div>
+      </dl>
+    </div>
+
+    <h3>Who's aboard</h3>
+    <ul class="roster">
+      <li class="host"><span class="av">KD</span><span>Kevin Daugherty<small>Host · Disney Cruise Line</small></span></li>
+      <li><span class="av">AA</span><span>Andrés Aranguibel<small>Trip lead</small></span></li>
+      <li><span class="av">HB</span><span>Heidi Bain<small>Speaker &amp; playlist</small></span></li>
+      <li><span class="av">KM</span><span>Kimberly Morehead</span></li>
+      <li><span class="av">PA</span><span>Phil Adams</span></li>
+      <li><span class="av">JH</span><span>Jerry Heberly</span></li>
+      <li><span class="av">AB</span><span>Andrea Barnett</span></li>
+      <li><span class="av">AS</span><span>Amy Simpson</span></li>
+      <li><span class="av">JC</span><span>JeniLynn Clementi</span></li>
+      <li><span class="av">HR</span><span>Holly Reidy</span></li>
+    </ul>
+
+    <h3>Questions you might have</h3>
+    <ul class="rows">
+      <li><button class="row" data-sheet="q1"><div class="lead num">?</div><div class="main"><b>What if I'm running late at 7:00?</b></div><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></button></li>
+      <li><button class="row" data-sheet="q2"><div class="lead num">?</div><div class="main"><b>Where does the van park at CT8?</b></div><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></button></li>
+      <li><button class="row" data-sheet="q3"><div class="lead num">?</div><div class="main"><b>Does the van have a toll transponder?</b></div><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></button></li>
+      <li><button class="row" data-sheet="q4"><div class="lead num">?</div><div class="main"><b>Can I take photos onboard?</b></div><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></button></li>
+      <li><button class="row" data-sheet="s-lunch"><div class="lead num">?</div><div class="main"><b>Lunch?</b></div><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></button></li>
+      <li><button class="row" data-sheet="q6"><div class="lead num">?</div><div class="main"><b>What's the dress code?</b></div><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></button></li>
+    </ul>
+  </section>
+
+  <p class="foot">Wish Day · October 30, 2026 · DPI Product Design<br>Times are plans, not promises. Check back here for day-of changes.</p>
+</div>
+
+<!-- ===================== SHEET CONTENT ===================== -->
+<template id="s-arrive" data-kick="6:50 AM" data-title="Arrive backstage EPCOT"><p>Andrés arrives first to open up. Partner trailer sits between Norway and Mexico, behind the Frozen area. Park personal cars nearby per your badge access and walk over.</p></template>
+<template id="s-van" data-kick="7:00 AM · Everyone" data-title="Meet · pick up the van"><p>Trailer door → key box → key <b>#13786</b>. Codes are behind the tap-to-reveal in <b>Details</b>.</p><p>Before we roll: quick walk-around of the van, check the windshield for a <b>SunPass</b>, adjust mirrors, pair Heidi's speaker.</p><span class="pill gold">Driver: TBD</span></template>
+<template id="s-roll" data-kick="7:15 AM target" data-title="Wheels rolling"><p>Backstage road → Epcot Center Dr → I-4 East → SR-528 East. Sunrise is at <b>7:36</b>, dead ahead on the Beachline.</p><p>Why 7:15: the drive is 65–75 minutes and we need to be at the terminal door by 8:30 to clear in time for 9:00.</p></template>
+<template id="s-coffee" data-kick="Optional" data-title="Coffee"><p><b>On the way out — only if we're on the Beachline before 7:30.</b> The Narcoossee Rd exit at Lake Nona has a Starbucks and Wawa cluster 2–3 minutes off route. A nine-person coffee order costs 10–15 minutes, so if we leave after 7:20, coffee waits.</p><p><b>For the ride home:</b> Water's Edge Café at the Cove (300 Christopher Columbus Dr, opens 6 AM) or the Starbucks on Astronaut Blvd (A1A) in Cape Canaveral. Confirm hours in Maps.</p></template>
+<template id="s-ct8" data-kick="8:30 AM" data-title="Arrive Cruise Terminal 8"><p><b>9155 Charles M. Rowland Dr, Cape Canaveral, FL 32920.</b> Park where Kevin directs — the guest garage doesn't open until 10:15, so expect a surface lot or an escort.</p><p>Get government ID and blue badge out <b>before</b> leaving the van, then walk in as one group.</p><div class="btns"><a class="btn" href="https://maps.apple.com/?daddr=9155+Charles+M+Rowland+Dr,+Cape+Canaveral,+FL+32920&dirflg=d" target="_blank" rel="noopener">Open in Maps</a></div></template>
+<template id="s-clear" data-kick="8:35 AM · ~30 min" data-title="Clearance &amp; screening"><p>ID check against Kevin's visitor list, then airport-style screening (bags on the belt, step through the metal detector), then a visitor pass for the day. Clip it on and keep it visible.</p><p>Empty your pockets into your bag before the line to keep it moving. The full flow is in the <b>Terminal</b> tab.</p></template>
+<template id="s-aboard" data-kick="9:00 AM" data-title="Aboard · meet Kevin"><p>Up the gangway to <b>Deck 3</b>. The gangway lands in the Grand Hall — the three-deck atrium with the Cinderella statue. <b>Kevin Daugherty</b> meets us there and leads from here.</p></template>
+<template id="s-tour" data-kick="9:00 – 1:00" data-title="Ship tour"><p>Four hours, crew-led. We're looking at:</p><ul><li>Photo backdrop locations</li><li>Magic Shot locations</li><li>Props</li><li>The back-of-house photo base</li><li>Conversations with the onboard photo crew about their day-to-day</li></ul><p>Deck-by-deck notes and a ship map are in the <b>Ship</b> tab. Come with questions.</p></template>
+<template id="s-off" data-kick="1:00 PM" data-title="Disembark"><p>Back down the gangway and through the terminal. Hand visitor passes back on the way out. Expect the terminal to be busy — embarkation for the next sailing is in full swing by now.</p></template>
+<template id="s-lunch" data-kick="1:15 PM · Group call" data-title="Lunch or straight back?"><p><b>Option A — lunch on the water.</b> The Cove at Port Canaveral is five minutes from CT8: Grills Seafood Deck, Fishlips Waterfront, Rusty's Seafood &amp; Oyster Bar. Back at EPCOT around <b>4:00</b>.</p><p><b>Option B — straight back.</b> EPCOT around <b>2:30</b>.</p><p>We decide as a group in the van.</p></template>
+<template id="s-return" data-kick="2:30 – 4:00 PM" data-title="Return the van"><p>Back to the partner trailer behind Norway/Mexico. Keys go back in the key box, lock the trailer, done. Codes are in <b>Details</b>.</p></template>
+
+<template id="d1" data-kick="Step 1 · ≈3 mi" data-title="Leave backstage"><p>From the Norway/Mexico trailer, follow the backstage road out to Epcot Center Drive and head toward I-4.</p></template>
+<template id="d2" data-kick="Step 2 · ≈10 mi" data-title="I-4 East"><p>Merge onto I-4 East toward Orlando. Stay in the right lanes approaching <b>Exit 72</b> (SR-528 / Beachline).</p></template>
+<template id="d3" data-kick="Step 3 · ≈45 mi" data-title="SR-528 East · Beachline"><p>Exit 72 onto SR-528 East. <b>Toll road</b> — check the van's SunPass before we leave. Then do nothing for 40 minutes except enjoy the sunrise and Heidi's playlist. You'll pass SR-417, then I-95; keep going east.</p></template>
+<template id="d4" data-kick="Step 4 · ≈2 mi" data-title="Exit 54A · A Terminals"><p>Signed for Terminals 5, 6, 8 and 10. Follow SR-401, then signs for <b>Charles M. Rowland Drive</b> and <b>Cruise Terminal 8</b>.</p></template>
+<template id="d5" data-kick="Step 5 · 8:30 AM" data-title="Arrive CT8"><p><b>9155 Charles M. Rowland Dr, Cape Canaveral, FL 32920.</b> Park where Kevin directs. IDs out, walk in together.</p></template>
+<template id="d-van" data-kick="On the road" data-title="In the van"><p><b>Heidi Bain</b> brings the Bluetooth speaker and the playlist. Driver gets veto power on volume.</p><p>Pull up this page on your phone before we go — coverage on the Beachline is fine, but the stretch past SR-417 gets quiet.</p></template>
+
+<template id="t1" data-kick="Step 1" data-title="Park and walk in together"><p>Kevin will tell us where the van goes. The guest garage doesn't open until 10:15, so expect a surface lot or an escort.</p><p>Stay as one group — one clearance, not nine.</p></template>
+<template id="t2" data-kick="Step 2" data-title="ID check"><p>Present government ID (license or passport) and your Disney blue badge. Our names should be on Kevin's visitor list.</p></template>
+<template id="t3" data-kick="Step 3" data-title="Security screening"><p>Airport style: bags on the belt, step through the metal detector. Empty pockets into your bag before the line to keep it moving.</p></template>
+<template id="t4" data-kick="Step 4" data-title="Visitor pass"><p>Clip it on and keep it visible all day. We hand them back on the way out at 1:00.</p></template>
+<template id="t5" data-kick="Step 5 · 9:00" data-title="Gangway to Deck 3"><p>Up the gangway into the Grand Hall. Kevin meets us there at 9:00.</p></template>
+<template id="t-turn" data-kick="Good to know" data-title="Turnaround day"><p>Friday is very likely a turnaround day for the Wish — one sailing debarks in the morning while the next embarks from late morning. Expect crew and port staff in full motion, and expect the terminal to be busy right as we leave at 1:00.</p><p>Pack light. Anything you bring goes through screening and comes with you all day.</p></template>
+
+<template id="w1" data-kick="Focus 1" data-title="Photo backdrop locations"><p>Where our backdrops live on a real ship — sightlines, light, traffic flow, how guests actually queue and pose.</p></template>
+<template id="w2" data-kick="Focus 2" data-title="Magic Shot locations"><p>The physical marks and framing the photographers work from, and what makes a spot work (or not) at sea.</p></template>
+<template id="w3" data-kick="Focus 3" data-title="Props"><p>What's on hand, how it's stored, what wears out, what guests reach for.</p></template>
+<template id="w4" data-kick="Focus 4" data-title="Back-of-house photo base"><p>Where the crew edits, prints and stages. The operational side our designs have to live inside. Ask before you shoot in here.</p></template>
+<template id="w5" data-kick="Focus 5" data-title="The photo crew"><p>Their day-to-day: embarkation rush, dinner rotations, Pirate Night, character sets. Come with questions.</p></template>
+
+<template id="k3" data-kick="Deck 3" data-title="Grand Hall · 1923 · The Bayou"><p>Where we board. Three-deck atrium with the Cinderella statue and the Grand Hall stage — the ship's busiest photo location on embarkation day. 1923 restaurant aft; The Bayou lounge on the other side of the stage.</p></template>
+<template id="k4" data-kick="Deck 4" data-title="Guest Services · Worlds of Marvel · Luna"><p>Atrium balcony level. Port Adventures desk, Hook's Barbery, Untangled Salon, Bibbidi Bobbidi Boutique, Never Land and Wonderland cinemas, and the Luna multi-space theater forward.</p></template>
+<template id="k5" data-kick="Deck 5" data-title="Shutters Portrait Studio · Arendelle"><p>Top of the Grand Hall. Shutters and the photo kiosks live here, alongside Mickey's Mainsail, the Edge tween club and the Arendelle restaurant aft.</p></template>
+<template id="k6" data-kick="Decks 6–10" data-title="Staterooms"><p>Enchanted Art and Magical Portholes throughout — framed screens that respond to guests. Worth a look for how interactive moments are staged in a corridor.</p></template>
+<template id="k11" data-kick="Decks 11–12" data-title="Pool decks · AquaMouse · Marceline Market"><p>Mickey and Friends Festival of Fun stage, the funnel vision screen and the open-air backdrops. Harsh midday light — a good test case for our work.</p></template>
+<template id="k13" data-kick="Decks 13–14" data-title="Hero Zone · Senses Spa · sun decks"><p>Upper decks and the forward views over the bow.</p></template>
+
+<template id="x-van" data-kick="Partner line" data-title="Van or trailer trouble?"><p>Call the partner after-hours line and ask for the leader on duty.</p><div class="btns"><a class="btn" href="tel:+14075607466">Call 407-560-7466</a></div></template>
+<template id="q1" data-kick="FAQ" data-title="Running late at 7:00?"><p>Text Andrés. Aboard-by-9:00 is a commitment to Kevin and the ship's schedule, so we can't hold long. If you miss the van, the drive is about 60 miles via I-4 East and SR-528 East, and you'd still need to clear the terminal before 9:00.</p></template>
+<template id="q2" data-kick="FAQ" data-title="Where does the van park?"><p>Still being confirmed with Kevin. The guest garage doesn't open until 10:15, so plan on a surface lot or an escort. Watch for an update here.</p></template>
+<template id="q3" data-kick="FAQ" data-title="Toll transponder?"><p>Check the windshield at pickup. SR-528 is a toll road both directions. If there's no SunPass, the driver should plan to pay by plate — routing around adds 20+ minutes and isn't recommended.</p></template>
+<template id="q4" data-kick="FAQ" data-title="Photos onboard?"><p>Follow Kevin's lead, especially back of house and anywhere crew or guests are in frame. Ask before you shoot in the photo base.</p></template>
+<template id="q6" data-kick="FAQ" data-title="Dress code"><p>Business casual you can walk 15 decks in. Closed-toe shoes for back of house. Bring a layer — the ship runs cold inside.</p></template>
+
+<div class="scrim" id="scrim"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+  <div class="grab"></div>
+  <header><div class="meta"><div class="kick" id="sheet-kick"></div><h3 id="sheet-title"></h3></div><button class="x" id="sheet-x" aria-label="Close">×</button></header>
+  <div class="content" id="sheet-body"></div>
+</div>
+
+<div class="tabbar">
+  <nav>
+    <a href="#plan" class="on" data-tab="plan"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="3"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>Plan</a>
+    <a href="#drive" data-tab="drive"><svg viewBox="0 0 24 24"><path d="M3 15l2-6a2 2 0 0 1 2-1h10a2 2 0 0 1 2 1l2 6v4H3z"/><circle cx="7.5" cy="16.5" r="1.5"/><circle cx="16.5" cy="16.5" r="1.5"/></svg>Drive</a>
+    <a href="#terminal" data-tab="terminal"><svg viewBox="0 0 24 24"><path d="M3 20h18M5 20V9l7-5 7 5v11"/><path d="M10 20v-5h4v5"/></svg>Terminal</a>
+    <a href="#ship" data-tab="ship"><svg viewBox="0 0 24 24"><path d="M3 17l2 3h14l2-3"/><path d="M4 17l1-5h14l1 5"/><path d="M7 12V8h10v4M10 8V5h4v3"/></svg>Ship</a>
+    <a href="#details" data-tab="details"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg>Details</a>
+  </nav>
+</div>
+
+<script>
+(function(){
+  var tabs=document.querySelectorAll('section.tab');
+  var links=document.querySelectorAll('.tabbar a');
+  function show(id){
+    var ok=false; tabs.forEach(function(s){ if(s.id===id) ok=true; });
+    if(!ok) id='plan';
+    tabs.forEach(function(s){ s.classList.toggle('on', s.id===id); });
+    links.forEach(function(a){ a.classList.toggle('on', a.dataset.tab===id); });
+    window.scrollTo(0,0);
+    try{ localStorage.setItem('wish-tab', id); }catch(e){}
+  }
+  links.forEach(function(a){ a.addEventListener('click',function(e){ e.preventDefault(); try{history.replaceState(null,'','#'+a.dataset.tab);}catch(err){} show(a.dataset.tab); }); });
+  var start=(location.hash||'').replace('#','');
+  if(!start){ try{ start=localStorage.getItem('wish-tab')||'plan'; }catch(e){ start='plan'; } }
+  show(start);
+
+  // Bottom sheet
+  var sheet=document.getElementById('sheet'), scrim=document.getElementById('scrim'), body=document.body, lastFocus=null;
+  function openSheet(id){
+    var t=document.getElementById(id); if(!t) return;
+    document.getElementById('sheet-kick').textContent=t.dataset.kick||'';
+    document.getElementById('sheet-title').innerHTML=t.dataset.title||'';
+    var c=document.getElementById('sheet-body'); c.innerHTML=''; c.appendChild(t.content.cloneNode(true)); c.scrollTop=0;
+    lastFocus=document.activeElement; body.classList.add('sheet-open'); sheet.style.transform='';
+    setTimeout(function(){ document.getElementById('sheet-x').focus(); },300);
+  }
+  function closeSheet(){ body.classList.remove('sheet-open'); sheet.style.transform=''; if(lastFocus&&lastFocus.focus) lastFocus.focus(); }
+  document.querySelectorAll('[data-sheet]').forEach(function(b){ b.addEventListener('click',function(){ openSheet(b.dataset.sheet); }); });
+  document.getElementById('sheet-x').addEventListener('click',closeSheet);
+  scrim.addEventListener('click',closeSheet);
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&body.classList.contains('sheet-open')) closeSheet(); });
+  // swipe down to dismiss
+  var y0=null, dy=0;
+  sheet.addEventListener('touchstart',function(e){ var c=document.getElementById('sheet-body'); if(c.scrollTop>0&&c.contains(e.target)) {y0=null;return;} y0=e.touches[0].clientY; dy=0; sheet.style.transition='none'; },{passive:true});
+  sheet.addEventListener('touchmove',function(e){ if(y0===null) return; dy=Math.max(0,e.touches[0].clientY-y0); sheet.style.transform='translateY('+dy+'px)'; },{passive:true});
+  sheet.addEventListener('touchend',function(){ sheet.style.transition=''; if(y0===null) return; if(dy>110) closeSheet(); else sheet.style.transform=''; y0=null; });
+
+  // Codes reveal
+  var vault=document.getElementById('vault');
+  document.getElementById('reveal').addEventListener('click',function(){ vault.classList.add('open'); });
+  document.getElementById('hide').addEventListener('click',function(){ vault.classList.remove('open'); });
+
+  // Checklist memory (per phone)
+  document.querySelectorAll('#checklist input').forEach(function(cb){
+    try{ cb.checked = localStorage.getItem('wish-'+cb.id)==='1'; }catch(e){}
+    cb.addEventListener('change',function(){ try{ localStorage.setItem('wish-'+cb.id, cb.checked?'1':'0'); }catch(e){} });
+  });
+
+  // "Now" marker on the day itself
+  var now=new Date();
+  if(now.getFullYear()===2026 && now.getMonth()===9 && now.getDate()===30){
+    var cur=now.getHours()*60+now.getMinutes(), best=null;
+    document.querySelectorAll('#timeline .row').forEach(function(r){
+      var p=r.dataset.t.split(':'), m=parseInt(p[0],10)*60+parseInt(p[1],10);
+      if(m<=cur) best=r;
+    });
+    if(best) best.classList.add('now');
+  }
+})();
+</script>
+
+</body>
+</html>
