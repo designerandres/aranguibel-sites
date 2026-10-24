@@ -2,7 +2,7 @@
    from the network (the /api/ routes are never cached), so listings are
    fresh every morning; the shell itself is cached for fast opens and
    offline resilience. */
-const CACHE = "poppy-v5";
+const CACHE = "poppy-v6";
 const CORE = [
   "/poppy-picks/",
   "/poppy-picks/index.html",

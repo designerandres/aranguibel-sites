@@ -134,8 +134,8 @@
     box-shadow:0 12px 26px -8px rgba(23,51,78,.38), inset 0 1px 0 #fff}
   #searchFab svg{width:21px;height:21px}
 
-  #scrim{position:fixed;inset:0;background:rgba(20,34,47,.48);z-index:60}
-  #sheet{position:fixed;left:50%;transform:translateX(-50%);width:min(430px,100vw);bottom:0;top:56px;z-index:65;
+  #scrim{position:fixed;inset:0;background:rgba(20,34,47,.48);z-index:72}
+  #sheet{position:fixed;left:50%;transform:translateX(-50%);width:min(430px,100vw);bottom:0;top:56px;z-index:75;
     background:rgba(251,245,234,.9);backdrop-filter:blur(20px) saturate(1.5);-webkit-backdrop-filter:blur(20px) saturate(1.5);
     border-radius:30px 30px 0 0;padding:12px 20px calc(24px + env(safe-area-inset-bottom));overflow-y:auto;box-shadow:var(--shadow-lg);
     transition:transform .3s cubic-bezier(.32,.72,.24,1);will-change:transform;overscroll-behavior:contain}
@@ -200,6 +200,11 @@
     border-radius:16px;padding:12px 14px}
   .searchbox svg{width:18px;height:18px;color:var(--faint);flex:0 0 auto}
   .searchbox input{flex:1;border:0;outline:none;font:inherit;font-size:16px;font-weight:700;color:var(--ink);background:none;min-width:0}
+  .searchbox input::-webkit-search-cancel-button{-webkit-appearance:none;appearance:none}
+  .clearbtn{width:30px;height:30px;border-radius:50%;background:#EFE6D2;color:var(--ink-soft);
+    display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+  .clearbtn svg{width:14px;height:14px}
+  .clearbtn:active{transform:scale(.92)}
   .closebtn{width:44px;height:44px;border-radius:50%;background:#fff;border:1.5px solid var(--line);
     display:flex;align-items:center;justify-content:center;color:var(--ink-soft);flex:0 0 auto}
   .closebtn svg{width:18px;height:18px}
@@ -249,7 +254,7 @@
   <div id="searchOverlay" hidden>
     <div class="inner">
       <div class="searchrow">
-        <div class="searchbox"><span id="searchIco"></span><input id="searchInput" type="search" placeholder="Search “tomorrow”, “10/31”, beaches…" autocomplete="off"></div>
+        <div class="searchbox"><span id="searchIco"></span><input id="searchInput" type="search" placeholder="Search “tomorrow”, “10/31”, beaches…" autocomplete="off"><button class="clearbtn" id="searchClear" aria-label="Clear search" hidden></button></div>
         <button class="closebtn" id="searchClose" aria-label="Close search"></button>
       </div>
       <div id="searchResults"></div>
@@ -801,6 +806,8 @@ function parseDateQuery(raw){
   return { dates, label, tod, rest };
 }
 function renderSearch(){
+  const clearBtn = $("#searchClear");
+  if (clearBtn) clearBtn.hidden = !$("#searchInput").value;
   const raw = $("#searchInput").value.trim().toLowerCase();
   const box = $("#searchResults");
   if (!raw){ box.innerHTML = `<div class="empty">Search every pick — try “tomorrow”, “next Saturday”, “Wednesday night”, “10/31”, “beach”, “storytime”, or “free”.</div>`; return; }
@@ -833,8 +840,15 @@ function renderSearch(){
 $("#searchFab").innerHTML = I.search;
 $("#searchIco").innerHTML = I.search;
 $("#searchClose").innerHTML = I.x;
+$("#searchClear").innerHTML = I.x;
 $("#searchFab").addEventListener("click", () => { $("#searchOverlay").hidden = false; renderSearch(); setTimeout(() => $("#searchInput").focus(), 60); });
 $("#searchClose").addEventListener("click", () => { $("#searchOverlay").hidden = true; });
+$("#searchClear").addEventListener("click", () => {
+  const input = $("#searchInput");
+  input.value = "";
+  renderSearch();
+  input.focus();
+});
 $("#searchInput").addEventListener("input", renderSearch);
 
 /* ---- tabs ---- */
