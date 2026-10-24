@@ -225,7 +225,7 @@
   <div id="searchOverlay" hidden>
     <div class="inner">
       <div class="searchrow">
-        <div class="searchbox"><span id="searchIco"></span><input id="searchInput" type="search" placeholder="Search fairs, beaches, storytimes…" autocomplete="off"></div>
+        <div class="searchbox"><span id="searchIco"></span><input id="searchInput" type="search" placeholder="Search “tomorrow”, “10/31”, beaches…" autocomplete="off"></div>
         <button class="closebtn" id="searchClose" aria-label="Close search"></button>
       </div>
       <div id="searchResults"></div>
@@ -614,14 +614,133 @@ $("#scrim").addEventListener("click", closeSheet);
   sheet.addEventListener("touchcancel", endDrag);
 })();
 
-/* ---- search ---- */
+/* ---- search (text + natural-language dates) ---- */
+function textMatch(ev, q){
+  return [ev.title, ev.venue, ev.city, ev.price, ...(ev.tags || [])].join(" ").toLowerCase().includes(q);
+}
+function ymdLocal(d){
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+}
+function startHour(ev){
+  const m = (ev.timeLabel || "").match(/(\d{1,2})(?::(\d{2}))?\s*(AM|PM)/i);
+  if (!m) return null;
+  let h = parseInt(m[1], 10) % 12;
+  if (/pm/i.test(m[3])) h += 12;
+  return h;
+}
+function todMatch(ev, tod){
+  const h = startHour(ev);
+  if (h === null) return true;               // all-day / open-hours picks fit any time of day
+  if (tod === "morning") return h < 12;
+  if (tod === "afternoon") return h >= 12 && h < 17;
+  return h >= 17;                            // evening / night
+}
+const DOW_NAMES = ["sunday","monday","tuesday","wednesday","thursday","friday","saturday"];
+const MON_NAMES = { jan:0, feb:1, mar:2, apr:3, may:4, jun:5, jul:6, aug:7, sep:8, oct:9, nov:10, dec:11 };
+function niceDate(ds){ return dowShort(ds) + " " + monShort(ds) + " " + domNum(ds); }
+function parseDateQuery(raw){
+  let q = " " + raw.toLowerCase().trim().replace(/\s+/g, " ") + " ";
+  let tod = null;
+  if (/\b(night|tonight|evening)\b/.test(q)) tod = "evening";
+  else if (/\bmorning\b/.test(q)) tod = "morning";
+  else if (/\bafternoon\b/.test(q)) tod = "afternoon";
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const add = n => { const d = new Date(today); d.setDate(d.getDate() + n); return d; };
+  let dates = null, label = "";
+  const take = re => { q = q.replace(re, " "); };
+  if (/\btonight\b/.test(q)){ dates = [ymdLocal(today)]; label = "Tonight · " + niceDate(ymdLocal(today)); take(/\btonight\b/g); }
+  else if (/\btoday\b/.test(q)){ dates = [ymdLocal(today)]; label = "Today · " + niceDate(ymdLocal(today)); take(/\btoday\b/g); }
+  else if (/\btomorrow\b/.test(q)){ dates = [ymdLocal(add(1))]; label = "Tomorrow · " + niceDate(ymdLocal(add(1))); take(/\btomorrow\b/g); }
+  else if (/\bthis weekend\b/.test(q) || /\bnext weekend\b/.test(q)){
+    const next = /\bnext weekend\b/.test(q);
+    const dow = today.getDay();
+    let satDelta = (6 - dow + 7) % 7;
+    if (next) satDelta += 7;
+    if (!next && dow === 0) { dates = [ymdLocal(today)]; label = "This weekend · " + niceDate(dates[0]); }
+    else { dates = [ymdLocal(add(satDelta)), ymdLocal(add(satDelta + 1))]; label = (next ? "Next weekend · " : "This weekend · ") + niceDate(dates[0]) + " – " + niceDate(dates[1]); }
+    take(/\b(this|next) weekend\b/g);
+  }
+  else if (/\bhalloween\b/.test(q)){ let d = new Date(today.getFullYear(), 9, 31); if (d < today) d = new Date(today.getFullYear() + 1, 9, 31); dates = [ymdLocal(d)]; label = "Halloween · " + niceDate(dates[0]); take(/\bhalloween\b/g); }
+  else if (/\bchristmas\b/.test(q)){ let d = new Date(today.getFullYear(), 11, 25); if (d < today) d = new Date(today.getFullYear() + 1, 11, 25); dates = [ymdLocal(d)]; label = "Christmas · " + niceDate(dates[0]); take(/\bchristmas\b/g); }
+  else if (/\bthanksgiving\b/.test(q)){
+    const tg = y => { const nov1 = new Date(y, 10, 1); const firstThu = 1 + ((4 - nov1.getDay() + 7) % 7); return new Date(y, 10, firstThu + 21); };
+    let d = tg(today.getFullYear()); if (d < today) d = tg(today.getFullYear() + 1);
+    dates = [ymdLocal(d)]; label = "Thanksgiving · " + niceDate(dates[0]); take(/\bthanksgiving\b/g);
+  }
+  if (!dates){
+    let m = q.match(/\b(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?\b/);
+    if (m){
+      const mo = parseInt(m[1], 10) - 1, da = parseInt(m[2], 10);
+      let yr = m[3] ? parseInt(m[3], 10) : today.getFullYear();
+      if (yr < 100) yr += 2000;
+      let d = new Date(yr, mo, da);
+      if (!m[3] && d < today) d = new Date(yr + 1, mo, da);
+      if (!isNaN(d) && d.getMonth() === mo && d.getDate() === da){ dates = [ymdLocal(d)]; label = niceDate(dates[0]); take(/\b\d{1,2}\/\d{1,2}(\/\d{2,4})?\b/g); }
+    }
+  }
+  if (!dates){
+    const monRe = "(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*";
+    let monIdx = null, day = null;
+    let m = q.match(new RegExp("\\b" + monRe + "\\s+(\\d{1,2})(?:st|nd|rd|th)?\\b"));   // "oct 31", "october 31st"
+    if (m){ monIdx = MON_NAMES[m[1].slice(0, 3)]; day = parseInt(m[2], 10); }
+    else {
+      m = q.match(new RegExp("\\b(\\d{1,2})(?:st|nd|rd|th)?\\s+(?:of\\s+)?" + monRe + "\\b"));  // "31 oct", "31st of october"
+      if (m){ day = parseInt(m[1], 10); monIdx = MON_NAMES[m[2].slice(0, 3)]; }
+    }
+    if (m && monIdx !== null && day >= 1 && day <= 31){
+      let d = new Date(today.getFullYear(), monIdx, day);
+      if (d < today) d = new Date(today.getFullYear() + 1, monIdx, day);
+      if (!isNaN(d) && d.getMonth() === monIdx && d.getDate() === day){
+        dates = [ymdLocal(d)]; label = niceDate(dates[0]);
+        take(new RegExp("\\b" + monRe + "\\s+\\d{1,2}(?:st|nd|rd|th)?\\b", "g"));
+        take(new RegExp("\\b\\d{1,2}(?:st|nd|rd|th)?\\s+(?:of\\s+)?" + monRe + "\\b", "g"));
+      }
+    }
+  }
+  if (!dates){
+    const m = q.match(/\b(next|this)?\s*(sunday|monday|tuesday|wednesday|thursday|friday|saturday)\b/);
+    if (m){
+      const idx = DOW_NAMES.indexOf(m[2]);
+      let delta = (idx - today.getDay() + 7) % 7;
+      if (m[1] === "next" && delta === 0) delta = 7;
+      dates = [ymdLocal(add(delta))];
+      label = (m[1] === "next" ? "Next " : "") + m[2][0].toUpperCase() + m[2].slice(1) + " · " + niceDate(dates[0]);
+      take(/\b(next|this)?\s*(sunday|monday|tuesday|wednesday|thursday|friday|saturday)\b/g);
+    }
+  }
+  if (!dates) return null;
+  take(/\b(night|tonight|evening|morning|afternoon)\b/g);
+  const rest = q.replace(/\s+/g, " ").trim();
+  return { dates, label, tod, rest };
+}
 function renderSearch(){
-  const q = $("#searchInput").value.trim().toLowerCase();
+  const raw = $("#searchInput").value.trim().toLowerCase();
   const box = $("#searchResults");
-  if (!q){ box.innerHTML = `<div class="empty">Search every pick — try “beach”, “storytime”, “free”, or a town name.</div>`; return; }
-  const hits = state.events.filter(ev => [ev.title, ev.venue, ev.city, ev.price, ...(ev.tags || [])].join(" ").toLowerCase().includes(q))
+  if (!raw){ box.innerHTML = `<div class="empty">Search every pick — try “tomorrow”, “next Saturday”, “Wednesday night”, “10/31”, “beach”, “storytime”, or “free”.</div>`; return; }
+  const dq = parseDateQuery(raw);
+  if (dq){
+    const byDate = (a, b) => (a.date || "9999").localeCompare(b.date || "9999");
+    let hits = state.events.filter(ev => ev.date && dq.dates.includes(ev.date)
+      && (!dq.tod || todMatch(ev, dq.tod))
+      && (!dq.rest || textMatch(ev, dq.rest))).sort(byDate);
+    let html = `<div class="sec" style="margin-top:2px">Showing · <span>${esc(dq.label)}${dq.tod ? " · " + dq.tod : ""}</span></div>`;
+    if (hits.length){
+      html += hits.map(ev => cardHTML(ev)).join("");
+    } else {
+      const anchor = dq.dates[dq.dates.length - 1];
+      const near = state.events.filter(ev => ev.date && ev.date >= anchor).sort(byDate).slice(0, 4);
+      html += `<div class="empty">Nothing ${dq.tod ? "that " + dq.tod : "on"} ${esc(dq.label)} yet — new picks land every morning.</div>`;
+      if (near.length) html += `<div class="sec">Nearest picks coming up</div>` + near.map(ev => cardHTML(ev)).join("");
+    }
+    const extras = state.events.filter(ev => !ev.date && (dq.tod || (dq.rest && textMatch(ev, dq.rest))) && (!dq.rest || textMatch(ev, dq.rest)));
+    if (extras.length && hits.length) html += `<div class="sec">Anytime ideas that fit too</div>` + extras.map(ev => cardHTML(ev)).join("");
+    box.innerHTML = html;
+    bindCards(box);
+    return;
+  }
+  const hits = state.events.filter(ev => textMatch(ev, raw))
     .sort((a,b) => (a.date || "9999").localeCompare(b.date || "9999"));
-  box.innerHTML = hits.length ? hits.map(ev => cardHTML(ev)).join("") : `<div class="empty">No picks match “${esc(q)}” yet.</div>`;
+  box.innerHTML = hits.length ? hits.map(ev => cardHTML(ev)).join("") : `<div class="empty">No picks match “${esc(raw)}” yet.</div>`;
   bindCards(box);
 }
 $("#searchFab").innerHTML = I.search;
