@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FF6B4A">
+<title>Poppy's Picks — Family Fun</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Poppy's Picks">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" type="image/svg+xml" href="icons/icon.svg">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,700;0,9..144,900;1,9..144,700&family=Nunito+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FBF5EA; --ink:#17334E; --ink-soft:#47617A; --faint:#8CA0B3;
+    --line:#EADFCB; --coral:#FF6B4A; --coral-deep:#F4502E; --coral-soft:#FFE9E2;
+    --sun:#FFB627; --sun-soft:#FFF3D6; --sky:#3E8FBF; --sky-soft:#E1F1F9;
+    --leaf:#4C9A5B; --leaf-soft:#E4F3E4; --plum:#7A5AA6; --plum-soft:#EFE8F8;
+    --shadow:0 1px 2px rgba(23,51,78,.05),0 14px 30px -14px rgba(23,51,78,.22);
+    --shadow-lg:0 2px 6px rgba(23,51,78,.08),0 28px 54px -20px rgba(23,51,78,.35);
+    --band:linear-gradient(125deg,#FF9E57,#FF6B4A 48%,#F43F5E 118%);
+    --band-ink:#fff; --pagebg:linear-gradient(180deg,#FFF6E8,#FDF9F0);
+    --b1:#FF6B4A; --b2:#FFB59E; --b3:#D63E1E; --b4:#FFB627;
+    --tabon:linear-gradient(135deg,#FF8A5C,#F4502E);
+  }
+  #app[data-tab="date"]{ --band:linear-gradient(125deg,#9D6BC4,#7A5AA6 48%,#E86A92 122%);
+    --pagebg:linear-gradient(180deg,#F7F0FA,#FBF8F4); --b1:#7A5AA6; --b2:#C3A9E8; --b3:#54397A; --b4:#E86A92;
+    --tabon:linear-gradient(135deg,#9D6BC4,#5E4186); }
+  #app[data-tab="far"]{ --band:linear-gradient(125deg,#4FB0DC,#3E8FBF 45%,#2FBFA5 122%);
+    --pagebg:linear-gradient(180deg,#EDF7FB,#F7FAF3); --b1:#3E8FBF; --b2:#9ADBF5; --b3:#256B91; --b4:#2FBFA5;
+    --tabon:linear-gradient(135deg,#4FB0DC,#2C7396); }
+  #app[data-tab="picks"]{ --band:linear-gradient(125deg,#FFB627,#FF8A5C 55%,#FF6B4A 118%);
+    --pagebg:linear-gradient(180deg,#FFF6E2,#FDF9F0); --b1:#FFB627; --b2:#FFE1A0; --b3:#D98E06; --b4:#FF6B4A;
+    --tabon:linear-gradient(135deg,#FFB627,#FF6B4A); }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html{-webkit-text-size-adjust:100%}
+  body{font-family:"Nunito Sans",system-ui,sans-serif;color:var(--ink);background:#EDE4D3;
+    -webkit-font-smoothing:antialiased}
+  button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+  #app{max-width:430px;margin:0 auto;min-height:100dvh;position:relative;overflow:hidden;
+    background:var(--pagebg);padding:0 20px 128px;box-shadow:0 0 60px rgba(90,60,20,.18)}
+  @media (min-width:480px){ #app{border-left:1px solid var(--line);border-right:1px solid var(--line)} }
+
+  .topband{position:absolute;left:0;right:0;top:0;height:246px;z-index:0;border-radius:0 0 38px 38px;
+    background:var(--band);overflow:hidden;transition:background .4s}
+  .topband::before{content:"";position:absolute;width:340px;height:340px;border-radius:50%;right:-110px;top:-160px;background:rgba(255,255,255,.20)}
+  .topband::after{content:"";position:absolute;width:230px;height:230px;border-radius:50%;left:-90px;bottom:-130px;background:rgba(255,255,255,.13)}
+
+  header.apphead{position:relative;z-index:2;display:flex;align-items:flex-start;justify-content:space-between;
+    padding-top:max(26px, env(safe-area-inset-top));margin-bottom:14px}
+  .appname{font-family:"Fraunces",serif;font-weight:900;font-size:30px;line-height:1.02;color:#fff;
+    text-shadow:0 2px 16px rgba(90,20,0,.28);letter-spacing:.005em}
+  .appname em{font-style:italic;font-weight:700;color:#FFE9A8}
+  .appsub{display:flex;align-items:center;gap:8px;font-size:10.5px;font-weight:900;letter-spacing:.24em;
+    text-transform:uppercase;color:rgba(255,255,255,.88);margin-top:6px}
+  .appsub::before{content:"";width:16px;height:3px;border-radius:2px;background:#FFE9A8;flex:0 0 auto}
+  .balloon{width:60px;height:72px;flex:0 0 auto;filter:drop-shadow(0 9px 12px rgba(90,25,0,.30))}
+
+  main{position:relative;z-index:2}
+  .hero{background:rgba(255,255,255,.55);backdrop-filter:blur(16px) saturate(1.65);-webkit-backdrop-filter:blur(16px) saturate(1.65);
+    border:1.5px solid rgba(255,255,255,.8);border-radius:26px;padding:18px;position:relative;overflow:hidden;
+    box-shadow:0 18px 36px -16px rgba(90,30,0,.35);cursor:pointer;text-align:left;width:100%;display:block}
+  .hero::after{content:"";position:absolute;right:-38px;top:-38px;width:150px;height:150px;border-radius:50%;background:rgba(255,255,255,.35)}
+  .hero-top{display:flex;justify-content:space-between;align-items:center;position:relative;z-index:1;gap:8px}
+  .today-chip{font-size:10.5px;font-weight:900;letter-spacing:.16em;background:rgba(255,255,255,.92);color:var(--ink);
+    padding:5px 10px;border-radius:999px;white-space:nowrap}
+  .wx{font-size:13px;font-weight:800;color:var(--ink-soft);display:flex;gap:6px;align-items:center;white-space:nowrap}
+  .wx svg{width:15px;height:15px}
+  .hero h2{font-family:"Fraunces",serif;font-size:28px;font-weight:700;line-height:1.1;margin:11px 0 5px;position:relative;z-index:1}
+  .hero .when{font-size:14.5px;font-weight:800;position:relative;z-index:1}
+  .hero .where{display:flex;justify-content:space-between;align-items:flex-end;margin-top:12px;position:relative;z-index:1;gap:10px}
+  .hero .addr{font-size:12.5px;font-weight:700;color:var(--ink-soft);line-height:1.45}
+  .hero .addr b{color:var(--ink)}
+  .map-pill{background:var(--ink);color:#fff;font-weight:900;font-size:12px;letter-spacing:.08em;
+    padding:9px 15px;border-radius:999px;display:flex;gap:6px;align-items:center;box-shadow:0 6px 14px rgba(23,51,78,.3);flex:0 0 auto}
+  .map-pill svg{width:14px;height:14px}
+
+  .sec{font-size:11.5px;font-weight:900;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-soft);
+    margin:22px 2px 10px;display:flex;justify-content:space-between;align-items:baseline}
+  .sec span{letter-spacing:.02em;text-transform:none;font-weight:700;color:var(--faint);font-size:12px}
+  .card{background:rgba(255,255,255,.68);backdrop-filter:blur(14px) saturate(1.5);-webkit-backdrop-filter:blur(14px) saturate(1.5);
+    border:1px solid rgba(255,255,255,.8);border-radius:22px;box-shadow:var(--shadow);
+    padding:13px 14px;display:flex;gap:12px;margin-bottom:11px;width:100%;text-align:left;cursor:pointer}
+  .dateblock{flex:0 0 52px;text-align:center;background:var(--sun-soft);border-radius:14px;padding:8px 0 7px;height:fit-content}
+  .dateblock .dow{font-size:9.5px;font-weight:900;letter-spacing:.14em;color:#B97E10}
+  .dateblock .dom{font-family:"Fraunces",serif;font-size:23px;font-weight:900;line-height:1.05}
+  .dateblock .mon{font-size:9.5px;font-weight:900;letter-spacing:.14em;color:#B97E10}
+  .card.blue .dateblock{background:var(--sky-soft)} .card.blue .dateblock .dow,.card.blue .dateblock .mon{color:var(--sky)}
+  .card.green .dateblock{background:var(--leaf-soft)} .card.green .dateblock .dow,.card.green .dateblock .mon{color:var(--leaf)}
+  .card.plum .dateblock{background:var(--plum-soft)} .card.plum .dateblock .dow,.card.plum .dateblock .mon{color:var(--plum)}
+  .card.coral .dateblock{background:var(--coral-soft)} .card.coral .dateblock .dow,.card.coral .dateblock .mon{color:var(--coral)}
+  .cardmain{flex:1;min-width:0}
+  .cardmain h3{font-size:16.5px;font-weight:900;line-height:1.2;letter-spacing:-.01em}
+  .meta{font-size:12.8px;color:var(--ink-soft);font-weight:700;margin-top:3px;line-height:1.45}
+  .meta .dist{color:var(--ink);font-weight:900}
+  .tags{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+  .tag{font-size:10px;font-weight:900;letter-spacing:.05em;padding:4px 8px;border-radius:999px;background:rgba(255,255,255,.75);border:1px solid var(--line);color:#7A6A4D}
+  .tag.free{background:var(--leaf-soft);color:var(--leaf);border-color:transparent}
+  .tag.tix{background:var(--sun-soft);color:#B97E10;border-color:transparent}
+  .learnmore{margin-top:9px;font-size:12.5px;font-weight:900;color:var(--sky);display:flex;align-items:center;gap:4px}
+  .cardacts{display:flex;flex-direction:column;gap:8px;align-items:center;padding-top:2px}
+  .iconbtn{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.8);border:1px solid var(--line);
+    display:flex;align-items:center;justify-content:center;color:var(--ink-soft);flex:0 0 auto}
+  .iconbtn svg{width:16.5px;height:16.5px;display:block}
+  .iconbtn.faved{background:var(--coral-soft);border-color:#FFD3C4;color:var(--coral)}
+  .byline{font-size:10.5px;font-weight:800;color:var(--faint);margin-top:7px;display:flex;align-items:center;gap:4px}
+  .byline svg{width:10.5px;height:10.5px;color:var(--coral)}
+  .byline b{color:var(--coral)}
+  .empty{background:rgba(255,255,255,.5);border:1.5px dashed var(--line);border-radius:22px;padding:20px 16px;
+    text-align:center;color:var(--faint);font-size:13.5px;font-weight:700;line-height:1.55}
+  .dayhead{display:flex;align-items:center;gap:10px;margin:18px 2px 10px}
+  .dayhead .pill{background:var(--ink);color:#fff;font-size:11px;font-weight:900;letter-spacing:.1em;
+    padding:6px 12px;border-radius:999px;text-transform:uppercase;white-space:nowrap}
+  .dayhead .ln{flex:1;height:1px;background:var(--line)}
+  .dayhead .ct{font-size:11.5px;font-weight:800;color:var(--faint);white-space:nowrap}
+  .footline{margin-top:20px;text-align:center;font-size:11.5px;color:var(--faint);font-weight:700;line-height:1.6}
+
+  #tabbar{position:fixed;left:50%;transform:translateX(-50%);width:min(398px,calc(100vw - 32px));
+    bottom:calc(14px + env(safe-area-inset-bottom));z-index:50;display:flex;gap:4px;padding:8px;
+    background:rgba(255,255,255,.72);backdrop-filter:blur(18px) saturate(1.6);-webkit-backdrop-filter:blur(18px) saturate(1.6);
+    border:1px solid rgba(255,255,255,.85);border-radius:26px;box-shadow:var(--shadow-lg)}
+  .tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:7px 0 5px;border-radius:19px;
+    font-size:10px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
+  .tab svg{width:21px;height:21px;display:block}
+  .tab.on{background:var(--tabon);color:#fff}
+  #searchFab{position:fixed;z-index:50;width:51px;height:51px;border-radius:50%;
+    right:max(16px, calc(50% - 199px + 16px));bottom:calc(96px + env(safe-area-inset-bottom));
+    background:rgba(255,255,255,.88);backdrop-filter:blur(14px) saturate(1.5);-webkit-backdrop-filter:blur(14px) saturate(1.5);
+    border:1px solid rgba(255,255,255,.95);color:var(--ink);display:flex;align-items:center;justify-content:center;
+    box-shadow:0 12px 26px -8px rgba(23,51,78,.38), inset 0 1px 0 #fff}
+  #searchFab svg{width:21px;height:21px}
+
+  #scrim{position:fixed;inset:0;background:rgba(20,34,47,.48);z-index:60}
+  #sheet{position:fixed;left:50%;transform:translateX(-50%);width:min(430px,100vw);bottom:0;top:56px;z-index:65;
+    background:rgba(251,245,234,.9);backdrop-filter:blur(20px) saturate(1.5);-webkit-backdrop-filter:blur(20px) saturate(1.5);
+    border-radius:30px 30px 0 0;padding:12px 20px calc(24px + env(safe-area-inset-bottom));overflow-y:auto;box-shadow:var(--shadow-lg)}
+  .grab{width:44px;height:5px;border-radius:3px;background:#D8CCB2;margin:0 auto 14px}
+  .mapbox{height:180px;border-radius:20px;overflow:hidden;border:1px solid var(--line);background:#DCEBD8;position:relative}
+  .mapbox iframe{width:100%;height:100%;border:0;display:block}
+  .mapfallback{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+    color:var(--ink-soft);font-weight:800;font-size:13px;background:linear-gradient(120deg,#CDE6D2,#BFE0F2 60%,#D9EDCB);text-align:center;padding:16px}
+  .mapfallback svg{width:34px;height:34px;color:var(--coral)}
+  #sheet h2{font-family:"Fraunces",serif;font-size:25px;font-weight:700;line-height:1.12;margin:16px 0 4px}
+  .submeta{font-size:13.5px;font-weight:800;color:var(--ink-soft)}
+  .photo{margin-top:13px;border-radius:18px;overflow:hidden;position:relative;background:linear-gradient(120deg,#FFD98E,#FF9E6B 55%,#7FB8D9)}
+  .photo img{width:100%;height:170px;object-fit:cover;display:block}
+  .phototag{position:absolute;left:12px;bottom:10px;color:#fff;font-size:11px;font-weight:900;
+    display:inline-flex;align-items:center;gap:6px;text-shadow:0 1px 6px rgba(0,0,0,.5)}
+  .phototag svg{width:14px;height:14px}
+  .blurb{font-size:14.5px;line-height:1.6;color:#33506B;margin-top:13px;font-weight:600}
+  .inforow{display:flex;gap:9px;margin-top:13px;flex-wrap:wrap}
+  .infochip{background:rgba(255,255,255,.85);border:1px solid var(--line);border-radius:13px;padding:8px 11px;
+    font-size:12px;font-weight:800;display:inline-flex;align-items:center;gap:6px}
+  .infochip svg{width:14.5px;height:14.5px}
+  .picon{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:5px;
+    background:var(--sky);color:#fff;font-size:10.5px;font-weight:900}
+  .sheetbtns{display:flex;gap:9px;margin-top:17px}
+  .sbtn{flex:1;display:flex;align-items:center;justify-content:center;gap:7px;padding:13px 4px;border-radius:16px;
+    font-size:13px;font-weight:900;background:rgba(255,255,255,.85);border:1.5px solid var(--line);color:var(--ink)}
+  .sbtn svg{width:15.5px;height:15.5px}
+  .sbtn.fav{background:rgba(255,255,255,.85);color:var(--ink)}
+  .sbtn.fav.is-fav{background:var(--coral);border-color:var(--coral);color:#fff}
+  .srcline{margin-top:14px;font-size:11.5px;color:var(--faint);font-weight:700;text-align:center;line-height:1.6}
+  .srcline a{color:var(--sky);font-weight:900;text-decoration:none}
+
+  #searchOverlay{position:fixed;inset:0;z-index:70;background:rgba(251,245,234,.96);backdrop-filter:blur(18px);
+    overflow-y:auto;padding:max(22px, env(safe-area-inset-top)) 20px 40px}
+  #searchOverlay .inner{max-width:390px;margin:0 auto}
+  .searchrow{display:flex;gap:9px;align-items:center}
+  .searchbox{flex:1;display:flex;align-items:center;gap:9px;background:#fff;border:1.5px solid var(--line);
+    border-radius:16px;padding:12px 14px}
+  .searchbox svg{width:18px;height:18px;color:var(--faint);flex:0 0 auto}
+  .searchbox input{flex:1;border:0;outline:none;font:inherit;font-size:16px;font-weight:700;color:var(--ink);background:none;min-width:0}
+  .closebtn{width:44px;height:44px;border-radius:50%;background:#fff;border:1.5px solid var(--line);
+    display:flex;align-items:center;justify-content:center;color:var(--ink-soft);flex:0 0 auto}
+  .closebtn svg{width:18px;height:18px}
+  #searchResults{margin-top:18px}
+
+  #signin{position:fixed;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;padding:24px;
+    background:linear-gradient(160deg,#FF9E57,#FF6B4A 52%,#F43F5E 125%)}
+  #signin .panel{width:100%;max-width:360px;background:rgba(255,255,255,.16);border:1.5px solid rgba(255,255,255,.4);
+    backdrop-filter:blur(18px) saturate(1.5);-webkit-backdrop-filter:blur(18px) saturate(1.5);
+    border-radius:28px;padding:30px 24px 26px;text-align:center;color:#fff;box-shadow:var(--shadow-lg)}
+  #signin .balloon{width:74px;height:88px;margin:0 auto 6px;display:block}
+  #signin h1{font-family:"Fraunces",serif;font-size:31px;font-weight:900}
+  #signin h1 em{font-style:italic;font-weight:700;color:#FFE9A8}
+  #signin p{font-size:14.5px;font-weight:700;line-height:1.55;opacity:.94;margin-top:8px}
+  #signin-btn{margin-top:20px;width:100%;padding:15px;border-radius:16px;background:#fff;color:#E8502A;
+    font-size:16px;font-weight:900;box-shadow:0 12px 26px -10px rgba(90,20,0,.5)}
+  #signin-btn[disabled]{opacity:.6}
+  #signin-err{min-height:20px;margin-top:12px;font-size:13px;font-weight:800;color:#FFE1D6}
+  #toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(96px + env(safe-area-inset-bottom));z-index:90;
+    background:var(--ink);color:#fff;font-size:13.5px;font-weight:800;padding:11px 18px;border-radius:999px;
+    box-shadow:var(--shadow-lg);max-width:88vw;text-align:center}
+  [hidden]{display:none !important}
+</style>
+</head>
+<body>
+<div id="app" data-tab="local">
+  <div class="topband"></div>
+  <header class="apphead">
+    <div>
+      <div class="appname">Poppy's <em>Picks</em></div>
+      <div class="appsub" id="appsub">Family fun near home</div>
+    </div>
+    <span id="balloonSlot"></span>
+  </header>
+  <main id="main">
+    <div id="heroSlot"></div>
+    <div id="lists"></div>
+    <div class="footline" id="footline"></div>
+  </main>
+
+  <button id="searchFab" aria-label="Search picks"></button>
+  <nav id="tabbar"></nav>
+
+  <div id="scrim" hidden></div>
+  <div id="sheet" hidden></div>
+
+  <div id="searchOverlay" hidden>
+    <div class="inner">
+      <div class="searchrow">
+        <div class="searchbox"><span id="searchIco"></span><input id="searchInput" type="search" placeholder="Search fairs, beaches, storytimes…" autocomplete="off"></div>
+        <button class="closebtn" id="searchClose" aria-label="Close search"></button>
+      </div>
+      <div id="searchResults"></div>
+    </div>
+  </div>
+
+  <div id="signin" hidden>
+    <div class="panel">
+      <span id="signinBalloon"></span>
+      <h1>Poppy's <em>Picks</em></h1>
+      <p>Family fun near home — sign in with Face ID to see today's picks and your shared favorites.</p>
+      <button id="signin-btn">Sign in with Face ID</button>
+      <div id="signin-err"></div>
+    </div>
+  </div>
+
+  <div id="toast" hidden></div>
+</div>
+<script>
+
+/* ================= Poppy's Picks ================= */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+const I = {
+  share: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4.2"/><path d="M7.2 8 12 3.4 16.8 8"/><path d="M5 12.5V19a1.6 1.6 0 0 0 1.6 1.6h10.8A1.6 1.6 0 0 0 19 19v-6.5"/></svg>',
+  heartO: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20.3C6.9 16.4 3.6 13.2 3.6 9.7 3.6 7 5.5 5.1 8 5.1c1.6 0 3.1.8 4 2.1.9-1.3 2.4-2.1 4-2.1 2.5 0 4.4 1.9 4.4 4.6 0 3.5-3.3 6.7-8.4 10.6Z"/></svg>',
+  heartF: '<svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20.3C6.9 16.4 3.6 13.2 3.6 9.7 3.6 7 5.5 5.1 8 5.1c1.6 0 3.1.8 4 2.1.9-1.3 2.4-2.1 4-2.1 2.5 0 4.4 1.9 4.4 4.6 0 3.5-3.3 6.7-8.4 10.6Z"/></svg>',
+  users: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8.4" r="3.3"/><path d="M3.6 19.2c.6-3.1 2.7-4.7 5.4-4.7s4.8 1.6 5.4 4.7"/><circle cx="17.1" cy="9.4" r="2.5"/><path d="M16.2 14.7c2.2.2 3.7 1.6 4.2 4.1"/></svg>',
+  dateHeart: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20.1C6.7 16.6 3.9 13.5 3.9 10.2c0-2.5 1.8-4.3 4.1-4.3 1.4 0 2.8.7 3.6 1.9.4-.6 1-1.1 1.7-1.4"/><path d="M17.9 3.2l.7 1.9 1.9.7-1.9.7-.7 1.9-.7-1.9-1.9-.7 1.9-.7Z" fill="currentColor" stroke="none"/></svg>',
+  compass: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.6"/><path d="M15.4 8.6 13.4 13.4 8.6 15.4 10.6 10.6Z"/></svg>',
+  search: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6.6"/><path d="M15.9 15.9 20.4 20.4"/></svg>',
+  x: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>',
+  map: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4 3.6 5.9v13.9L9 17.9l6 1.9 5.4-1.9V4.1L15 6 9 4Z"/><path d="M9 4v13.9M15 6v13.9"/></svg>',
+  pin: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21.5s-6.7-5.7-6.7-10.7A6.7 6.7 0 0 1 12 4.5a6.7 6.7 0 0 1 6.7 6.8c0 5-6.7 10.2-6.7 10.2Z"/><circle cx="12" cy="11.2" r="2.4"/></svg>',
+  ticket: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8.2A2.2 2.2 0 0 1 6.2 6h11.6A2.2 2.2 0 0 1 20 8.2v1.9a2.6 2.6 0 0 0 0 5.2v1.9a2.2 2.2 0 0 1-2.2 2.2H6.2A2.2 2.2 0 0 1 4 17.2v-1.9a2.6 2.6 0 0 0 0-5.2Z"/><path d="M13.8 6.5v2M13.8 11v2M13.8 16.5v2"/></svg>',
+  baby: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9.2" r="4.3"/><path d="M12 4.9c-.2-1.6 1-2.5 2.4-2.2"/><path d="M5.2 20c.9-3.3 3.5-5 6.8-5s5.9 1.7 6.8 5"/></svg>',
+  camera: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3.4" y="7.4" width="17.2" height="12.4" rx="2.6"/><circle cx="12" cy="13.4" r="3.4"/><path d="M8.8 7.4 10 4.9h4l1.2 2.5"/></svg>',
+  sun: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="12" r="3.6"/><path d="M12 3.4v2.2M12 18.4v2.2M3.4 12h2.2M18.4 12h2.2M5.6 5.6l1.6 1.6M16.8 16.8l1.6 1.6M18.4 5.6l-1.6 1.6M7.2 16.8l-1.6 1.6"/></svg>',
+  moon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M19.8 13.6A8.2 8.2 0 1 1 10.4 4.2a6.6 6.6 0 0 0 9.4 9.4Z"/></svg>',
+  cloud: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18.5h9.3a4.2 4.2 0 0 0 .9-8.3 5.8 5.8 0 0 0-11.2 1.3A3.9 3.9 0 0 0 7 18.5Z"/></svg>',
+  rain: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M7 14.5h9.3a4.2 4.2 0 0 0 .9-8.3 5.8 5.8 0 0 0-11.2 1.3A3.9 3.9 0 0 0 7 14.5Z"/><path d="M8.5 17.8l-1 2.2M13 17.8l-1 2.2M17.5 17.8l-1 2.2"/></svg>',
+  car: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15.5 5.6 9A2 2 0 0 1 7.6 7.5h9A2 2 0 0 1 18.5 9L20 15.5"/><path d="M3.5 15.5h17V19h-17Z"/><circle cx="7.5" cy="19" r="1.6"/><circle cx="16.5" cy="19" r="1.6"/></svg>',
+};
+
+function balloonSVG(){
+  return `<svg class="balloon" viewBox="0 0 72 86" aria-hidden="true">
+  <defs><clipPath id="bclip"><path d="M36 3C51 3 61 14 61 27.5 61 39.5 50 49 43.5 54.5h-15C22 49 11 39.5 11 27.5 11 14 21 3 36 3Z"/></clipPath></defs>
+  <g clip-path="url(#bclip)">
+    <rect x="0" y="0" width="72" height="60" fill="var(--b1)"/>
+    <path d="M36 0c-7 8-10.5 30-8.5 58h17C46.5 30 43 8 36 0Z" fill="var(--b2)"/>
+    <path d="M0 0h13.5C10.5 18 11.5 40 16.5 58H0Z" fill="var(--b3)" opacity=".5"/>
+    <path d="M72 0H58.5c3 18 2 40-3 58H72Z" fill="var(--b3)" opacity=".5"/>
+    <rect x="0" y="40" width="72" height="7" fill="var(--b4)" opacity=".85"/>
+    <ellipse cx="25" cy="15" rx="8.5" ry="13" fill="#fff" opacity=".30" transform="rotate(-14 25 15)"/>
+  </g>
+  <path d="M36 3C51 3 61 14 61 27.5 61 39.5 50 49 43.5 54.5h-15C22 49 11 39.5 11 27.5 11 14 21 3 36 3Z" fill="none" stroke="rgba(90,30,0,.16)" stroke-width="1.4"/>
+  <path d="M29.5 55.5 32 67.5M42.5 55.5 40 67.5" stroke="#7A4A21" stroke-width="1.8" stroke-linecap="round"/>
+  <rect x="28.6" y="67" width="14.8" height="4.2" rx="2.1" fill="#8A5A2B"/>
+  <rect x="29.8" y="70.6" width="12.4" height="9.4" rx="2.2" fill="#B07B3F"/>
+  <path d="M30 74h12.2M30 77.2h12.2" stroke="#8A5A2B" stroke-width="1.3"/>
+  <path d="M59 9.5l.9 2.4 2.4.9-2.4.9-.9 2.4-.9-2.4-2.4-.9 2.4-.9Z" fill="#FFE9A8"/>
+  <ellipse cx="6.5" cy="50" rx="6.5" ry="3.2" fill="#fff" opacity=".8"/>
+  <ellipse cx="64" cy="57" rx="5.5" ry="2.8" fill="#fff" opacity=".65"/>
+</svg>`;
+}
+
+const TABS = [
+  { id:"local", label:"Local", icon:"users", sub:"Family fun near home" },
+  { id:"date", label:"Date", icon:"dateHeart", sub:"Date night, close to home" },
+  { id:"far", label:"Farther", icon:"compass", sub:"Worth the drive · day trips" },
+  { id:"picks", label:"Our Picks", icon:"heartF", sub:"Everything you both love · shared" },
+];
+const CARD_COLORS = ["coral","blue","green","plum"];
+const state = { me:null, events:[], updatedAt:null, favs:new Map(), tab:"local", wx:null, sheetId:null };
+
+async function api(method, path, body){
+  const res = await fetch(path, { method, headers: body ? {"Content-Type":"application/json"} : {}, body: body ? JSON.stringify(body) : undefined });
+  if (!res.ok) throw new Error(path + " " + res.status);
+  return res.json();
+}
+
+/* ---- dates (America/New_York) ---- */
+const TZ = "America/New_York";
+function todayStr(){
+  return new Intl.DateTimeFormat("en-CA", { timeZone: TZ, year:"numeric", month:"2-digit", day:"2-digit" }).format(new Date());
+}
+function parseDate(s){ const [y,m,d] = s.split("-").map(Number); return new Date(y, m-1, d); }
+function addDays(s, n){ const d = parseDate(s); d.setDate(d.getDate()+n); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+function dayDiff(a, b){ return Math.round((parseDate(a) - parseDate(b)) / 86400000); }
+function dowShort(s){ return ["SUN","MON","TUE","WED","THU","FRI","SAT"][parseDate(s).getDay()]; }
+function monShort(s){ return ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"][parseDate(s).getMonth()]; }
+function domNum(s){ return parseDate(s).getDate(); }
+function prettyDate(s){
+  const d = parseDate(s);
+  return ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"][d.getDay()] + ", " +
+    ["January","February","March","April","May","June","July","August","September","October","November","December"][d.getMonth()] + " " + d.getDate();
+}
+function dayLabel(s){
+  const t = todayStr(), diff = dayDiff(s, t);
+  if (diff === 0) return "Today";
+  if (diff === 1) return "Tomorrow";
+  return prettyDate(s);
+}
+
+/* ---- weather (Open-Meteo, no key) ---- */
+async function loadWeather(){
+  try{
+    const u = "https://api.open-meteo.com/v1/forecast?latitude=28.495&longitude=-81.536&daily=temperature_2m_max,precipitation_probability_max,weather_code&temperature_unit=fahrenheit&timezone=America%2FNew_York&forecast_days=16";
+    const r = await fetch(u); const j = await r.json();
+    const map = {};
+    (j.daily?.time || []).forEach((d, i) => { map[d] = { hi: Math.round(j.daily.temperature_2m_max[i]), pop: j.daily.precipitation_probability_max?.[i] ?? null, code: j.daily.weather_code?.[i] ?? 0 }; });
+    state.wx = map;
+  }catch(e){ state.wx = null; }
+}
+function wxIcon(code){ if (code >= 51) return I.rain; if (code >= 2) return I.cloud; return I.sun; }
+function wxHTML(dateStr){
+  const w = state.wx && dateStr ? state.wx[dateStr] : null;
+  if (!w) return "";
+  return `<span class="wx">${wxIcon(w.code)} ${w.hi}°${w.pop != null ? " · " + w.pop + "% rain" : ""}</span>`;
+}
+
+/* ---- rendering ---- */
+function mapsURL(ev){
+  const q = ev.lat && ev.lng ? ev.lat + "," + ev.lng : encodeURIComponent((ev.address || ev.venue || ev.title) + " " + (ev.city || ""));
+  return "https://www.google.com/maps/search/?api=1&query=" + q;
+}
+function distLabel(ev){
+  if (ev.distanceMi == null) return "";
+  return ev.distanceMi < 10 ? ev.distanceMi.toFixed(1) + " mi" : Math.round(ev.distanceMi) + " mi";
+}
+function colorFor(ev){ let h = 0; for (const c of ev.id) h = (h * 31 + c.charCodeAt(0)) >>> 0; return CARD_COLORS[h % CARD_COLORS.length]; }
+
+function dateBlock(ev){
+  if (!ev.date) return `<div class="dateblock"><div class="dow">ANY</div><div class="dom">✦</div><div class="mon">TIME</div></div>`;
+  return `<div class="dateblock"><div class="dow">${dowShort(ev.date)}</div><div class="dom">${domNum(ev.date)}</div><div class="mon">${monShort(ev.date)}</div></div>`;
+}
+function tagsHTML(ev){
+  const t = [];
+  if (ev.price) t.push(`<span class="tag ${/^free/i.test(ev.price) ? "free" : "tix"}">${esc(ev.price.toUpperCase())}</span>`);
+  for (const tag of (ev.tags || []).slice(0, 2)) t.push(`<span class="tag">${esc(tag.toUpperCase())}</span>`);
+  return t.length ? `<div class="tags">${t.join("")}</div>` : "";
+}
+function cardHTML(ev, opts = {}){
+  const fav = state.favs.get(ev.id);
+  const metaBits = [];
+  if (ev.timeLabel) metaBits.push(esc(ev.timeLabel));
+  if (ev.venue) metaBits.push(esc(ev.venue) + (ev.city ? ", " + esc(ev.city) : ""));
+  let meta = metaBits.join(" · ");
+  if (distLabel(ev)) meta += `${meta ? "<br>" : ""}<span class="dist">${distLabel(ev)}</span>${ev.note ? " · " + esc(ev.note) : ""}`;
+  else if (ev.note) meta += (meta ? " · " : "") + esc(ev.note);
+  return `<div class="card ${colorFor(ev)}" data-open="${esc(ev.id)}" role="button" tabindex="0">
+    ${dateBlock(ev)}
+    <div class="cardmain">
+      <h3>${esc(ev.title)}</h3>
+      <div class="meta">${meta}</div>
+      ${tagsHTML(ev)}
+      ${opts.showBy && fav ? `<div class="byline">${I.heartF} favorited by <b>${esc(fav.mine ? "You" : fav.by)}</b></div>` : ""}
+      <div class="learnmore">Learn more ›</div>
+    </div>
+    <div class="cardacts">
+      <button class="iconbtn" data-share="${esc(ev.id)}" aria-label="Share by text">${I.share}</button>
+      <button class="iconbtn ${fav ? "faved" : ""}" data-fav="${esc(ev.id)}" aria-label="Favorite">${fav ? I.heartF : I.heartO}</button>
+    </div>
+  </div>`;
+}
+function heroHTML(ev){
+  const chipDate = ev.date ? (dayDiff(ev.date, todayStr()) === 0 ? "TODAY" : dayLabel(ev.date).toUpperCase()) + " · " + dowShort(ev.date || todayStr()) + " " + monShort(ev.date || todayStr()) + " " + domNum(ev.date || todayStr()) : "ANYTIME IDEA";
+  return `<button class="hero" data-open="${esc(ev.id)}">
+    <div class="hero-top"><span class="today-chip">${esc(chipDate)}</span>${wxHTML(ev.date || todayStr())}</div>
+    <h2>${esc(ev.title)}</h2>
+    ${ev.timeLabel ? `<div class="when">${esc(ev.timeLabel)}${ev.venue ? " · " + esc(ev.venue) : ""}</div>` : ""}
+    <div class="where">
+      <div class="addr">${esc(ev.address || "")}${ev.address && ev.city ? ", " + esc(ev.city) : ""}${distLabel(ev) ? `<br><b>${distLabel(ev)} away</b>` : ""}</div>
+      <span class="map-pill">${I.map} MAP</span>
+    </div>
+  </button>`;
+}
+function sectionHTML(title, note, cards){
+  if (!cards.length) return "";
+  return `<div class="sec">${title} <span>${note || ""}</span></div>` + cards.join("");
+}
+function upcoming(ev){ return ev.date && dayDiff(ev.date, todayStr()) >= 0; }
+
+function render(){
+  const app = $("#app");
+  app.dataset.tab = state.tab;
+  const tab = TABS.find(t => t.id === state.tab);
+  $("#appsub").textContent = tab.sub;
+  const lists = $("#lists"), heroSlot = $("#heroSlot");
+  const t = todayStr();
+
+  if (state.tab === "picks"){
+    heroSlot.innerHTML = "";
+    const favEvents = state.events.filter(e => state.favs.has(e.id));
+    const dated = favEvents.filter(e => e.date && dayDiff(e.date, t) >= 0).sort((a,b) => a.date.localeCompare(b.date));
+    const anytime = favEvents.filter(e => !e.date);
+    let html = "";
+    if (!favEvents.length){
+      html = `<div class="empty" style="margin-top:22px">Nothing here yet.<br>Tap the ♡ on any pick and it will show up here for both of you.</div>`;
+    }
+    let lastDay = null;
+    for (const ev of dated){
+      if (ev.date !== lastDay){
+        lastDay = ev.date;
+        const sameDay = dated.filter(e => e.date === ev.date).length;
+        html += `<div class="dayhead"><span class="pill">${esc(dayLabel(ev.date))}</span><span class="ln"></span><span class="ct">${sameDay} pick${sameDay === 1 ? "" : "s"}</span></div>`;
+      }
+      html += cardHTML(ev, { showBy: true });
+    }
+    if (anytime.length){
+      html += `<div class="dayhead"><span class="pill">Anytime</span><span class="ln"></span><span class="ct">ideas bank</span></div>` + anytime.map(ev => cardHTML(ev, { showBy: true })).join("");
+    }
+    lists.innerHTML = html;
+  } else {
+    const items = state.events.filter(e => e.tab === state.tab);
+    const dated = items.filter(upcoming).sort((a,b) => (a.date + (a.timeLabel || "")).localeCompare(b.date + (b.timeLabel || "")));
+    const anytime = items.filter(e => !e.date);
+    const hero = dated[0] || anytime[0] || null;
+    heroSlot.innerHTML = hero ? heroHTML(hero) : "";
+    const rest = hero ? dated.filter(e => e.id !== hero.id) : dated;
+    const soon = rest.filter(e => dayDiff(e.date, t) <= 7);
+    const later = rest.filter(e => dayDiff(e.date, t) > 7);
+    let html = "";
+    html += sectionHTML("Upcoming", "this week", soon.map(ev => cardHTML(ev)));
+    html += sectionHTML("Later", "plan ahead", later.map(ev => cardHTML(ev)));
+    if (anytime.length && !(hero && !hero.date && anytime.length === 1))
+      html += sectionHTML("Anytime ideas", "no date needed", anytime.filter(e => !hero || e.id !== hero.id).map(ev => cardHTML(ev)));
+    if (!items.length)
+      html = `<div class="empty" style="margin-top:22px">No picks here yet — fresh listings land every morning.</div>`;
+    else if (!html)
+      html = `<div class="footline">That's everything for now — more lands tomorrow morning.</div>`;
+    lists.innerHTML = html;
+  }
+  $("#footline").textContent = state.updatedAt
+    ? "Listings refreshed " + new Date(state.updatedAt).toLocaleString("en-US", { timeZone: TZ, weekday:"short", month:"short", day:"numeric", hour:"numeric", minute:"2-digit" }) + " · Sources: Orlando Parenting, My Central Florida Family & more"
+    : "";
+  bindCards(lists); bindCards(heroSlot);
+}
+
+function bindCards(root){
+  root.querySelectorAll("[data-open]").forEach(el => {
+    el.addEventListener("click", e => {
+      if (e.target.closest("[data-fav],[data-share]")) return;
+      if (e.target.closest(".map-pill")){
+        const ev = state.events.find(x => x.id === el.dataset.open);
+        if (ev) window.open(mapsURL(ev), "_blank", "noopener");
+        return;
+      }
+      openSheet(el.dataset.open);
+    });
+  });
+  root.querySelectorAll("[data-fav]").forEach(b => b.addEventListener("click", e => { e.stopPropagation(); toggleFav(b.dataset.fav); }));
+  root.querySelectorAll("[data-share]").forEach(b => b.addEventListener("click", e => { e.stopPropagation(); shareEvent(b.dataset.share); }));
+}
+
+/* ---- favorites ---- */
+async function toggleFav(id){
+  const ev = state.events.find(e => e.id === id);
+  const has = state.favs.has(id);
+  if (has) state.favs.delete(id); else state.favs.set(id, { by: "You", mine: true });
+  render(); if (state.sheetId === id) fillSheetFav(id);
+  try{
+    await api("POST", "/api/poppy/favorites", { eventId: id, fav: !has });
+    const fresh = await api("GET", "/api/poppy/favorites");
+    state.favs = new Map((fresh.favorites || []).map(f => [f.eventId, f]));
+    render(); if (state.sheetId === id) fillSheetFav(id);
+    toast(has ? "Removed from Our Picks" : "Added to Our Picks — shared with your family");
+  }catch(e){
+    if (has) state.favs.set(id, { by: "You", mine: true }); else state.favs.delete(id);
+    render(); toast("Couldn't sync that — check your connection");
+  }
+  if (ev) ev._t = 1;
+}
+
+/* ---- share ---- */
+function shareText(ev){
+  const bits = [ev.title];
+  if (ev.date) bits.push(dayLabel(ev.date) + (ev.timeLabel ? " · " + ev.timeLabel : ""));
+  if (ev.venue) bits.push("at " + ev.venue + (ev.city ? ", " + ev.city : ""));
+  bits.push(mapsURL(ev));
+  return bits.join("\n");
+}
+async function shareEvent(id){
+  const ev = state.events.find(e => e.id === id); if (!ev) return;
+  const text = shareText(ev);
+  if (navigator.share){ try{ await navigator.share({ title: ev.title, text }); return; }catch(e){ if (e.name === "AbortError") return; } }
+  location.href = "sms:?&body=" + encodeURIComponent(text);
+}
+
+/* ---- detail sheet ---- */
+function openSheet(id){
+  const ev = state.events.find(e => e.id === id); if (!ev) return;
+  state.sheetId = id;
+  const sheet = $("#sheet");
+  const mapInner = ev.lat && ev.lng
+    ? `<iframe title="Map" loading="lazy" src="https://www.openstreetmap.org/export/embed.html?bbox=${ev.lng - 0.012}%2C${ev.lat - 0.007}%2C${ev.lng + 0.012}%2C${ev.lat + 0.007}&layer=mapnik&marker=${ev.lat}%2C${ev.lng}"></iframe>`
+    : `<div class="mapfallback">${I.pin}<div>${esc(ev.venue || ev.title)}<br>${esc(ev.address || "")}${ev.city ? ", " + esc(ev.city) : ""}</div></div>`;
+  const chips = [];
+  if (ev.price) chips.push(`<span class="infochip">${I.ticket} ${esc(ev.price)}</span>`);
+  if (ev.ages) chips.push(`<span class="infochip">${I.baby} Ages ${esc(ev.ages)}</span>`);
+  if (ev.parking) chips.push(`<span class="infochip"><span class="picon">P</span> ${esc(ev.parking)}</span>`);
+  if (ev.driveMin) chips.push(`<span class="infochip">${I.car} About ${ev.driveMin} min drive</span>`);
+  sheet.innerHTML = `
+    <div class="grab"></div>
+    <div class="mapbox">${mapInner}</div>
+    <h2>${esc(ev.title)}</h2>
+    <div class="submeta">${ev.date ? esc(dayLabel(ev.date)) + " · " + esc(dowShort(ev.date)) + " " + esc(monShort(ev.date)) + " " + domNum(ev.date) : "Anytime idea"}${ev.timeLabel ? " · " + esc(ev.timeLabel) : ""}</div>
+    ${ev.photo ? `<div class="photo"><img src="${esc(ev.photo)}" alt="" onerror="this.parentElement.remove()"><span class="phototag">${I.camera} Photo from the source listing</span></div>` : ""}
+    ${ev.blurb ? `<p class="blurb">${esc(ev.blurb)}</p>` : ""}
+    ${chips.length ? `<div class="inforow">${chips.join("")}</div>` : ""}
+    <div class="sheetbtns">
+      <button class="sbtn fav" id="sheetFav"></button>
+      <button class="sbtn" id="sheetText">${I.share} Text it</button>
+      <a class="sbtn" style="text-decoration:none" target="_blank" rel="noopener" href="${mapsURL(ev)}">${I.map} Maps</a>
+    </div>
+    <div class="srcline">${ev.address ? esc(ev.address) + (ev.city ? ", " + esc(ev.city) : "") + (distLabel(ev) ? " · " + distLabel(ev) + " away" : "") + "<br>" : ""}Source: ${ev.sourceUrl ? `<a href="${esc(ev.sourceUrl)}" target="_blank" rel="noopener">${esc(ev.source || "listing")}</a>` : esc(ev.source || "")} · via Poppy's Picks</div>`;
+  fillSheetFav(id);
+  $("#sheetFav").addEventListener("click", () => toggleFav(id));
+  $("#sheetText").addEventListener("click", () => shareEvent(id));
+  $("#scrim").hidden = false; sheet.hidden = false;
+  document.body.style.overflow = "hidden";
+}
+function fillSheetFav(id){
+  const b = $("#sheetFav"); if (!b) return;
+  const fav = state.favs.has(id);
+  b.classList.toggle("is-fav", fav);
+  b.innerHTML = (fav ? I.heartF : I.heartO) + (fav ? " Favorited" : " Favorite");
+}
+function closeSheet(){
+  state.sheetId = null;
+  $("#scrim").hidden = true; $("#sheet").hidden = true;
+  document.body.style.overflow = "";
+}
+$("#scrim").addEventListener("click", closeSheet);
+
+/* ---- search ---- */
+function renderSearch(){
+  const q = $("#searchInput").value.trim().toLowerCase();
+  const box = $("#searchResults");
+  if (!q){ box.innerHTML = `<div class="empty">Search every pick — try “beach”, “storytime”, “free”, or a town name.</div>`; return; }
+  const hits = state.events.filter(ev => [ev.title, ev.venue, ev.city, ev.price, ...(ev.tags || [])].join(" ").toLowerCase().includes(q))
+    .sort((a,b) => (a.date || "9999").localeCompare(b.date || "9999"));
+  box.innerHTML = hits.length ? hits.map(ev => cardHTML(ev)).join("") : `<div class="empty">No picks match “${esc(q)}” yet.</div>`;
+  bindCards(box);
+}
+$("#searchFab").innerHTML = I.search;
+$("#searchIco").innerHTML = I.search;
+$("#searchClose").innerHTML = I.x;
+$("#searchFab").addEventListener("click", () => { $("#searchOverlay").hidden = false; renderSearch(); setTimeout(() => $("#searchInput").focus(), 60); });
+$("#searchClose").addEventListener("click", () => { $("#searchOverlay").hidden = true; });
+$("#searchInput").addEventListener("input", renderSearch);
+
+/* ---- tabs ---- */
+function renderTabs(){
+  $("#tabbar").innerHTML = TABS.map(t => `<button class="tab ${state.tab === t.id ? "on" : ""}" data-tab="${t.id}">${I[t.icon]}${t.label}</button>`).join("");
+  $("#tabbar").querySelectorAll("[data-tab]").forEach(b => b.addEventListener("click", () => {
+    state.tab = b.dataset.tab; renderTabs(); render(); window.scrollTo({ top: 0 });
+  }));
+}
+
+/* ---- toast ---- */
+let toastTimer = null;
+function toast(msg){
+  const el = $("#toast"); el.textContent = msg; el.hidden = false;
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => { el.hidden = true; }, 2600);
+}
+
+/* ---- sign-in (same passkey flow as the other apps) ---- */
+function b64urlToBuf(s){ const b = atob(s.replace(/-/g,"+").replace(/_/g,"/") + "=".repeat((4 - s.length % 4) % 4)); const u = new Uint8Array(b.length); for (let i=0;i<b.length;i++) u[i] = b.charCodeAt(i); return u.buffer; }
+function bufToB64url(buf){ const u = new Uint8Array(buf); let s = ""; for (let i=0;i<u.length;i++) s += String.fromCharCode(u[i]); return btoa(s).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,""); }
+async function faceIdSignIn(){
+  const errEl = $("#signin-err"), btn = $("#signin-btn");
+  errEl.textContent = ""; btn.disabled = true;
+  try{
+    const options = await api("POST", "/api/auth/login/options", {});
+    options.challenge = b64urlToBuf(options.challenge);
+    if (options.allowCredentials) options.allowCredentials = options.allowCredentials.map(c => ({ ...c, id: b64urlToBuf(c.id) }));
+    const cred = await navigator.credentials.get({ publicKey: options });
+    await api("POST", "/api/auth/login/verify", { credential: {
+      id: bufToB64url(cred.rawId), rawId: bufToB64url(cred.rawId), type: cred.type,
+      response: { authenticatorData: bufToB64url(cred.response.authenticatorData), clientDataJSON: bufToB64url(cred.response.clientDataJSON), signature: bufToB64url(cred.response.signature), userHandle: cred.response.userHandle ? bufToB64url(cred.response.userHandle) : null }
+    }});
+    $("#signin").hidden = true;
+    await loadAll();
+  }catch(e){ errEl.textContent = "Sign-in didn't complete — try again."; }
+  btn.disabled = false;
+}
+$("#signin-btn").addEventListener("click", faceIdSignIn);
+
+/* ---- boot ---- */
+async function loadAll(){
+  const [eventsRes, favRes] = await Promise.all([
+    api("GET", "/api/poppy/events"),
+    api("GET", "/api/poppy/favorites"),
+  ]);
+  state.events = (eventsRes.events || []).filter(ev => !ev.date || dayDiff(ev.date, todayStr()) >= -1);
+  state.updatedAt = eventsRes.updatedAt || null;
+  state.favs = new Map((favRes.favorites || []).map(f => [f.eventId, f]));
+  renderTabs(); render();
+  const h = new URLSearchParams(location.hash.slice(1));
+  if (h.get("event")) openSheet(h.get("event"));
+  loadWeather().then(() => render());
+}
+async function boot(){
+  $("#balloonSlot").innerHTML = balloonSVG();
+  $("#signinBalloon").innerHTML = balloonSVG();
+  const h = new URLSearchParams(location.hash.slice(1));
+  if (TABS.find(t => t.id === h.get("tab"))) state.tab = h.get("tab");
+  renderTabs();
+  try{
+    state.me = await api("GET", "/api/auth/me");
+  }catch(e){
+    $("#signin").hidden = false;
+    return;
+  }
+  try{ await loadAll(); }
+  catch(e){ $("#signin").hidden = false; $("#signin-err").textContent = "Couldn't load your picks — try signing in again."; }
+}
+boot();
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+</script>
+</body>
+</html>
