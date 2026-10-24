@@ -147,6 +147,30 @@
   .mapfallback svg{width:34px;height:34px;color:var(--coral)}
   #sheet h2{font-family:"Fraunces",serif;font-size:25px;font-weight:700;line-height:1.12;margin:16px 0 4px}
   .submeta{font-size:13.5px;font-weight:800;color:var(--ink-soft)}
+  .locbox{margin-top:14px;background:rgba(255,255,255,.92);border:1px solid var(--line);border-radius:16px;
+    padding:13px 14px;display:flex;gap:11px;align-items:flex-start;text-decoration:none;color:inherit;
+    box-shadow:0 4px 14px -6px rgba(23,51,78,.18)}
+  .locbox:active{transform:scale(.99)}
+  .locpin{flex:0 0 auto;width:38px;height:38px;border-radius:12px;background:var(--coral-soft);color:var(--coral);
+    display:flex;align-items:center;justify-content:center}
+  .locpin svg{width:20px;height:20px}
+  .locmain{flex:1;min-width:0}
+  .locvenue{font-size:15.5px;font-weight:900;line-height:1.25;color:var(--ink)}
+  .locaddr{font-size:14px;font-weight:700;color:var(--ink-soft);line-height:1.45;margin-top:2px}
+  .locdist{font-size:13.5px;font-weight:900;color:var(--ink);margin-top:6px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+  .locdist .dot{width:3px;height:3px;border-radius:50%;background:var(--faint)}
+  .locgo{flex:0 0 auto;font-size:11px;font-weight:900;letter-spacing:.08em;color:var(--sky);padding-top:4px;white-space:nowrap}
+  .moreDates{margin-top:14px;background:rgba(255,255,255,.92);border:1px solid var(--line);border-radius:16px;padding:13px 14px}
+  .moreDatesHead{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:900;color:var(--ink);letter-spacing:.01em}
+  .moreDatesHead svg{width:16px;height:16px;color:var(--coral);flex:0 0 auto}
+  .moreDatesHead .ct{margin-left:auto;font-size:11.5px;font-weight:800;color:var(--faint);white-space:nowrap}
+  .moreDatesNote{font-size:12.5px;font-weight:700;color:var(--ink-soft);margin-top:3px;line-height:1.45}
+  .dateChips{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+  .dateChip{font-size:12.5px;font-weight:800;padding:8px 11px;border-radius:999px;background:#fff;
+    border:1.5px solid var(--line);color:var(--ink);display:inline-flex;align-items:center;gap:6px}
+  .dateChip small{font-size:11px;font-weight:800;color:var(--faint)}
+  .dateChip.current{background:var(--ink);border-color:var(--ink);color:#fff;cursor:default}
+  .dateChip.current small{color:rgba(255,255,255,.75)}
   .photo{margin-top:13px;border-radius:18px;overflow:hidden;position:relative;background:linear-gradient(120deg,#FFD98E,#FF9E6B 55%,#7FB8D9)}
   .photo img{width:100%;height:170px;object-fit:cover;display:block}
   .phototag{position:absolute;left:12px;bottom:10px;color:#fff;font-size:11px;font-weight:900;
@@ -269,6 +293,8 @@ const I = {
   cloud: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18.5h9.3a4.2 4.2 0 0 0 .9-8.3 5.8 5.8 0 0 0-11.2 1.3A3.9 3.9 0 0 0 7 18.5Z"/></svg>',
   rain: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M7 14.5h9.3a4.2 4.2 0 0 0 .9-8.3 5.8 5.8 0 0 0-11.2 1.3A3.9 3.9 0 0 0 7 14.5Z"/><path d="M8.5 17.8l-1 2.2M13 17.8l-1 2.2M17.5 17.8l-1 2.2"/></svg>',
   car: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15.5 5.6 9A2 2 0 0 1 7.6 7.5h9A2 2 0 0 1 18.5 9L20 15.5"/><path d="M3.5 15.5h17V19h-17Z"/><circle cx="7.5" cy="19" r="1.6"/><circle cx="16.5" cy="19" r="1.6"/></svg>',
+  repeat: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2.8 21 6.8l-4 4"/><path d="M3.5 12.8v-2a3.8 3.8 0 0 1 3.8-3.8H21"/><path d="M7 21.2 3 17.2l4-4"/><path d="M20.5 11.2v2a3.8 3.8 0 0 1-3.8 3.8H3"/></svg>',
+  calendar: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 9.8h17M8 3v4M16 3v4"/></svg>',
 };
 
 function balloonSVG(){
@@ -523,6 +549,38 @@ async function shareEvent(id){
 }
 
 /* ---- detail sheet ---- */
+function baseId(id){ return String(id || "").replace(/--\d{4}-\d{2}-\d{2}$/, ""); }
+function siblingsFor(ev){
+  if (!ev.date) return [];
+  const base = baseId(ev.id);
+  const sibs = state.events.filter(e => e.date && (baseId(e.id) === base || (e.title === ev.title && e.venue === ev.venue && e.venue)));
+  const byDate = new Map();
+  for (const s of [...sibs].sort((a, b) => a.date.localeCompare(b.date))) if (!byDate.has(s.date)) byDate.set(s.date, s);
+  return [...byDate.values()];
+}
+function recurrenceLabel(ev, sibs){
+  if (!ev.date){
+    const src = ((ev.timeLabel || "") + " " + (ev.note || "")).trim();
+    if (/\bdaily\b/i.test(src)) return "Happens daily";
+    const em = src.match(/every\s+(monday|tuesday|wednesday|thursday|friday|saturday|sunday|week|tues|thurs)/i);
+    if (em) return "Every " + em[1][0].toUpperCase() + em[1].slice(1).toLowerCase();
+    if (/\bweekly\b/i.test(src)) return "Happens weekly";
+  }
+  if (ev.note && /weekly/i.test(ev.note)) return ev.note.replace(/\s*·.*$/, "");
+  if (ev.note && /(1st & 3rd|first monday|monthly)/i.test(ev.note)) return ev.note;
+  if (sibs.length >= 2){
+    const dows = [...new Set(sibs.map(s => parseDate(s.date).getDay()))];
+    if (dows.length === 1){
+      // Only call it weekly if the gaps look weekly (mostly 7 days)
+      const gaps = []; for (let i = 1; i < sibs.length; i++) gaps.push(dayDiff(sibs[i].date, sibs[i-1].date));
+      if (gaps.every(g => g % 7 === 0)) return "Every " + ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"][dows[0]];
+    }
+    let consecutive = true;
+    for (let i = 1; i < sibs.length; i++){ if (dayDiff(sibs[i].date, sibs[i-1].date) !== 1){ consecutive = false; break; } }
+    if (consecutive && sibs.length >= 3) return "Runs daily";
+  }
+  return null;
+}
 function openSheet(id){
   const ev = state.events.find(e => e.id === id); if (!ev) return;
   state.sheetId = id;
@@ -535,11 +593,33 @@ function openSheet(id){
   if (ev.ages) chips.push(`<span class="infochip">${I.baby} Ages ${esc(ev.ages)}</span>`);
   if (ev.parking) chips.push(`<span class="infochip"><span class="picon">P</span> ${esc(ev.parking)}</span>`);
   if (ev.driveMin) chips.push(`<span class="infochip">${I.car} About ${ev.driveMin} min drive</span>`);
+  const sibs = siblingsFor(ev);
+  const recLabel = recurrenceLabel(ev, sibs);
+  const locHTML = (ev.venue || ev.address) ? `<a class="locbox" target="_blank" rel="noopener" href="${mapsURL(ev)}">
+      <span class="locpin">${I.pin}</span>
+      <span class="locmain">
+        ${ev.venue ? `<span class="locvenue">${esc(ev.venue)}</span>` : ""}
+        ${ev.address || ev.city ? `<span class="locaddr" style="display:block">${esc(ev.address || "")}${ev.address && ev.city ? ", " : ""}${esc(ev.city || "")}</span>` : ""}
+        ${distLabel(ev) || ev.driveMin ? `<span class="locdist">${distLabel(ev) ? esc(distLabel(ev)) + " away" : ""}${distLabel(ev) && ev.driveMin ? `<span class="dot"></span>` : ""}${ev.driveMin ? "About " + ev.driveMin + " min drive" : ""}</span>` : ""}
+      </span>
+      <span class="locgo">MAP ›</span>
+    </a>` : "";
+  const alsoMatch = sibs.length <= 1 ? ((ev.blurb || "") + " " + (ev.note || "")).match(/\balso (?:on|runs|happens)[^.·]*/i) : null;
+  const alsoHint = alsoMatch ? alsoMatch[0].trim() : null;
+  const moreHTML = sibs.length > 1 ? `<div class="moreDates">
+      <div class="moreDatesHead">${I.repeat} ${esc(recLabel || "More dates for this pick")}<span class="ct">${sibs.length} dates</span></div>
+      <div class="moreDatesNote">${recLabel ? "This pick happens on more than one date — tap another date to see (and favorite) that one." : "Same pick, other dates — tap one to see (and favorite) that date instead."}</div>
+      <div class="dateChips">${sibs.map(s => s.id === ev.id
+        ? `<span class="dateChip current">${esc(dowShort(s.date))} ${esc(monShort(s.date))} ${domNum(s.date)} <small>· this one</small></span>`
+        : `<button class="dateChip" data-goto="${esc(s.id)}">${esc(dowShort(s.date))} ${esc(monShort(s.date))} ${domNum(s.date)}${s.timeLabel ? ` <small>${esc(s.timeLabel)}</small>` : ""}</button>`).join("")}</div>
+    </div>` : (recLabel ? `<div class="moreDates"><div class="moreDatesHead">${I.repeat} ${esc(recLabel)}</div><div class="moreDatesNote">This is a recurring pick — new dates are added as listings refresh each morning.</div></div>` : (alsoHint ? `<div class="moreDates"><div class="moreDatesHead">${I.repeat} More dates for this pick</div><div class="moreDatesNote">This pick ${esc(alsoHint.charAt(0).toLowerCase() + alsoHint.slice(1))} — check the source listing for those dates.</div></div>` : ""));
   sheet.innerHTML = `
     <div class="grab"></div>
     <div class="mapbox">${mapInner}</div>
     <h2>${esc(ev.title)}</h2>
     <div class="submeta">${ev.date ? esc(dayLabel(ev.date)) + " · " + esc(dowShort(ev.date)) + " " + esc(monShort(ev.date)) + " " + domNum(ev.date) : "Anytime idea"}${ev.timeLabel ? " · " + esc(ev.timeLabel) : ""}</div>
+    ${locHTML}
+    ${moreHTML}
     ${ev.photo ? `<div class="photo"><img src="${esc(ev.photo)}" alt="" onerror="this.parentElement.remove()"><span class="phototag">${I.camera} Photo from the source listing</span></div>` : ""}
     ${ev.blurb ? `<p class="blurb">${esc(ev.blurb)}</p>` : ""}
     ${chips.length ? `<div class="inforow">${chips.join("")}</div>` : ""}
@@ -548,19 +628,26 @@ function openSheet(id){
       <button class="sbtn" id="sheetText">${I.share} Text it</button>
       <a class="sbtn" style="text-decoration:none" target="_blank" rel="noopener" href="${mapsURL(ev)}">${I.map} Maps</a>
     </div>
-    <div class="srcline">${ev.address ? esc(ev.address) + (ev.city ? ", " + esc(ev.city) : "") + (distLabel(ev) ? " · " + distLabel(ev) + " away" : "") + "<br>" : ""}Source: ${ev.sourceUrl ? `<a href="${esc(ev.sourceUrl)}" target="_blank" rel="noopener">${esc(ev.source || "listing")}</a>` : esc(ev.source || "")} · via Poppy's Picks</div>`;
+    <div class="srcline">Source: ${ev.sourceUrl ? `<a href="${esc(ev.sourceUrl)}" target="_blank" rel="noopener">${esc(ev.source || "listing")}</a>` : esc(ev.source || "")} · via Poppy's Picks</div>`;
   fillSheetFav(id);
   $("#sheetFav").addEventListener("click", () => toggleFav(id));
   $("#sheetText").addEventListener("click", () => shareEvent(id));
+  sheet.querySelectorAll("[data-goto]").forEach(b => b.addEventListener("click", () => openSheet(b.dataset.goto)));
   $("#scrim").hidden = false;
+  const wasOpen = !sheet.hidden;
   sheet.scrollTop = 0;
-  sheet.style.transition = "none";
-  sheet.style.transform = "translate(-50%, 100%)";
-  sheet.hidden = false;
-  requestAnimationFrame(() => requestAnimationFrame(() => {
+  if (wasOpen){
     sheet.style.transition = "";
     sheet.style.transform = "translate(-50%, 0)";
-  }));
+  } else {
+    sheet.style.transition = "none";
+    sheet.style.transform = "translate(-50%, 100%)";
+    sheet.hidden = false;
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      sheet.style.transition = "";
+      sheet.style.transform = "translate(-50%, 0)";
+    }));
+  }
   document.body.style.overflow = "hidden";
 }
 function fillSheetFav(id){
