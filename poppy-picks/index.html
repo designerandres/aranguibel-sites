@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#FF6B4A">
 <title>Poppy's Picks — Family Fun</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Poppy's Picks">
 <link rel="apple-touch-icon" href="icons/icon-180.png">
 <link rel="icon" type="image/svg+xml" href="icons/icon.svg">
@@ -137,7 +137,8 @@
   #scrim{position:fixed;inset:0;background:rgba(20,34,47,.48);z-index:60}
   #sheet{position:fixed;left:50%;transform:translateX(-50%);width:min(430px,100vw);bottom:0;top:56px;z-index:65;
     background:rgba(251,245,234,.9);backdrop-filter:blur(20px) saturate(1.5);-webkit-backdrop-filter:blur(20px) saturate(1.5);
-    border-radius:30px 30px 0 0;padding:12px 20px calc(24px + env(safe-area-inset-bottom));overflow-y:auto;box-shadow:var(--shadow-lg)}
+    border-radius:30px 30px 0 0;padding:12px 20px calc(24px + env(safe-area-inset-bottom));overflow-y:auto;box-shadow:var(--shadow-lg);
+    transition:transform .3s cubic-bezier(.32,.72,.24,1);will-change:transform;overscroll-behavior:contain}
   .grab{width:44px;height:5px;border-radius:3px;background:#D8CCB2;margin:0 auto 14px}
   .mapbox{height:180px;border-radius:20px;overflow:hidden;border:1px solid var(--line);background:#DCEBD8;position:relative}
   .mapbox iframe{width:100%;height:100%;border:0;display:block}
@@ -409,9 +410,14 @@ function sectionHTML(title, note, cards){
 }
 function upcoming(ev){ return ev.date && dayDiff(ev.date, todayStr()) >= 0; }
 
+const TAB_THEME = { local:"#FF9E57", date:"#9D6BC4", far:"#4FB0DC", picks:"#FFB627" };
 function render(){
   const app = $("#app");
   app.dataset.tab = state.tab;
+  const themeColor = TAB_THEME[state.tab] || "#FF6B4A";
+  const tcMeta = document.querySelector('meta[name="theme-color"]');
+  if (tcMeta) tcMeta.setAttribute("content", themeColor);
+  document.body.style.background = themeColor;
   const tab = TABS.find(t => t.id === state.tab);
   $("#appsub").textContent = tab.sub;
   const lists = $("#lists"), heroSlot = $("#heroSlot");
@@ -545,7 +551,15 @@ function openSheet(id){
   fillSheetFav(id);
   $("#sheetFav").addEventListener("click", () => toggleFav(id));
   $("#sheetText").addEventListener("click", () => shareEvent(id));
-  $("#scrim").hidden = false; sheet.hidden = false;
+  $("#scrim").hidden = false;
+  sheet.scrollTop = 0;
+  sheet.style.transition = "none";
+  sheet.style.transform = "translate(-50%, 100%)";
+  sheet.hidden = false;
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    sheet.style.transition = "";
+    sheet.style.transform = "translate(-50%, 0)";
+  }));
   document.body.style.overflow = "hidden";
 }
 function fillSheetFav(id){
@@ -556,10 +570,48 @@ function fillSheetFav(id){
 }
 function closeSheet(){
   state.sheetId = null;
-  $("#scrim").hidden = true; $("#sheet").hidden = true;
+  const sheet = $("#sheet");
+  $("#scrim").hidden = true;
   document.body.style.overflow = "";
+  if (sheet.hidden) return;
+  sheet.style.transition = "";
+  sheet.style.transform = "translate(-50%, 100%)";
+  setTimeout(() => { sheet.hidden = true; sheet.style.transform = ""; }, 300);
 }
 $("#scrim").addEventListener("click", closeSheet);
+
+/* ---- sheet drag-to-dismiss: pull down from the top of the sheet ---- */
+(() => {
+  const sheet = $("#sheet");
+  let startY = null, dy = 0, dragging = false;
+  sheet.addEventListener("touchstart", (e) => {
+    if (e.touches.length !== 1) return;
+    startY = e.touches[0].clientY; dy = 0; dragging = false;
+  }, { passive: true });
+  sheet.addEventListener("touchmove", (e) => {
+    if (startY === null) return;
+    dy = e.touches[0].clientY - startY;
+    if (!dragging && dy > 8 && sheet.scrollTop <= 0) {
+      dragging = true;
+      sheet.style.transition = "none";
+    }
+    if (dragging) {
+      sheet.style.transform = `translate(-50%, ${Math.max(0, dy)}px)`;
+      e.preventDefault();
+    }
+  }, { passive: false });
+  const endDrag = () => {
+    if (startY === null) return;
+    const wasDragging = dragging, finalDy = dy;
+    startY = null; dragging = false; dy = 0;
+    if (!wasDragging) return;
+    sheet.style.transition = "";
+    if (finalDy > 110) closeSheet();
+    else sheet.style.transform = "translate(-50%, 0)";
+  };
+  sheet.addEventListener("touchend", endDrag);
+  sheet.addEventListener("touchcancel", endDrag);
+})();
 
 /* ---- search ---- */
 function renderSearch(){
