@@ -887,6 +887,32 @@
   },
   {
    "tab": "far",
+   "title": "Hawks and Haunts at Audubon Center for Birds of Prey",
+   "timeLabel": "10:00 AM – 2:00 PM",
+   "venue": "Audubon Center for Birds of Prey",
+   "address": "1101 Audubon Way",
+   "city": "Maitland",
+   "price": "$10 · 3 & under free",
+   "ages": null,
+   "parking": null,
+   "note": "All activities included",
+   "tags": [
+    "Halloween"
+   ],
+   "blurb": "A daytime Halloween party at the raptor rescue center on Lake Sybelia: a 'trick-or-tweet' candy trail, bubble dance party, kid-friendly story time, a scavenger hunt, and meet-and-greets with eagles, owls, and hawks. $10 per person; children 3 and under free.",
+   "photo": null,
+   "source": "Orlando on the Cheap",
+   "sourceUrl": "https://orlandoonthecheap.com/hawks-and-haunts-at-audubon-center-for-birds-of-prey/",
+   "id": "hawks-and-haunts",
+   "date": "2026-10-31",
+   "anytime": false,
+   "distanceMi": 18.6,
+   "driveMin": 32,
+   "lat": 28.62111,
+   "lng": -81.37581
+  },
+  {
+   "tab": "far",
    "title": "Zoo Boo Bash at Central Florida Zoo",
    "timeLabel": "9:00 AM – 5:00 PM",
    "venue": "Central Florida Zoo & Botanical Gardens",
@@ -1664,6 +1690,32 @@
    "driveMin": 27,
    "lat": 28.57279,
    "lng": -81.36516
+  },
+  {
+   "tab": "local",
+   "title": "Wild World of Animals at Garden Theatre",
+   "timeLabel": "1:00 PM & 7:00 PM",
+   "venue": "Garden Theatre",
+   "address": "160 W Plant St",
+   "city": "Winter Garden",
+   "price": "$44.55–$65.15",
+   "ages": null,
+   "parking": null,
+   "note": "Pick the 1 PM matinee with a toddler",
+   "tags": [
+    "Live animals"
+   ],
+   "blurb": "Grant Kemmerer's live wildlife show brings reptiles, birds, mammals, and other animals face-to-face with the audience in Winter Garden's historic theatre — part education, part comedy. The 1 PM matinee is the toddler-friendly pick.",
+   "photo": null,
+   "source": "Garden Theatre / City of Winter Garden",
+   "sourceUrl": "https://www.cwgdn.com/m/newsflash/Home/Detail/772",
+   "id": "wild-world-of-animals-garden-theatre",
+   "date": "2026-11-14",
+   "anytime": false,
+   "distanceMi": 7.9,
+   "driveMin": 16,
+   "lat": 28.56502,
+   "lng": -81.58738
   },
   {
    "tab": "far",
