@@ -153,6 +153,35 @@
   .card h3 { font-size: 1.08rem; font-weight: 600; letter-spacing: -0.005em; color: var(--headline); }
   .card p { font-size: 0.92rem; line-height: 1.55; color: var(--muted); flex: 1 1 auto; }
 
+  /* Reorder tools (signed-in owner edit mode) */
+  .idx-tools { display: flex; align-items: center; gap: 0.55rem; }
+  button.tool {
+    font: inherit; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase;
+    padding: 0.5rem 0.85rem; border-radius: 999px; border: 1px solid var(--edge-strong);
+    background: var(--surface); color: var(--headline); cursor: pointer; white-space: nowrap;
+    -webkit-tap-highlight-color: transparent;
+  }
+  button.tool.primary { background: var(--brand); border-color: var(--brand); color: var(--on-brand); }
+  button.tool[hidden] { display: none; }
+  .editbar {
+    display: none; font-size: 0.85rem; color: var(--muted); line-height: 1.5;
+    border: 1px dashed var(--edge-strong); border-radius: 12px; padding: 0.8rem 1rem; margin-bottom: 1.1rem;
+  }
+  body.editing .editbar { display: block; }
+  .editmsg { display: none; font-size: 0.85rem; color: var(--muted); margin-bottom: 1.1rem; }
+  .editmsg.on { display: block; }
+  .card .mv { display: none; gap: 0.45rem; margin-left: auto; }
+  body.editing .card .mv { display: flex; }
+  .card .mv button {
+    width: 2.3rem; height: 2.3rem; border-radius: 50%; border: 1px solid var(--edge-strong);
+    background: var(--surface); color: var(--headline); font-size: 1.05rem; line-height: 1; cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .card .mv button[disabled] { opacity: 0.3; cursor: default; }
+  .card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.8rem; width: 100%; }
+  body.editing .card { cursor: default; }
+  body.editing .card:hover, body.editing .card:focus-visible { transform: none; box-shadow: var(--shadow); }
+
   footer {
     border-top: 1px solid var(--edge);
     padding: 1.4rem 0 max(2.2rem, env(safe-area-inset-bottom));
@@ -184,8 +213,15 @@
 
   <div class="index-head">
     <h2>Index</h2>
-    <span id="count"></span>
+    <div class="idx-tools">
+      <span id="count"></span>
+      <button class="tool" id="btnEdit" type="button" hidden>Edit order</button>
+      <button class="tool" id="btnCancel" type="button" hidden>Cancel</button>
+      <button class="tool primary" id="btnSave" type="button" hidden>Save</button>
+    </div>
   </div>
+  <p class="editbar">Reorder mode — use the arrows on each card to move it, then Save. The saved order is shared: everyone who opens this page sees it.</p>
+  <p class="editmsg" id="editMsg" role="status"></p>
   <nav class="grid" id="sites" aria-label="Microsites"></nav>
 
   <footer>
@@ -238,20 +274,106 @@
   ];
 
   const grid = document.getElementById("sites");
-  for (const site of SITES) {
-    const a = document.createElement("a");
-    a.className = "card";
-    a.href = site.path;
-    const visual = site.icon
-      ? '<img class="icon" src="' + site.icon + '" alt="" width="512" height="512">'
-      : '<div class="mark">' + site.monogram + "</div>";
-    a.innerHTML = visual + "<h3></h3><p></p>";
-    a.querySelector("h3").textContent = site.title;
-    a.querySelector("p").textContent = site.description;
-    grid.appendChild(a);
+  let displaySites = SITES.slice();
+  let savedOrder = null; // last order fetched from (or saved to) the server
+
+  function applyOrder(order) {
+    if (!Array.isArray(order)) return;
+    const known = new Map(SITES.map(s => [s.path, s]));
+    const next = [];
+    for (const p of order) { if (known.has(p)) { next.push(known.get(p)); known.delete(p); } }
+    for (const s of SITES) { if (known.has(s.path)) next.push(s); } // new sites append at the end
+    displaySites = next;
   }
-  document.getElementById("count").textContent =
-    SITES.length + (SITES.length === 1 ? " site" : " sites");
+
+  function renderGrid() {
+    grid.innerHTML = "";
+    displaySites.forEach((site, i) => {
+      const a = document.createElement("a");
+      a.className = "card";
+      a.href = site.path;
+      const visual = site.icon
+        ? '<img class="icon" src="' + site.icon + '" alt="" width="512" height="512">'
+        : '<div class="mark">' + site.monogram + "</div>";
+      a.innerHTML = '<div class="card-top">' + visual +
+        '<span class="mv"><button type="button" data-mv="-1" aria-label="Move up">&#8593;</button>' +
+        '<button type="button" data-mv="1" aria-label="Move down">&#8595;</button></span></div>' +
+        "<h3></h3><p></p>";
+      a.querySelector("h3").textContent = site.title;
+      a.querySelector("p").textContent = site.description;
+      const btns = a.querySelectorAll(".mv button");
+      btns[0].disabled = i === 0;
+      btns[1].disabled = i === displaySites.length - 1;
+      btns.forEach(b => b.addEventListener("click", (e) => {
+        e.preventDefault(); e.stopPropagation();
+        const j = i + parseInt(b.dataset.mv, 10);
+        if (j < 0 || j >= displaySites.length) return;
+        const t = displaySites[i]; displaySites[i] = displaySites[j]; displaySites[j] = t;
+        renderGrid();
+      }));
+      a.addEventListener("click", (e) => { if (document.body.classList.contains("editing")) e.preventDefault(); });
+      grid.appendChild(a);
+    });
+    document.getElementById("count").textContent =
+      displaySites.length + (displaySites.length === 1 ? " site" : " sites");
+  }
+  renderGrid();
+
+  // Shared order: the server copy wins over the baked-in list order, so a
+  // reorder saved on one device shows up on every device.
+  fetch("/api/apps/order", { cache: "no-store" })
+    .then(r => r.ok ? r.json() : null)
+    .then(j => { if (j && Array.isArray(j.order)) { savedOrder = j.order; applyOrder(j.order); renderGrid(); } })
+    .catch(() => { /* offline — baked-in order stands */ });
+
+  // --- Edit order (signed-in accounts only) ---
+  const $id = (x) => document.getElementById(x);
+  const btnEdit = $id("btnEdit"), btnCancel = $id("btnCancel"), btnSave = $id("btnSave"), editMsg = $id("editMsg");
+  function msg(t) { editMsg.textContent = t || ""; editMsg.classList.toggle("on", !!t); }
+  function b64uToBuf(s) { s = s.replace(/-/g, "+").replace(/_/g, "/"); while (s.length % 4) s += "="; return Uint8Array.from(atob(s), c => c.charCodeAt(0)).buffer; }
+  function bufToB64u(buf) { const b = new Uint8Array(buf); let s = ""; for (let i = 0; i < b.length; i += 0x8000) s += String.fromCharCode.apply(null, b.subarray(i, i + 0x8000)); return btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); }
+  async function api(method, path, body) {
+    const r = await fetch(path, { method, headers: body ? { "Content-Type": "application/json" } : undefined, body: body ? JSON.stringify(body) : undefined });
+    if (!r.ok) { const e = new Error("api " + r.status); e.status = r.status; throw e; }
+    return r.json();
+  }
+  async function signedIn() { try { const me = await api("GET", "/api/auth/me"); return !!(me && me.signedIn); } catch { return false; } }
+  async function passkeySignIn() {
+    const options = await api("POST", "/api/auth/login/options", {});
+    options.challenge = b64uToBuf(options.challenge);
+    const cred = await navigator.credentials.get({ publicKey: options });
+    await api("POST", "/api/auth/login/verify", { credential: { id: bufToB64u(cred.rawId), rawId: bufToB64u(cred.rawId), type: cred.type, response: { authenticatorData: bufToB64u(cred.response.authenticatorData), clientDataJSON: bufToB64u(cred.response.clientDataJSON), signature: bufToB64u(cred.response.signature), userHandle: cred.response.userHandle ? bufToB64u(cred.response.userHandle) : null } } });
+  }
+  function setEditing(on) {
+    document.body.classList.toggle("editing", on);
+    btnEdit.hidden = on; btnCancel.hidden = !on; btnSave.hidden = !on;
+    renderGrid();
+  }
+  btnEdit.addEventListener("click", async () => {
+    msg("");
+    btnEdit.disabled = true;
+    try {
+      if (!(await signedIn())) { await passkeySignIn(); }
+      if (await signedIn()) { setEditing(true); }
+      else msg("Sign-in didn't complete — please try again.");
+    } catch (e) { msg("Sign-in didn't complete — please try again."); }
+    btnEdit.disabled = false;
+  });
+  btnCancel.addEventListener("click", () => { applyOrder(savedOrder); setEditing(false); msg(""); });
+  btnSave.addEventListener("click", async () => {
+    btnSave.disabled = true; btnCancel.disabled = true;
+    try {
+      const order = displaySites.map(s => s.path);
+      await api("PUT", "/api/apps/order", { order });
+      savedOrder = order;
+      setEditing(false);
+      msg("Order saved — it now shows this way on every device.");
+    } catch (e) { msg("That save didn't go through. Check your connection and try again."); }
+    btnSave.disabled = false; btnCancel.disabled = false;
+  });
+  // The button appears for everyone; tapping it starts Face ID sign-in if
+  // needed, so there is nothing extra to find.
+  btnEdit.hidden = false;
 
   // Freshness: this page is often resumed from the home-screen app without a
   // real reload, which can leave a stale app list on screen (a newly added
