@@ -3,279 +3,436 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Apps — Andres Aranguibel</title>
-<meta name="description" content="An index of microsites published at sites.aranguibel.com.">
+<title>The Skipper's Log — Andres Aranguibel</title>
+<meta name="description" content="The Skipper's Log — a journal of expeditions and apps published at sites.aranguibel.com.">
 <meta property="og:type" content="website">
-<meta property="og:title" content="Apps — Andres Aranguibel">
-<meta property="og:description" content="Every microsite published at sites.aranguibel.com, in one place.">
+<meta property="og:title" content="The Skipper's Log — Andres Aranguibel">
+<meta property="og:description" content="Every expedition published at sites.aranguibel.com, kept as entries in the Skipper's Log.">
 <meta property="og:url" content="https://sites.aranguibel.com/">
 <meta property="og:image" content="https://sites.aranguibel.com/assets/headshot.jpg">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="https://sites.aranguibel.com/assets/headshot.jpg">
-<meta name="theme-color" content="#111111" media="(prefers-color-scheme: dark)">
-<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1C3A2A">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Apps">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Skipper's Log">
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23fed600'/%3E%3Ctext x='32' y='45' font-family='Georgia,serif' font-style='italic' font-size='38' fill='%23131c2b' text-anchor='middle'%3Ea%3C/text%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231C3A2A'/%3E%3Ccircle cx='32' cy='26' r='11' fill='none' stroke='%23EFC25E' stroke-width='3'/%3E%3Cpath d='M32 18 L35 26 L32 34 L29 26 Z' fill='%23EFC25E'/%3E%3Cpath d='M14 46 q6 -5 12 0 q6 5 12 0 q6 -5 12 0' fill='none' stroke='%237FC4BC' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Wire+One&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Trade+Winds&family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=Special+Elite&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #ffffff;
-    --surface: #ffffff;
-    --edge: #e7e7e7;
-    --edge-strong: #c9c9c9;
-    --ink: #272727;
-    --headline: #131313;
-    --muted: #767676;
-    --faint: #a8a8a8;
-    --brand: #fed600;
-    --on-brand: #131c2b;
-    --shadow: 0 1px 2px rgba(39, 39, 39, 0.05), 0 12px 32px -12px rgba(39, 39, 39, 0.18);
-    --shadow-lift: 0 2px 4px rgba(39, 39, 39, 0.06), 0 20px 44px -14px rgba(39, 39, 39, 0.28);
+  :root{
+    --jungle:#1C3A2A; --jungle-deep:#122619; --jungle-soft:#2A5240;
+    --paper:#F1E5C6; --paper-hi:#F7EED6; --paper-lo:#E7D6AB; --kraft:#DCC793;
+    --ink:#2E2416; --ink-soft:#57452C; --faded:#857048;
+    --ochre:#D9A13B; --ochre-hi:#EFC25E;
+    --rust:#A63D2A; --indigo:#33566E; --teal:#2E6E6A; --stampgreen:#2F6F4F;
+    --grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0.36 0 0 0 0 0.27 0 0 0 0 0.12 0 0 0 0.11 0'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)'/%3E%3C/svg%3E");
   }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #101010;
-      --surface: #171717;
-      --edge: #2b2b2b;
-      --edge-strong: #4a4a4a;
-      --ink: #e8e8e8;
-      --headline: #f5f5f5;
-      --muted: #a3a3a3;
-      --faint: #6f6f6f;
-      --shadow: 0 1px 2px rgba(0, 0, 0, 0.45), 0 12px 32px -12px rgba(0, 0, 0, 0.6);
-      --shadow-lift: 0 2px 4px rgba(0, 0, 0, 0.5), 0 20px 44px -14px rgba(0, 0, 0, 0.72);
-    }
+  *{margin:0;padding:0;box-sizing:border-box}
+  [hidden]{display:none !important}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    font-family:"IM Fell English",Georgia,serif; color:var(--ink);
+    background:
+      radial-gradient(1100px 500px at 15% -5%, rgba(217,161,59,.16), transparent 60%),
+      radial-gradient(900px 600px at 105% 12%, rgba(46,110,106,.20), transparent 55%),
+      linear-gradient(168deg,#173325 0%, #1C3A2A 34%, #152B1F 72%, #0F2016 100%);
+    min-height:100vh; min-height:100dvh; padding:26px 14px 54px;
+    -webkit-font-smoothing:antialiased;
   }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  html { -webkit-text-size-adjust: 100%; }
-  body {
-    font-family: "proxima-nova", "Helvetica Neue", Helvetica, Arial, sans-serif;
-    background: var(--bg); color: var(--ink);
-    min-height: 100vh; min-height: 100dvh;
-    -webkit-font-smoothing: antialiased;
-  }
-  .wrap { max-width: 72rem; margin: 0 auto; padding: 0 1.5rem; }
+  .riverlines{position:fixed; inset:0; pointer-events:none; opacity:.5; z-index:0}
+  .stage{position:relative; z-index:1; max-width:820px; margin:0 auto}
 
-  /* Header bar, after aranguibel.com — sticky: stays pinned while the page scrolls */
-  .topbar {
-    position: sticky; top: 0; z-index: 50;
-    background: var(--bg);
-    display: flex; align-items: center; justify-content: space-between; gap: 1rem;
-    padding: max(1.1rem, env(safe-area-inset-top)) 0 1.1rem;
-    border-bottom: 1px solid var(--edge);
+  /* ============ MASTHEAD — the hanging boathouse sign ============ */
+  .signwrap{position:relative; padding-top:34px}
+  .ropes{position:absolute; top:0; left:0; right:0; height:44px; pointer-events:none}
+  .sign{
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.22)),
+      repeating-linear-gradient(93deg, rgba(0,0,0,.10) 0 2px, transparent 2px 130px),
+      linear-gradient(175deg,#26503A, var(--jungle) 45%, var(--jungle-deep));
+    border:3px solid #0C1D13; border-radius:14px;
+    box-shadow:0 24px 48px -18px rgba(0,0,0,.65), inset 0 1px 0 rgba(255,255,255,.14), inset 0 -14px 30px rgba(0,0,0,.35);
+    padding:24px 26px 20px; text-align:center; position:relative; overflow:hidden;
   }
-  .brand-lockup { display: flex; align-items: center; gap: 0.8rem; text-decoration: none; color: inherit; min-width: 0; }
-  .brand-lockup img {
-    width: 2.6rem; height: 2.6rem; border-radius: 50%; flex: 0 0 auto;
-    object-fit: cover; aspect-ratio: 1 / 1; display: block;
-  }
-  .brand-lockup .site-title {
-    font-family: "Wire One", "Helvetica Neue", Helvetica, Arial, sans-serif;
-    font-size: 1.55rem; font-weight: 700; letter-spacing: 0.045em; line-height: 1;
-    color: var(--headline); white-space: nowrap;
-  }
-  .topbar nav a {
-    font-size: 0.72rem; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase;
-    color: var(--muted); text-decoration: none; white-space: nowrap;
-  }
-  .topbar nav a:hover { color: var(--headline); }
+  .sign::after{content:""; position:absolute; inset:9px; border:1.5px solid rgba(239,194,94,.5); border-radius:9px; pointer-events:none}
+  .sign .eyebrow{font-family:"Special Elite",monospace; font-size:11px; letter-spacing:.34em; text-transform:uppercase; color:var(--ochre-hi); margin-bottom:12px}
+  .sign h1{font-family:"Trade Winds",serif; font-weight:400; color:#F3E5BE; font-size:clamp(42px, 11.5vw, 74px); line-height:1.02; letter-spacing:.01em; text-shadow:0 2px 0 rgba(0,0,0,.45), 0 10px 26px rgba(0,0,0,.5)}
+  .sign .sub{margin-top:10px; font-style:italic; font-size:clamp(15px,3.6vw,18px); color:#E4D3A4; line-height:1.45}
+  .sign .sub b{color:#F7EED6; font-weight:400; border-bottom:1px dotted rgba(239,194,94,.7)}
+  .crestrow{display:flex; align-items:center; justify-content:center; gap:16px; margin-top:14px}
+  .crestrow .rule{height:2px; width:min(120px,22vw); background:linear-gradient(90deg,transparent,var(--ochre),transparent); border-radius:2px}
+  .crest{width:72px; height:86px; flex:0 0 auto; filter:drop-shadow(0 6px 10px rgba(0,0,0,.45))}
+  .sign .motto{margin-top:10px; font-family:"IM Fell English SC",serif; letter-spacing:.3em; font-size:12px; color:#CDB87E; text-transform:uppercase}
 
-  /* Hero */
-  .hero {
-    display: grid; gap: 2rem; align-items: center;
-    padding: 3rem 0 2.6rem;
-  }
-  @media (min-width: 760px) {
-    .hero { grid-template-columns: 1fr 19rem; padding: 4rem 0 3.2rem; }
-  }
-  .hero-photo { display: none; }
-  @media (min-width: 760px) {
-    .hero-photo {
-      display: block; width: 100%; aspect-ratio: 1 / 1; object-fit: cover;
-      border-radius: 4px;
-    }
-  }
-  .kicker {
-    display: flex; align-items: center; gap: 0.65rem;
-    font-size: 0.7rem; font-weight: 700; letter-spacing: 0.24em; text-transform: uppercase;
-    color: var(--muted); margin-bottom: 1.2rem;
-  }
-  .kicker::before { content: ""; width: 2rem; height: 3px; background: var(--brand); flex: 0 0 auto; }
-  h1 {
-    font-family: "Wire One", "Helvetica Neue", Helvetica, Arial, sans-serif;
-    font-size: clamp(4.2rem, 13vw, 7.5rem); font-weight: 400; line-height: 0.95;
-    letter-spacing: 0.01em; color: var(--headline); text-transform: uppercase;
-  }
-  /* Index */
-  .index-head {
-    display: flex; align-items: baseline; justify-content: space-between;
-    border-top: 1px solid var(--edge); padding-top: 1.4rem; margin-bottom: 1.2rem;
-  }
-  .index-head h2 {
-    font-size: 0.72rem; font-weight: 700; letter-spacing: 0.24em; text-transform: uppercase; color: var(--headline);
-  }
-  .index-head span { font-size: 0.8rem; color: var(--faint); }
-  .grid {
-    display: grid; gap: 1.1rem;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
-    margin-bottom: 3.5rem;
-  }
-  .card {
-    display: flex; flex-direction: column; gap: 0.7rem;
-    padding: 1.5rem 1.5rem 1.35rem; min-height: 10rem;
-    background: var(--surface); text-decoration: none; color: inherit;
-    border: 1px solid var(--edge); border-radius: 20px;
-    box-shadow: var(--shadow);
-    transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.15s ease;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .card:hover, .card:focus-visible { transform: translateY(-3px); box-shadow: var(--shadow-lift); outline: none; }
-  .card:active { transform: translateY(-1px) scale(0.995); box-shadow: var(--shadow); }
-  .mark {
-    width: 2.6rem; height: 2.6rem; border-radius: 4px; flex: 0 0 auto;
-    display: flex; align-items: center; justify-content: center;
-    font-family: Georgia, "Times New Roman", serif; font-style: italic; font-size: 1.35rem;
-    color: var(--brand); background: var(--headline);
-  }
-  @media (prefers-color-scheme: dark) { .mark { background: var(--brand); color: var(--on-brand); } }
-  .icon {
-    width: 3.6rem; height: 3.6rem; border-radius: 26%; flex: 0 0 auto;
-    object-fit: cover; aspect-ratio: 1 / 1; display: block;
-    border: 1px solid var(--edge);
-    box-shadow: 0 2px 8px rgba(39, 39, 39, 0.12);
-  }
-  .card h3 { font-size: 1.08rem; font-weight: 600; letter-spacing: -0.005em; color: var(--headline); }
-  .card p { font-size: 0.92rem; line-height: 1.55; color: var(--muted); flex: 1 1 auto; }
+  /* ============ PINNED NOTICE ============ */
+  .notice{margin:18px auto 0; max-width:640px; position:relative; transform:rotate(.5deg);
+    background:var(--grain), linear-gradient(180deg,#FBF3DC,#F4E8C8); border:1px solid #D5BE85; border-radius:4px;
+    box-shadow:0 16px 30px -14px rgba(0,0,0,.55); padding:18px 22px 16px}
+  .notice::before{content:""; position:absolute; top:-9px; left:50%; margin-left:-9px; width:18px; height:18px; border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #E86A52, var(--rust) 62%, #6E2415); box-shadow:0 3px 5px rgba(0,0,0,.4)}
+  .notice h2{font-family:"Special Elite",monospace; font-size:13px; letter-spacing:.22em; text-transform:uppercase; color:var(--rust); text-align:center; margin-bottom:8px}
+  .notice p{font-family:"Special Elite",monospace; font-size:13.5px; line-height:1.65; color:#453723; text-align:center}
+  .notice .hand{display:block; margin-top:8px; font-family:"Caveat",cursive; font-weight:700; font-size:20px; color:var(--indigo); transform:rotate(-1.4deg)}
 
-  /* Reorder tools (signed-in owner edit mode) */
-  .idx-tools { display: flex; align-items: center; gap: 0.55rem; }
-  button.tool {
-    font: inherit; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase;
-    padding: 0.5rem 0.85rem; border-radius: 999px; border: 1px solid var(--edge-strong);
-    background: var(--surface); color: var(--headline); cursor: pointer; white-space: nowrap;
-    -webkit-tap-highlight-color: transparent;
+  /* ============ LOG HEAD + ORDER TOOLS ============ */
+  .loghead{display:flex; align-items:center; gap:14px; margin:28px 4px 0}
+  .loghead h2{font-family:"IM Fell English SC",serif; font-size:19px; letter-spacing:.22em; color:#EBD9A6; text-transform:uppercase; white-space:nowrap}
+  .loghead .rope{flex:1; height:8px; border-radius:4px; opacity:.85;
+    background:repeating-linear-gradient(45deg,#8A6A3B 0 7px,#6E5229 7px 14px); box-shadow:inset 0 1px 2px rgba(0,0,0,.5)}
+  .tools{display:flex; gap:8px; align-items:center}
+  button.tool{
+    font-family:"IM Fell English SC",serif; letter-spacing:.12em; font-size:13.5px; cursor:pointer; white-space:nowrap;
+    padding:8px 14px 7px; border-radius:999px; color:var(--ink);
+    background:linear-gradient(180deg,var(--paper-hi),var(--kraft)); border:1.5px solid #A5854C;
+    box-shadow:0 5px 12px -5px rgba(0,0,0,.6), inset 0 1px 0 #FFFBEF;
+    -webkit-tap-highlight-color:transparent;
   }
-  button.tool.primary { background: var(--brand); border-color: var(--brand); color: var(--on-brand); }
-  button.tool[hidden] { display: none; }
-  .editbar {
-    display: none; font-size: 0.85rem; color: var(--muted); line-height: 1.5;
-    border: 1px dashed var(--edge-strong); border-radius: 12px; padding: 0.8rem 1rem; margin-bottom: 1.1rem;
-  }
-  body.editing .editbar { display: block; }
-  .editmsg { display: none; font-size: 0.85rem; color: var(--muted); margin-bottom: 1.1rem; }
-  .editmsg.on { display: block; }
-  .card .mv { display: none; gap: 0.45rem; margin-left: auto; }
-  body.editing .card .mv { display: flex; }
-  .card .mv button {
-    width: 2.3rem; height: 2.3rem; border-radius: 50%; border: 1px solid var(--edge-strong);
-    background: var(--surface); color: var(--headline); font-size: 1.05rem; line-height: 1; cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
-  }
-  .card .mv button[disabled] { opacity: 0.3; cursor: default; }
-  .card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 0.8rem; width: 100%; }
-  body.editing .card { cursor: default; }
-  body.editing .card:hover, body.editing .card:focus-visible { transform: none; box-shadow: var(--shadow); }
+  button.tool.primary{background:linear-gradient(180deg,var(--jungle-soft),var(--jungle)); color:#F3E5BE; border-color:#0C1D13}
+  .editbar{display:none; margin:14px 4px 0; font-size:14.5px; font-style:italic; color:#DCCB9C; line-height:1.55;
+    border:1.5px dashed rgba(220,199,147,.55); border-radius:10px; padding:10px 14px}
+  body.editing .editbar{display:block}
+  .editmsg{display:none; margin:10px 4px 0; font-family:"Special Elite",monospace; font-size:12.5px; color:var(--ochre-hi)}
+  .editmsg.on{display:block}
 
-  footer {
-    border-top: 1px solid var(--edge);
-    padding: 1.4rem 0 max(2.2rem, env(safe-area-inset-bottom));
-    display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; justify-content: space-between;
-    font-size: 0.8rem; color: var(--faint); line-height: 1.6;
+  /* ============ TABS — logbook divider tabs ============ */
+  .tabbar{display:flex; gap:8px; margin:22px 2px 0; align-items:flex-end}
+  .tab{
+    flex:1 1 0; cursor:pointer; text-align:center; border-radius:12px 12px 0 0; position:relative;
+    padding:13px 8px 11px; font-family:"IM Fell English SC",serif; font-size:17.5px; letter-spacing:.05em;
+    color:#6d5836; background:var(--grain), linear-gradient(180deg,#CDB582,#BFA96F);
+    border:1.5px solid #8A6F3E; border-bottom:none;
+    box-shadow:inset 0 1px 0 rgba(255,251,239,.5);
+    -webkit-tap-highlight-color:transparent;
   }
-  footer a { color: var(--muted); text-decoration: none; }
-  footer a:hover { color: var(--headline); }
+  .tab .tabcount{display:block; font-family:"Special Elite",monospace; font-size:10.5px; letter-spacing:.22em; text-transform:uppercase; margin-top:3px; color:#7A6238}
+  .tab.active{
+    color:var(--ink); padding-top:17px;
+    background:var(--grain), linear-gradient(180deg,var(--paper-hi),var(--paper));
+    border-color:#C4A96E;
+    box-shadow:0 -6px 16px -6px rgba(0,0,0,.45), inset 0 3px 0 var(--ochre);
+  }
+  .tab.active .tabcount{color:var(--faded)}
+  .shelf{height:10px; margin:0 2px; background:var(--grain), linear-gradient(180deg,var(--paper-lo),#D9C48D); border:1.5px solid #C4A96E; border-top:none; border-radius:0 0 8px 8px; box-shadow:0 10px 20px -10px rgba(0,0,0,.55)}
+  body.editing .tab{opacity:.55; pointer-events:none}
+  .tabintro{font-style:italic; color:#B7A678; font-size:14.5px; margin:14px 4px 16px}
+
+  /* ============ ENTRIES ============ */
+  .entry{
+    position:relative; margin-bottom:18px; border-radius:8px; overflow:hidden; cursor:pointer;
+    background:
+      var(--grain),
+      radial-gradient(420px 190px at 88% -8%, rgba(166,61,42,.05), transparent 60%),
+      linear-gradient(178deg, var(--paper-hi), var(--paper) 55%, var(--paper-lo));
+    border:1px solid #C4A96E;
+    box-shadow:0 18px 36px -16px rgba(0,0,0,.6), inset 0 0 0 1px rgba(255,252,240,.5);
+    padding:18px 20px 14px 38px;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .entry::before{content:""; position:absolute; left:0; top:0; bottom:0; width:25px; z-index:0;
+    background:
+      radial-gradient(circle 5px at 12px 30px, #173325 4.5px, rgba(0,0,0,.28) 5.5px, transparent 6.5px),
+      radial-gradient(circle 5px at 12px 50%, #173325 4.5px, rgba(0,0,0,.28) 5.5px, transparent 6.5px),
+      radial-gradient(circle 5px at 12px calc(100% - 30px), #173325 4.5px, rgba(0,0,0,.28) 5.5px, transparent 6.5px),
+      linear-gradient(90deg, rgba(120,90,40,.20), transparent);
+    border-right:1.5px dashed rgba(120,90,40,.45);
+  }
+  .entry .go{position:absolute; inset:0; z-index:1; border-radius:inherit}
+  .entry .top{position:relative; z-index:2; display:flex; justify-content:space-between; align-items:flex-start; gap:12px; pointer-events:none}
+  .entryno{font-family:"Special Elite",monospace; font-size:11.5px; letter-spacing:.3em; color:var(--faded); text-transform:uppercase; padding-top:6px}
+  .entryno b{color:var(--ink-soft)}
+  .stamp{font-family:"IM Fell English SC",serif; font-size:11.5px; letter-spacing:.18em; text-transform:uppercase;
+    padding:6px 10px 5px; border:2.5px solid currentColor; border-radius:6px; transform:rotate(-3.5deg);
+    opacity:.88; mix-blend-mode:multiply; white-space:nowrap}
+  .stamp.rust{color:var(--rust)} .stamp.indigo{color:var(--indigo)} .stamp.green{color:var(--stampgreen)} .stamp.teal{color:var(--teal)}
+  .ebody{display:flex; gap:16px; margin-top:12px; position:relative; z-index:2; pointer-events:none}
+  .plate{flex:0 0 auto; text-align:center}
+  .plate .frame{width:96px; height:96px; padding:6px; background:#FCF8EC; border:1px solid #B99F63; border-radius:6px;
+    box-shadow:0 5px 12px rgba(46,36,22,.28), inset 0 0 0 1px #fff; transition:width .18s ease, height .18s ease}
+  .plate img{width:100%; height:100%; object-fit:cover; border-radius:4px; display:block}
+  .plate .mono{width:100%; height:100%; border-radius:4px; display:flex; align-items:center; justify-content:center;
+    background:linear-gradient(160deg,var(--jungle-soft),var(--jungle-deep)); color:#F3E5BE;
+    font-family:"Trade Winds",serif; font-size:40px}
+  .plate figcaption{font-family:"Special Elite",monospace; font-size:10px; letter-spacing:.08em; color:var(--faded); margin-top:7px; white-space:pre-line}
+  .txt{min-width:0; flex:1 1 auto}
+  .txt h3{font-family:"IM Fell English SC",serif; font-weight:400; font-size:26px; line-height:1.12; color:var(--ink)}
+  .txt .territory{font-style:italic; color:#9A742A; font-size:14.5px; margin-top:2px}
+  .txt .teaser{font-size:15px; line-height:1.5; color:var(--ink-soft); margin-top:7px; font-style:italic}
+  .txt .story{font-size:15.5px; line-height:1.58; color:#40331F; margin-top:8px}
+  .marginalia{font-family:"Caveat",cursive; font-weight:700; font-size:19.5px; color:var(--indigo); transform:rotate(-1.6deg); margin-top:10px; display:inline-block}
+  .marginalia.rust{color:var(--rust)}
+  .meta{margin-top:13px; padding-top:11px; border-top:1.5px solid rgba(120,90,40,.35);
+    display:flex; flex-wrap:wrap; gap:6px 20px; align-items:center; justify-content:space-between}
+  .meta .paddle{font-family:"Special Elite",monospace; font-size:12px; letter-spacing:.06em; color:var(--ink-soft)}
+  .meta .paddle span{color:var(--faded)}
+  .board{font-family:"IM Fell English SC",serif; letter-spacing:.1em; font-size:14.5px; text-decoration:none; white-space:nowrap;
+    color:#F3E5BE; background:linear-gradient(180deg,var(--jungle-soft),var(--jungle));
+    padding:9px 16px 8px; border-radius:999px; border:1px solid #0C1D13;
+    box-shadow:0 6px 14px -6px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.18);
+    position:relative; z-index:3; pointer-events:auto}
+
+  /* collapsed state */
+  .entry.collapsed .more{display:none}
+  .entry.collapsed .plate .frame{width:62px; height:62px; padding:4px}
+  .entry.collapsed .plate .mono{font-size:26px}
+  .entry.collapsed .plate figcaption{display:none}
+  .entry.collapsed .txt h3{font-size:23px}
+  .entry:not(.collapsed) .teaser{display:none}
+
+  /* card footer: read toggle / board hint / reorder arrows */
+  .cardfoot{position:relative; z-index:2; display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:13px; padding-top:10px; border-top:1.5px solid rgba(120,90,40,.28); pointer-events:none}
+  .entry.collapsed .cardfoot{border-top:none; margin-top:8px; padding-top:0}
+  .readtoggle{background:none; border:none; cursor:pointer; padding:2px 0; white-space:nowrap; pointer-events:auto; position:relative; z-index:3;
+    font-family:"Special Elite",monospace; font-size:11.5px; letter-spacing:.13em; text-transform:uppercase; color:var(--teal);
+    display:flex; align-items:center; gap:6px; -webkit-tap-highlight-color:transparent}
+  .readtoggle .chev{display:inline-block; transition:transform .2s ease; font-size:11px}
+  .entry:not(.collapsed) .readtoggle .chev{transform:rotate(180deg)}
+  .gohint{display:flex; align-items:center; gap:8px; font-family:"Special Elite",monospace; white-space:nowrap;
+    font-size:10px; letter-spacing:.15em; text-transform:uppercase; color:var(--faded); pointer-events:none}
+  .gohint .gobtn{width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-size:15px; color:#F3E5BE; background:linear-gradient(180deg,var(--jungle-soft),var(--jungle));
+    border:1px solid #0C1D13; box-shadow:0 4px 9px -4px rgba(0,0,0,.55)}
+  body.editing .gohint, body.editing .readtoggle{visibility:hidden}
+  .mv{display:none; gap:8px; margin-left:auto; position:relative; z-index:3}
+  body.editing .mv{display:flex}
+  body.editing .entry{cursor:default}
+  body.editing .entry .go{pointer-events:none}
+  .mv button{width:38px; height:38px; border-radius:50%; cursor:pointer; pointer-events:auto;
+    border:1.5px solid #A5854C; background:linear-gradient(180deg,var(--paper-hi),var(--kraft));
+    color:var(--ink); font-size:17px; line-height:1; box-shadow:0 4px 9px -4px rgba(0,0,0,.5);
+    -webkit-tap-highlight-color:transparent}
+  .mv button[disabled]{opacity:.3; cursor:default}
+
+  footer{margin-top:36px; text-align:center; color:#C9B586}
+  footer .rope{height:8px; border-radius:4px; margin-bottom:24px;
+    background:repeating-linear-gradient(45deg,#8A6A3B 0 7px,#6E5229 7px 14px); box-shadow:inset 0 1px 2px rgba(0,0,0,.5)}
+  footer .end{font-style:italic; font-size:16px; line-height:1.6; color:#DCCB9C}
+  footer .kung{font-family:"Trade Winds",serif; color:var(--ochre-hi); font-size:21px; letter-spacing:.04em; margin-top:12px}
+  footer .fine{font-family:"Special Elite",monospace; font-size:11px; letter-spacing:.14em; color:#93A185; margin-top:14px; line-height:1.9; text-transform:uppercase}
+  footer .fine a{color:#C9B586}
+
+  @media (max-width:560px){
+    body{padding:18px 10px 44px}
+    .sign{padding:24px 16px 20px}
+    .entry{padding:16px 15px 12px 32px}
+    .entry.collapsed .ebody{align-items:center}
+    .entry:not(.collapsed) .ebody{flex-direction:column; gap:8px}
+    .entry:not(.collapsed) .plate{display:flex; align-items:center; gap:12px; text-align:left}
+    .entry:not(.collapsed) .plate figcaption{margin-top:0}
+    .tab{font-size:15.5px}
+    .loghead h2{font-size:16px}
+    button.tool{font-size:12.5px; padding:7px 11px 6px}
+  }
 </style>
 </head>
 <body>
-<div class="wrap">
+<svg class="riverlines" width="100%" height="100%" preserveAspectRatio="none" viewBox="0 0 100 100" aria-hidden="true">
+  <g fill="none" stroke="#D9A13B" stroke-width="0.14" opacity="0.28">
+    <path d="M-2,22 C20,14 30,30 48,24 S78,10 102,20"/>
+    <path d="M-2,58 C18,50 34,66 55,58 S82,46 102,56"/>
+    <path d="M-2,86 C24,78 40,92 62,84 S86,74 102,82"/>
+    <path d="M30,-2 C34,22 24,44 32,66 S30,88 36,102" stroke="#2E6E6A"/>
+    <path d="M74,-2 C70,26 82,48 74,72 S78,92 72,102" stroke="#2E6E6A"/>
+  </g>
+</svg>
 
-  <div class="topbar">
-    <a class="brand-lockup" href="https://www.aranguibel.com" aria-label="Andres Aranguibel — portfolio">
-      <img src="assets/headshot.jpg" alt="Portrait of Andres Aranguibel" width="180" height="180">
-      <span class="site-title">ANDRES ARANGUIBEL</span>
-    </a>
-    <nav><a href="https://www.aranguibel.com">Portfolio &rarr;</a></nav>
+<div class="stage">
+
+  <div class="signwrap">
+    <svg class="ropes" width="100%" height="44" preserveAspectRatio="none" viewBox="0 0 800 44" aria-hidden="true">
+      <g stroke="#8A6A3B" stroke-width="3.4" fill="none" stroke-linecap="round">
+        <path d="M118,-4 C180,26 220,34 262,42"/>
+        <path d="M682,-4 C620,26 580,34 538,42"/>
+      </g>
+      <g fill="#3A2A16"><circle cx="262" cy="42" r="4.5"/><circle cx="538" cy="42" r="4.5"/></g>
+    </svg>
+    <header class="sign">
+      <div class="eyebrow">Home Port Windermere · Sites.Aranguibel.com</div>
+      <h1>The Skipper&rsquo;s<br>Log</h1>
+      <p class="sub">Being a true &amp; faithful record of <b>expeditions &amp; curiosities</b>.</p>
+      <div class="crestrow">
+        <div class="rule"></div>
+        <svg class="crest" viewBox="0 0 100 118" aria-hidden="true">
+          <path d="M50 3 L90 12 V52 C90 82 72 102 50 115 C28 102 10 82 10 52 V12 Z" fill="#14301F" stroke="#D9A13B" stroke-width="2.6"/>
+          <path d="M50 9.5 L84 17 V52 C84 78 68.5 95.5 50 107.5 C31.5 95.5 16 78 16 52 V17 Z" fill="none" stroke="#D9A13B" stroke-width="1" opacity=".65"/>
+          <g transform="translate(50 40)">
+            <circle r="17" fill="#1C3A2A" stroke="#EFC25E" stroke-width="1.8"/>
+            <circle r="13.5" fill="none" stroke="#D9A13B" stroke-width=".8" opacity=".7"/>
+            <path d="M0 -15 L3.2 0 L0 15 L-3.2 0 Z" fill="#EFC25E"/>
+            <path d="M-15 0 L0 3.2 L15 0 L0 -3.2 Z" fill="#D9A13B"/>
+            <path d="M-10.6 -10.6 L0 0 L10.6 10.6 M10.6 -10.6 L0 0 L-10.6 10.6" stroke="#CDB87E" stroke-width="1.1"/>
+            <circle r="2.4" fill="#F3E5BE"/>
+            <path d="M0 -21 l2.2 4.4 h-4.4 Z" fill="#A63D2A"/>
+          </g>
+          <path d="M24 73 q6.5 -6 13 0 q6.5 6 13 0 q6.5 -6 13 0 q6.5 6 13 0" fill="none" stroke="#7FC4BC" stroke-width="2.6" stroke-linecap="round"/>
+          <path d="M24 82 q6.5 -6 13 0 q6.5 6 13 0 q6.5 -6 13 0 q6.5 6 13 0" fill="none" stroke="#7FC4BC" stroke-width="2.6" stroke-linecap="round" opacity=".65"/>
+          <path d="M18 99 h64 l-6 8 H24 Z" fill="#A63D2A"/>
+          <text x="50" y="105.6" text-anchor="middle" font-family="IM Fell English SC, serif" font-size="6.4" letter-spacing="1.1" fill="#F3E5BE">ET ULTRA</text>
+        </svg>
+        <div class="rule"></div>
+      </div>
+      <div class="motto">Flumina et Ultra — the Rivers, and Beyond</div>
+    </header>
   </div>
 
-  <section class="hero">
-    <div>
-      <div class="kicker">sites.aranguibel.com</div>
-      <h1>Apps</h1>
-    </div>
-    <img class="hero-photo" src="assets/headshot.jpg" alt="Portrait of Andres Aranguibel" width="720" height="720">
-  </section>
+  <div class="notice">
+    <h2>Notice to Explorers</h2>
+    <p>All expeditions depart from this dock. Select a journal entry below to board.</p>
+    <span class="hand">— mind the hippos. they charge the boats, not the apps —</span>
+  </div>
 
-  <div class="index-head">
-    <h2>Index</h2>
-    <div class="idx-tools">
-      <span id="count"></span>
+  <div class="loghead">
+    <h2>The Log</h2><div class="rope"></div>
+    <div class="tools">
       <button class="tool" id="btnEdit" type="button" hidden>Edit order</button>
       <button class="tool" id="btnCancel" type="button" hidden>Cancel</button>
       <button class="tool primary" id="btnSave" type="button" hidden>Save</button>
     </div>
   </div>
-  <p class="editbar">Reorder mode — use the arrows on each card to move it, then Save. The saved order is shared: everyone who opens this page sees it.</p>
+  <p class="editbar">Correcting the log — use the arrows to move an entry within its tab, then Save. The sealed order shows for every explorer, on every device. (Signing in with Face ID comes first, as ever.)</p>
   <p class="editmsg" id="editMsg" role="status"></p>
-  <nav class="grid" id="sites" aria-label="Microsites"></nav>
+
+  <div class="tabbar" role="tablist" aria-label="Log sections">
+    <button class="tab" data-tab="family" role="tab" type="button">Family Adventures<span class="tabcount" data-count="family"></span></button>
+    <button class="tab" data-tab="personal" role="tab" type="button">Personal Voyages<span class="tabcount" data-count="personal"></span></button>
+  </div>
+  <div class="shelf"></div>
+
+  <section class="tabpage" data-page="family">
+    <p class="tabintro">Expeditions undertaken with the whole crew — the small explorer very much included.</p>
+    <div class="entries"></div>
+  </section>
+  <section class="tabpage" data-page="personal" hidden>
+    <p class="tabintro">Voyages from the skipper&rsquo;s own charts — the household, the craft, and one very good ship.</p>
+    <div class="entries"></div>
+  </section>
 
   <footer>
-    <span>New sites appear here as they're published.</span>
-    <a href="https://www.aranguibel.com">aranguibel.com</a>
+    <div class="rope"></div>
+    <p class="end">Here endeth the current entries.<br>New expeditions are logged as they are provisioned.</p>
+    <div class="kung">Kungaloosh!</div>
+    <p class="fine">Kept at Home Port Windermere · Bound by hand · MMXXVI<br>
+    An unofficial log, kept in the spirit of the Society of Explorers &amp; Adventurers<br>
+    <a href="https://www.aranguibel.com">aranguibel.com</a></p>
   </footer>
+
 </div>
 
 <script>
-  // The index of published microsites. One entry per folder in the repo;
-  // this list is updated in the same commit that publishes a new site.
-  // Every site gets its own contextual icon: prefer an icon the site itself
-  // ships (e.g. its app icon); otherwise a custom one lives in assets/icons/.
+  // The index of published microsites, kept as entries in the Skipper's Log.
+  // One entry per folder in the repo; this list is updated in the same commit
+  // that publishes a new site. Every site gets its own contextual icon: prefer
+  // an icon the site itself ships; otherwise a custom one in assets/icons/.
+  // "tab" files the entry under Family Adventures or Personal Voyages; the
+  // remaining fields are the entry's log dressing (territory, teaser, story,
+  // rubber stamp, waters & bearings), written in the skipper's voice.
   const SITES = [
     {
       path: "poppy-picks/",
       title: "Poppy's Picks",
       description: "Family fun near home — local picks for your 3-year-old, date nights, and day trips, refreshed every morning.",
       icon: "poppy-picks/icons/icon-512.png?v=2",
-      monogram: "P"
+      monogram: "P",
+      tab: "family",
+      section: "The Family Rivers",
+      territory: "the Suburban Wilds of Windermere",
+      teaser: "Family game within fifteen miles of home port, sighted fresh each dawn.",
+      story: "A daily survey of family game spotted within fifteen miles of home port — farmers\u2019 markets, lantern festivals, storytimes in the wild. Sightings are verified each dawn before publication. The three-year-old leads the safari; morale remains high; snacks are carried at all times.",
+      marginalia: "the balloon drifts where the fun is \u2191",
+      marginaliaClass: "",
+      stamp: "Refreshed at Dawn",
+      stampClass: "green",
+      waters: "The Windermere Reach",
+      bearings: "28.49\u00B0 N, 81.54\u00B0 W",
+      fig: "the balloon\nthat marks the territory"
     },
     {
       path: "lodge-boys-2026/",
       title: "Lodge Boys 2026",
       description: "Our Asheville Christmas trip — the Omni Grove Park Inn & Biltmore itinerary, December 19–23, 2026.",
       icon: "lodge-boys-2026/icons/icon.svg",
-      monogram: "L"
+      monogram: "L",
+      tab: "family",
+      section: "The Winter Voyage",
+      territory: "the Smoky Highlands of North Carolina",
+      teaser: "Five December days at a grand stone lodge above Asheville — booked & provisioned.",
+      story: "A winter voyage north to a grand stone lodge above Asheville — five days of firesides, gingerbread architecture, and one very large house dressed for Christmas. The full itinerary, bookings and bearings are recorded herein. Provisioned, paid, and counting down.",
+      marginalia: "pack the good sweaters — Dec 19\u201323",
+      marginaliaClass: "rust",
+      stamp: "Voyage Booked",
+      stampClass: "rust",
+      waters: "The French Broad River",
+      bearings: "35.31\u00B0 N, 82.32\u00B0 W",
+      fig: "insignia of\nthe northern party"
     },
     {
       path: "cycles/",
       title: "Cycles",
       description: "Recurring chores and to-dos — each on its own cadence, resetting when done.",
       icon: "cycles/icons/icon-512.png",
-      monogram: "C"
+      monogram: "C",
+      tab: "personal",
+      section: "The Household Currents",
+      territory: "the Domestic Reaches",
+      teaser: "The household\u2019s recurring currents, faithfully charted by tide.",
+      story: "Recurring currents, faithfully charted: cat litter, air filters, motor oil, card payments and the great bin migrations of Thursday and Friday. Each current returns on its own tide, and each is struck from the log the moment it is done. The cat, Phoenix, has reviewed this entry and approves.",
+      marginalia: "bins out at dawn — the river provides (reminders)",
+      marginaliaClass: "",
+      stamp: "Perpetual Expedition",
+      stampClass: "indigo",
+      waters: "Home Port",
+      bearings: "wherever the chores are",
+      fig: "emblem of\nthe returning tides"
     },
     {
       path: "max-pocket-agenda/",
       title: "MAX Pocket Agenda",
       description: "Adobe MAX 2026 companion — schedule, people, and places, in your pocket.",
       icon: "max-pocket-agenda/icons/icon-512.png",
-      monogram: "M"
+      monogram: "M",
+      tab: "personal",
+      section: "The Design Gathering",
+      territory: "the Neon Coast, Miami Beach",
+      teaser: "Pocket charts for the great design gathering — Adobe MAX, this November.",
+      story: "Pocket charts for the great gathering of designers — sessions, people and places for Adobe MAX, with the skipper\u2019s own notes and soundings synced along the way. Includes one (1) happy hour and zero (0) tolerance for missing a good session.",
+      marginalia: "khakis pressed. notebook ready.",
+      marginaliaClass: "",
+      stamp: "Departs November",
+      stampClass: "teal",
+      waters: "Biscayne Bay",
+      bearings: "25.79\u00B0 N, 80.13\u00B0 W \u00B7 Nov 2026",
+      fig: "pocket charts\nof the neon coast"
     },
     {
       path: "wish-day-guide/",
       title: "Wish Day Guide",
       description: "Day-of guide for the Disney Wish visit — itinerary, maps, and logistics for October 30, 2026.",
       icon: "wish-day-guide/icons/icon.svg",
-      monogram: "W"
+      monogram: "W",
+      tab: "personal",
+      section: "The High Seas",
+      territory: "Port Canaveral & the High Seas",
+      teaser: "A one-day boarding guide for the good ship Wish — Friday, Oct 30.",
+      story: "A one-day boarding guide for the crew\u2019s visit to the good ship <i>Wish</i> — itinerary, maps and muster points for Friday, October 30. An early muster is expected; coffee will be served, courage will be assumed.",
+      marginalia: "muster early — adventure waits for no skipper",
+      marginaliaClass: "rust",
+      stamp: "One-Day Voyage",
+      stampClass: "rust",
+      waters: "The Banana River",
+      bearings: "28.41\u00B0 N, 80.62\u00B0 W \u00B7 Oct 30, 2026",
+      fig: "colours of\nthe good ship Wish"
     }
   ];
 
-  const grid = document.getElementById("sites");
+  const TABS = ["family", "personal"];
   let displaySites = SITES.slice();
   let savedOrder = null; // last order fetched from (or saved to) the server
+  let activeTab = "family";
+  try { const t = sessionStorage.getItem("skipperslog.tab"); if (TABS.includes(t)) activeTab = t; } catch (e) {}
+  const openByTab = { family: null, personal: null }; // path of the expanded entry per tab
 
   function applyOrder(order) {
     if (!Array.isArray(order)) return;
@@ -286,44 +443,107 @@
     displaySites = next;
   }
 
-  function renderGrid() {
-    grid.innerHTML = "";
-    displaySites.forEach((site, i) => {
-      const a = document.createElement("a");
-      a.className = "card";
-      a.href = site.path;
-      const visual = site.icon
-        ? '<img class="icon" src="' + site.icon + '" alt="" width="512" height="512">'
-        : '<div class="mark">' + site.monogram + "</div>";
-      a.innerHTML = '<div class="card-top">' + visual +
-        '<span class="mv"><button type="button" data-mv="-1" aria-label="Move up">&#8593;</button>' +
-        '<button type="button" data-mv="1" aria-label="Move down">&#8595;</button></span></div>' +
-        "<h3></h3><p></p>";
-      a.querySelector("h3").textContent = site.title;
-      a.querySelector("p").textContent = site.description;
-      const btns = a.querySelectorAll(".mv button");
-      btns[0].disabled = i === 0;
-      btns[1].disabled = i === displaySites.length - 1;
-      btns.forEach(b => b.addEventListener("click", (e) => {
-        e.preventDefault(); e.stopPropagation();
-        const j = i + parseInt(b.dataset.mv, 10);
-        if (j < 0 || j >= displaySites.length) return;
-        const t = displaySites[i]; displaySites[i] = displaySites[j]; displaySites[j] = t;
-        renderGrid();
-      }));
-      a.addEventListener("click", (e) => { if (document.body.classList.contains("editing")) e.preventDefault(); });
-      grid.appendChild(a);
-    });
-    document.getElementById("count").textContent =
-      displaySites.length + (displaySites.length === 1 ? " site" : " sites");
+  function sitesInTab(tab) { return displaySites.filter(s => s.tab === tab); }
+
+  function setOpen(entryEl, open) {
+    entryEl.classList.toggle("collapsed", !open);
+    entryEl.querySelector(".readtoggle .lbl").textContent = open ? "Close the entry" : "Read the log entry";
   }
-  renderGrid();
+
+  function buildEntry(site, idx, tabCount) {
+    const art = document.createElement("article");
+    art.className = "entry collapsed";
+    art.dataset.path = site.path;
+    const num = String(idx + 1).padStart(3, "0");
+    const visual = site.icon
+      ? '<img src="" alt="" width="512" height="512">'
+      : '<div class="mono"></div>';
+    art.innerHTML =
+      '<a class="go" href="' + site.path + '" aria-label="Open ' + site.title.replace(/"/g, "&quot;") + '"></a>' +
+      '<div class="top"><div class="entryno">Entry <b>N\u00BA ' + num + '</b> \u00B7 <span class="sec"></span></div>' +
+      '<div class="stamp ' + site.stampClass + '"></div></div>' +
+      '<div class="ebody"><figure class="plate"><div class="frame">' + visual + '</div>' +
+      '<figcaption></figcaption></figure>' +
+      '<div class="txt"><h3></h3><div class="territory"></div><p class="teaser"></p>' +
+      '<div class="more"><p class="story"></p><span class="marginalia"></span>' +
+      '<div class="meta"><div class="paddle"></div><a class="board" href="' + site.path + '">Board this expedition \u2192</a></div></div>' +
+      '</div></div>' +
+      '<div class="cardfoot"><button class="readtoggle" type="button"><span class="lbl">Read the log entry</span><span class="chev">\u25BE</span></button>' +
+      '<span class="gohint">Tap to board<span class="gobtn">\u2192</span></span>' +
+      '<span class="mv"><button type="button" data-mv="-1" aria-label="Move up">\u2191</button>' +
+      '<button type="button" data-mv="1" aria-label="Move down">\u2193</button></span></div>';
+    if (site.icon) art.querySelector(".frame img").src = site.icon;
+    else art.querySelector(".mono").textContent = site.monogram;
+    art.querySelector(".sec").textContent = site.section;
+    art.querySelector(".stamp").textContent = site.stamp;
+    art.querySelector("figcaption").textContent = "Fig. " + (idx + 1) + " \u2014 " + site.fig;
+    art.querySelector("h3").textContent = site.title;
+    art.querySelector(".territory").textContent = "Territory: " + site.territory;
+    art.querySelector(".teaser").textContent = site.teaser;
+    art.querySelector(".story").innerHTML = site.story;
+    const marg = art.querySelector(".marginalia");
+    marg.textContent = site.marginalia;
+    if (site.marginaliaClass) marg.classList.add(site.marginaliaClass);
+    art.querySelector(".paddle").innerHTML = "<span>Waters:</span> " + site.waters.replace(/</g, "&lt;") + " \u00B7 <span>Bearings:</span> " + site.bearings.replace(/</g, "&lt;");
+
+    art.querySelector(".readtoggle").addEventListener("click", () => {
+      const willOpen = art.classList.contains("collapsed");
+      openByTab[site.tab] = willOpen ? site.path : null;
+      art.closest(".tabpage").querySelectorAll(".entry").forEach(e => setOpen(e, false));
+      if (willOpen) setOpen(art, true);
+    });
+    const btns = art.querySelectorAll(".mv button");
+    btns[0].disabled = idx === 0;
+    btns[1].disabled = idx === tabCount - 1;
+    btns.forEach(b => b.addEventListener("click", () => moveInTab(site.tab, idx, parseInt(b.dataset.mv, 10))));
+    if (openByTab[site.tab] === site.path && !document.body.classList.contains("editing")) setOpen(art, true);
+    return art;
+  }
+
+  function moveInTab(tab, fromIdx, dir) {
+    const list = sitesInTab(tab);
+    const j = fromIdx + dir;
+    if (j < 0 || j >= list.length) return;
+    const t = list[fromIdx]; list[fromIdx] = list[j]; list[j] = t;
+    let k = 0;
+    displaySites = displaySites.map(s => (s.tab === tab ? list[k++] : s));
+    renderEntries();
+  }
+
+  function renderEntries() {
+    document.querySelectorAll(".tabpage").forEach(page => {
+      const tab = page.dataset.page;
+      const holder = page.querySelector(".entries");
+      holder.innerHTML = "";
+      const list = sitesInTab(tab);
+      list.forEach((site, i) => holder.appendChild(buildEntry(site, i, list.length)));
+      page.hidden = tab !== activeTab;
+    });
+    document.querySelectorAll(".tab").forEach(t => {
+      const on = t.dataset.tab === activeTab;
+      t.classList.toggle("active", on);
+      t.setAttribute("aria-selected", on ? "true" : "false");
+    });
+    document.querySelectorAll(".tabcount").forEach(c => {
+      const n = sitesInTab(c.dataset.count).length;
+      c.textContent = n + (n === 1 ? " entry" : " entries");
+    });
+  }
+
+  function showTab(tab) {
+    if (!TABS.includes(tab)) return;
+    activeTab = tab;
+    try { sessionStorage.setItem("skipperslog.tab", tab); } catch (e) {}
+    renderEntries();
+  }
+  document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => showTab(t.dataset.tab)));
+  renderEntries();
 
   // Shared order: the server copy wins over the baked-in list order, so a
   // reorder saved on one device shows up on every device.
   fetch("/api/apps/order", { cache: "no-store" })
     .then(r => r.ok ? r.json() : null)
-    .then(j => { if (j && Array.isArray(j.order)) { savedOrder = j.order; applyOrder(j.order); renderGrid(); } })
+    .then(j => { if (j && Array.isArray(j.order)) { savedOrder = j.order; applyOrder(j.order); renderEntries(); } })
     .catch(() => { /* offline — baked-in order stands */ });
 
   // --- Edit order (signed-in accounts only) ---
@@ -347,7 +567,10 @@
   function setEditing(on) {
     document.body.classList.toggle("editing", on);
     btnEdit.hidden = on; btnCancel.hidden = !on; btnSave.hidden = !on;
-    renderGrid();
+    document.querySelectorAll(".tab").forEach(t => { t.disabled = on; });
+    if (on) document.querySelectorAll(".entry").forEach(e => setOpen(e, false));
+    renderEntries();
+    if (on) document.querySelectorAll(".entry").forEach(e => setOpen(e, false));
   }
   btnEdit.addEventListener("click", async () => {
     msg("");
@@ -367,7 +590,7 @@
       await api("PUT", "/api/apps/order", { order });
       savedOrder = order;
       setEditing(false);
-      msg("Order saved — it now shows this way on every device.");
+      msg("Order sealed — it now shows this way on every device.");
     } catch (e) { msg("That save didn't go through. Check your connection and try again."); }
     btnSave.disabled = false; btnCancel.disabled = false;
   });
