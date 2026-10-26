@@ -492,7 +492,7 @@ function render(){
     if (anytime.length && !(hero && !hero.date && anytime.length === 1))
       html += sectionHTML("Anytime ideas", "no date needed", anytime.filter(e => !hero || e.id !== hero.id).map(ev => cardHTML(ev)));
     if (!items.length)
-      html = `<div class="empty" style="margin-top:22px">No picks here yet — fresh listings land every morning.</div>`;
+      html = `<div class="empty" style="margin-top:22px">No picks here yet — fresh listings land every few days.</div>`;
     else if (!html)
       html = `<div class="footline">That's everything for now — more lands tomorrow morning.</div>`;
     lists.innerHTML = html;
@@ -823,7 +823,7 @@ function renderSearch(){
     } else {
       const anchor = dq.dates[dq.dates.length - 1];
       const near = state.events.filter(ev => ev.date && ev.date >= anchor).sort(byDate).slice(0, 4);
-      html += `<div class="empty">Nothing ${dq.tod ? "that " + dq.tod : "on"} ${esc(dq.label)} yet — new picks land every morning.</div>`;
+      html += `<div class="empty">Nothing ${dq.tod ? "that " + dq.tod : "on"} ${esc(dq.label)} yet — new picks land every few days.</div>`;
       if (near.length) html += `<div class="sec">Nearest picks coming up</div>` + near.map(ev => cardHTML(ev)).join("");
     }
     const extras = state.events.filter(ev => !ev.date && (dq.tod || (dq.rest && textMatch(ev, dq.rest))) && (!dq.rest || textMatch(ev, dq.rest)));
