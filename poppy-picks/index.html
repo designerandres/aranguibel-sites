@@ -116,7 +116,7 @@
   .dayhead .pill{background:var(--ink);color:#fff;font-size:11px;font-weight:900;letter-spacing:.1em;
     padding:6px 12px;border-radius:999px;text-transform:uppercase;white-space:nowrap}
   .dayhead .ln{flex:1;height:1px;background:var(--line)}
-  .dayhead .ct{font-size:11.5px;font-weight:800;color:var(--faint);white-space:nowrap}
+  .dayhead .ct{font-size:11.5px;font-weight:900;color:var(--ink);white-space:nowrap}
   .footline{margin-top:20px;text-align:center;font-size:11.5px;color:var(--faint);font-weight:700;line-height:1.6}
 
   #tabbar{position:fixed;left:50%;transform:translateX(-50%);width:min(398px,calc(100vw - 32px));
@@ -425,7 +425,7 @@ function cardHTML(ev, opts = {}){
   </div>`;
 }
 function heroHTML(ev){
-  const chipDate = ev.date ? (dayDiff(ev.date, todayStr()) === 0 ? "TODAY" : dayLabel(ev.date).toUpperCase()) + " · " + dowShort(ev.date || todayStr()) + " " + monShort(ev.date || todayStr()) + " " + domNum(ev.date || todayStr()) : "ANYTIME IDEA";
+  const chipDate = ev.date ? dayLabel(ev.date).toUpperCase() + (dayDiff(ev.date, todayStr()) <= 1 ? " · " + dowShort(ev.date) + " " + monShort(ev.date) + " " + domNum(ev.date) : "") : "ANYTIME IDEA";
   return `<button class="hero" data-open="${esc(ev.id)}">
     <div class="hero-top"><span class="today-chip">${esc(chipDate)}</span>${wxHTML(ev.date || todayStr())}</div>
     <h2>${esc(ev.title)}</h2>
@@ -623,7 +623,7 @@ function openSheet(id){
     <div class="grab"></div>
     <div class="mapbox">${mapInner}</div>
     <h2>${esc(ev.title)}</h2>
-    <div class="submeta">${ev.date ? esc(dayLabel(ev.date)) + " · " + esc(dowShort(ev.date)) + " " + esc(monShort(ev.date)) + " " + domNum(ev.date) : "Anytime idea"}${ev.timeLabel ? " · " + esc(ev.timeLabel) : ""}</div>
+    <div class="submeta">${ev.date ? esc(dayLabel(ev.date)) + (dayDiff(ev.date, todayStr()) <= 1 ? " · " + esc(dowShort(ev.date)) + " " + esc(monShort(ev.date)) + " " + domNum(ev.date) : "") : "Anytime idea"}${ev.timeLabel ? " · " + esc(ev.timeLabel) : ""}</div>
     ${locHTML}
     ${moreHTML}
     ${ev.photo ? `<div class="photo"><img src="${esc(ev.photo)}" alt="" onerror="this.parentElement.remove()"><span class="phototag">${I.camera} Photo from the source listing</span></div>` : ""}
