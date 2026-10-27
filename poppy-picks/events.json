@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-10-26T06:12:59-04:00",
+ "updatedAt": "2026-10-27T07:16:06-04:00",
  "events": [
   {
    "tab": "date",
@@ -1095,6 +1095,33 @@
    "lng": -81.58772
   },
   {
+   "tab": "local",
+   "title": "Home Depot Kids Workshop: Dump Truck",
+   "timeLabel": "9:00 AM – 12:00 PM",
+   "venue": "The Home Depot — West Colonial",
+   "address": "7022 W Colonial Dr",
+   "city": "Orlando",
+   "price": "Free",
+   "ages": "5–12",
+   "parking": null,
+   "note": "Register ahead — kits go fast",
+   "tags": [
+    "Workshop",
+    "Hands-on"
+   ],
+   "blurb": "Free monthly in-store build: this month's kit is a wooden dump truck to assemble and paint, with a workshop apron, collectible pin, and certificate to take home. Officially geared to ages 5–12, but little builders join in with a grown-up on hammer duty — register online to reserve a kit.",
+   "photo": null,
+   "source": "The Home Depot",
+   "sourceUrl": "https://www.homedepot.com/l/West-Colonial/FL/Orlando/32818/261",
+   "id": "home-depot-kids-workshop--2026-11-07",
+   "date": "2026-11-07",
+   "anytime": false,
+   "distanceMi": 7.7,
+   "driveMin": 16,
+   "lat": 28.550233,
+   "lng": -81.476988
+  },
+  {
    "tab": "far",
    "title": "MAX POWER at Kennedy Space Center",
    "timeLabel": "Nov 6–8 · from 9:00 AM",
@@ -1562,6 +1589,33 @@
    "driveMin": 16,
    "lat": 28.5647,
    "lng": -81.58772
+  },
+  {
+   "tab": "local",
+   "title": "Lowe's Kids Workshop: Holiday Engine",
+   "timeLabel": "10:00 AM – 1:00 PM",
+   "venue": "Lowe's — Winter Garden Village",
+   "address": "3391 Daniels Rd",
+   "city": "Winter Garden",
+   "price": "Free",
+   "ages": "4–11",
+   "parking": null,
+   "note": "Register ahead — pick a time slot",
+   "tags": [
+    "Workshop",
+    "Hands-on"
+   ],
+   "blurb": "Free monthly DIY-U kids build: this month, a wooden Holiday Engine train to assemble and decorate, plus a builder badge for the apron. Sessions run in time slots through the morning — register with a free MyLowe's account to hold a kit. Geared to ages 4–11 with a grown-up alongside.",
+   "photo": null,
+   "source": "Lowe's",
+   "sourceUrl": "https://www.lowes.com/store/FL-Winter%20Garden/2651",
+   "id": "lowes-kids-workshop--2026-11-14",
+   "date": "2026-11-14",
+   "anytime": false,
+   "distanceMi": 5.2,
+   "driveMin": 11,
+   "lat": 28.524254,
+   "lng": -81.580087
   },
   {
    "tab": "date",
