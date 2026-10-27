@@ -151,9 +151,12 @@
   .stamp.rust{color:var(--rust)} .stamp.indigo{color:var(--indigo)} .stamp.green{color:var(--stampgreen)} .stamp.teal{color:var(--teal)}
   .ebody{display:flex; gap:16px; margin-top:12px; position:relative; z-index:2; pointer-events:none}
   .plate{flex:0 0 auto; text-align:center}
-  .plate .frame{width:96px; height:96px; padding:6px; background:#FCF8EC; border:1px solid #B99F63; border-radius:6px;
-    box-shadow:0 5px 12px rgba(46,36,22,.28), inset 0 0 0 1px #fff; transition:width .18s ease, height .18s ease}
-  .plate img{width:100%; height:100%; object-fit:cover; border-radius:4px; display:block}
+  .plate .frame{width:96px; height:96px; padding:0; background:transparent; border:none; border-radius:21%; position:relative; overflow:hidden;
+    box-shadow:0 7px 14px rgba(46,36,22,.40); transition:width .18s ease, height .18s ease}
+  .plate .frame::after{content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
+    background:linear-gradient(155deg, rgba(255,255,255,.42) 0%, rgba(255,255,255,.12) 36%, rgba(255,255,255,0) 56%);
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.28), inset 0 -10px 16px rgba(0,0,0,.14)}
+  .plate img{width:100%; height:100%; object-fit:cover; display:block; transform:scale(1.05)}
   .plate .mono{width:100%; height:100%; border-radius:4px; display:flex; align-items:center; justify-content:center;
     background:linear-gradient(160deg,var(--jungle-soft),var(--jungle-deep)); color:#F3E5BE;
     font-family:"Trade Winds",serif; font-size:40px}
@@ -177,7 +180,7 @@
 
   /* collapsed state */
   .entry.collapsed .more{display:none}
-  .entry.collapsed .plate .frame{width:62px; height:62px; padding:4px}
+  .entry.collapsed .plate .frame{width:62px; height:62px}
   .entry.collapsed .plate .mono{font-size:26px}
   .entry.collapsed .plate figcaption{display:none}
   .entry.collapsed .txt h3{font-size:23px}
@@ -193,6 +196,8 @@
   .entry:not(.collapsed) .readtoggle .chev{transform:rotate(180deg)}
   .gohint{display:flex; align-items:center; gap:8px; font-family:"Special Elite",monospace; white-space:nowrap;
     font-size:10px; letter-spacing:.15em; text-transform:uppercase; color:var(--faded); pointer-events:none}
+  .gohint .lbl{display:none}
+  .entry:not(.collapsed) .gohint .lbl{display:inline}
   .gohint .gobtn{width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center;
     font-size:15px; color:#F3E5BE; background:linear-gradient(180deg,var(--jungle-soft),var(--jungle));
     border:1px solid #0C1D13; box-shadow:0 4px 9px -4px rgba(0,0,0,.55)}
@@ -448,7 +453,7 @@
 
   function setOpen(entryEl, open) {
     entryEl.classList.toggle("collapsed", !open);
-    entryEl.querySelector(".readtoggle .lbl").textContent = open ? "Close the entry" : "Read the log entry";
+    entryEl.querySelector(".readtoggle .lbl").textContent = open ? "Close the entry" : "Read log entry";
   }
 
   function buildEntry(site, idx, tabCount) {
@@ -461,7 +466,7 @@
       : '<div class="mono"></div>';
     art.innerHTML =
       '<a class="go" href="' + site.path + '" aria-label="Open ' + site.title.replace(/"/g, "&quot;") + '"></a>' +
-      '<div class="top"><div class="entryno">Entry <b>N\u00BA ' + num + '</b> \u00B7 <span class="sec"></span></div>' +
+      '<div class="top"><div class="entryno">Entry <b>N\u00BA ' + num + '</b></div>' +
       '<div class="stamp ' + site.stampClass + '"></div></div>' +
       '<div class="ebody"><figure class="plate"><div class="frame">' + visual + '</div>' +
       '<figcaption></figcaption></figure>' +
@@ -469,13 +474,12 @@
       '<div class="more"><p class="story"></p><span class="marginalia"></span>' +
       '<div class="meta"><div class="paddle"></div><a class="board" href="' + site.path + '">Board this expedition \u2192</a></div></div>' +
       '</div></div>' +
-      '<div class="cardfoot"><button class="readtoggle" type="button"><span class="lbl">Read the log entry</span><span class="chev">\u25BE</span></button>' +
-      '<span class="gohint">Tap to board<span class="gobtn">\u2192</span></span>' +
+      '<div class="cardfoot"><button class="readtoggle" type="button"><span class="lbl">Read log entry</span><span class="chev">\u25BE</span></button>' +
+      '<span class="gohint"><span class="lbl">Tap to board</span><span class="gobtn">\u2192</span></span>' +
       '<span class="mv"><button type="button" data-mv="-1" aria-label="Move up">\u2191</button>' +
       '<button type="button" data-mv="1" aria-label="Move down">\u2193</button></span></div>';
     if (site.icon) art.querySelector(".frame img").src = site.icon;
     else art.querySelector(".mono").textContent = site.monogram;
-    art.querySelector(".sec").textContent = site.section;
     art.querySelector(".stamp").textContent = site.stamp;
     art.querySelector("figcaption").textContent = "Fig. " + (idx + 1) + " \u2014 " + site.fig;
     art.querySelector("h3").textContent = site.title;
