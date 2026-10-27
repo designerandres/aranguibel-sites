@@ -289,6 +289,7 @@ const I = {
   search: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6.6"/><path d="M15.9 15.9 20.4 20.4"/></svg>',
   x: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>',
   map: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4 3.6 5.9v13.9L9 17.9l6 1.9 5.4-1.9V4.1L15 6 9 4Z"/><path d="M9 4v13.9M15 6v13.9"/></svg>',
+  ext: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M13.5 4.5H19a1 1 0 0 1 1 1V11"/><path d="M19.5 4.5 11 13"/><path d="M19 13.5V19a1.6 1.6 0 0 1-1.6 1.6H5.6A1.6 1.6 0 0 1 4 19V7.4A1.6 1.6 0 0 1 5.6 5.8H11"/></svg>',
   pin: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21.5s-6.7-5.7-6.7-10.7A6.7 6.7 0 0 1 12 4.5a6.7 6.7 0 0 1 6.7 6.8c0 5-6.7 10.2-6.7 10.2Z"/><circle cx="12" cy="11.2" r="2.4"/></svg>',
   ticket: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8.2A2.2 2.2 0 0 1 6.2 6h11.6A2.2 2.2 0 0 1 20 8.2v1.9a2.6 2.6 0 0 0 0 5.2v1.9a2.2 2.2 0 0 1-2.2 2.2H6.2A2.2 2.2 0 0 1 4 17.2v-1.9a2.6 2.6 0 0 0 0-5.2Z"/><path d="M13.8 6.5v2M13.8 11v2M13.8 16.5v2"/></svg>',
   baby: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9.2" r="4.3"/><path d="M12 4.9c-.2-1.6 1-2.5 2.4-2.2"/><path d="M5.2 20c.9-3.3 3.5-5 6.8-5s5.9 1.7 6.8 5"/></svg>',
@@ -617,7 +618,7 @@ function openSheet(id){
       <div class="dateChips">${sibs.map(s => s.id === ev.id
         ? `<span class="dateChip current">${esc(dowShort(s.date))} ${esc(monShort(s.date))} ${domNum(s.date)} <small>· this one</small></span>`
         : `<button class="dateChip" data-goto="${esc(s.id)}">${esc(dowShort(s.date))} ${esc(monShort(s.date))} ${domNum(s.date)}${s.timeLabel ? ` <small>${esc(s.timeLabel)}</small>` : ""}</button>`).join("")}</div>
-    </div>` : (recLabel ? `<div class="moreDates"><div class="moreDatesHead">${I.repeat} ${esc(recLabel)}</div><div class="moreDatesNote">This is a recurring pick — new dates are added as listings refresh each morning.</div></div>` : (alsoHint ? `<div class="moreDates"><div class="moreDatesHead">${I.repeat} More dates for this pick</div><div class="moreDatesNote">This pick ${esc(alsoHint.charAt(0).toLowerCase() + alsoHint.slice(1))} — check the source listing for those dates.</div></div>` : ""));
+    </div>` : (recLabel ? `<div class="moreDates"><div class="moreDatesHead">${I.repeat} ${esc(recLabel)}</div><div class="moreDatesNote">This is a recurring pick — new dates are added as listings refresh.</div></div>` : (alsoHint ? `<div class="moreDates"><div class="moreDatesHead">${I.repeat} More dates for this pick</div><div class="moreDatesNote">This pick ${esc(alsoHint.charAt(0).toLowerCase() + alsoHint.slice(1))} — check the source listing for those dates.</div></div>` : ""));
   sheet.innerHTML = `
     <div class="grab"></div>
     <div class="mapbox">${mapInner}</div>
@@ -632,6 +633,7 @@ function openSheet(id){
       <button class="sbtn fav" id="sheetFav"></button>
       <button class="sbtn" id="sheetText">${I.share} Text it</button>
       <a class="sbtn" style="text-decoration:none" target="_blank" rel="noopener" href="${mapsURL(ev)}">${I.map} Maps</a>
+      ${ev.sourceUrl ? `<a class="sbtn" style="text-decoration:none" target="_blank" rel="noopener" href="${esc(ev.sourceUrl)}">${I.ext} Details</a>` : ""}
     </div>
     <div class="srcline">Source: ${ev.sourceUrl ? `<a href="${esc(ev.sourceUrl)}" target="_blank" rel="noopener">${esc(ev.source || "listing")}</a>` : esc(ev.source || "")} · via Poppy's Picks</div>`;
   fillSheetFav(id);
