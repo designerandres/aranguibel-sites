@@ -385,6 +385,54 @@ function mapsURL(ev){
   const q = ev.lat && ev.lng ? ev.lat + "," + ev.lng : encodeURIComponent((ev.address || ev.venue || ev.title) + " " + (ev.city || ""));
   return "https://www.google.com/maps/search/?api=1&query=" + q;
 }
+function gcalURL(ev){
+  // "Add to Google Calendar": prefilled event-creation link. Times are parsed
+  // from timeLabel when it carries a clock time; otherwise an all-day event.
+  const p2 = (n) => String(n).padStart(2, "0");
+  const day = ev.date.replace(/-/g, "");
+  const nextDay = (() => { const d = parseDate(ev.date); d.setDate(d.getDate() + 1);
+    return d.getFullYear() + p2(d.getMonth() + 1) + p2(d.getDate()); })();
+  const times = [];
+  const label = ev.timeLabel || "";
+  const re = /(\d{1,2})(?::(\d{2}))?\s*([AP]M)?/gi; let m;
+  const found = [];
+  while ((m = re.exec(label)) !== null) found.push({ h:+m[1], min:+(m[2] || 0), mer:(m[3] || "").toUpperCase(), inh:false, hasMin: m[2] !== undefined, start:m.index, end:m.index + m[0].length });
+  // Keep real clock times only: a token counts if it has minutes or a
+  // meridiem, or if it is a bare hour directly dashed to a meridiem token
+  // ("7–9 PM"). This rejects day numbers in prefixes like "Nov 6–8 · from…".
+  const raw = found.filter((t, i) => {
+    if (t.hasMin || t.mer) return true;
+    const n = found[i + 1];
+    return !!(n && n.mer && /^\s*[–—-]\s*$/.test(label.slice(t.end, n.start)));
+  });
+  for (let i = 0; i < raw.length; i++){
+    const t = raw[i];
+    if (!t.mer && raw[i + 1] && raw[i + 1].mer){ t.mer = raw[i + 1].mer; t.inh = true; }
+    if (!t.mer) t.mer = "AM";
+    let h24 = t.h % 12; if (t.mer === "PM") h24 += 12;
+    times.push(h24 * 60 + t.min);
+  }
+  // "11–1 PM" style: if the start inherited its meridiem and lands at/after
+  // the end, it belongs to the other half of the day (11 AM – 1 PM).
+  if (raw.length >= 2 && raw[0].inh && times[0] >= times[1]) times[0] = (times[0] + 720) % 1440;
+  let dates;
+  if (times.length >= 1){
+    const start = times[0];
+    let end = times.length >= 2 ? times[1] : start + 120;
+    if (end <= start) end = start + 120;
+    const fmt = (mins) => day + "T" + p2(Math.floor(mins / 60)) + p2(mins % 60) + "00";
+    dates = fmt(start) + "/" + fmt(end);
+  } else {
+    dates = day + "/" + nextDay;
+  }
+  const loc = [ev.venue, ev.address, ev.city].filter(Boolean).join(", ");
+  const det = [ev.blurb || "", ev.sourceUrl ? "More info: " + ev.sourceUrl : "", "via Poppy's Picks"].filter(Boolean).join("\n\n");
+  return "https://calendar.google.com/calendar/render?action=TEMPLATE"
+    + "&text=" + encodeURIComponent(ev.title)
+    + "&dates=" + dates
+    + (loc ? "&location=" + encodeURIComponent(loc) : "")
+    + (det ? "&details=" + encodeURIComponent(det) : "");
+}
 function distLabel(ev){
   if (ev.distanceMi == null) return "";
   return ev.distanceMi < 10 ? ev.distanceMi.toFixed(1) + " mi" : Math.round(ev.distanceMi) + " mi";
@@ -633,6 +681,7 @@ function openSheet(id){
       <button class="sbtn fav" id="sheetFav"></button>
       <button class="sbtn" id="sheetText">${I.share} Text it</button>
       <a class="sbtn" style="text-decoration:none" target="_blank" rel="noopener" href="${mapsURL(ev)}">${I.map} Maps</a>
+      ${ev.date ? `<a class="sbtn" style="text-decoration:none" target="_blank" rel="noopener" href="${gcalURL(ev)}">${I.calendar} Calendar</a>` : ""}
       ${ev.sourceUrl ? `<a class="sbtn" style="text-decoration:none" target="_blank" rel="noopener" href="${esc(ev.sourceUrl)}">${I.ext} Details</a>` : ""}
     </div>
     <div class="srcline">Source: ${ev.sourceUrl ? `<a href="${esc(ev.sourceUrl)}" target="_blank" rel="noopener">${esc(ev.source || "listing")}</a>` : esc(ev.source || "")} · via Poppy's Picks</div>`;
