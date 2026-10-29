@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-10-29T06:16:52-04:00",
+ "updatedAt": "2026-10-29T06:21:11-04:00",
  "events": [
   {
    "tab": "local",
@@ -1982,6 +1982,32 @@
    "lng": -81.36516
   },
   {
+   "tab": "date",
+   "title": "Taste of College Park",
+   "timeLabel": "6:00 – 9:00 PM",
+   "venue": "Great Southern Box Company",
+   "address": "2105 N Orange Blossom Trail",
+   "city": "Orlando",
+   "price": "Tickets from $71",
+   "ages": null,
+   "parking": null,
+   "note": "Rotary charity event · 20+ restaurants",
+   "tags": [
+    "Food festival"
+   ],
+   "blurb": "College Park's biggest charity night: the Rotary Club's annual tasting brings 20+ local restaurants and craft drink vendors under one roof at the Great Southern Box Company food hall. Graze, sip, and bid — a Thursday date night that does some good.",
+   "photo": null,
+   "source": "Rotary Club of College Park",
+   "sourceUrl": "https://www.eventbrite.com/e/taste-of-college-park-2026-tickets-1998908845165",
+   "id": "taste-of-college-park--2026-11-19",
+   "date": "2026-11-19",
+   "anytime": false,
+   "distanceMi": 14.5,
+   "driveMin": 25,
+   "lat": 28.57025,
+   "lng": -81.40428
+  },
+  {
    "tab": "local",
    "title": "Festival of Trees at Orlando Museum of Art",
    "timeLabel": "10:00 AM – 5:00 PM",
@@ -2058,6 +2084,32 @@
    "driveMin": 16,
    "lat": 28.56574,
    "lng": -81.58662
+  },
+  {
+   "tab": "date",
+   "title": "Swan and Dolphin Food & Wine Classic",
+   "timeLabel": "5:00 – 9:00 PM",
+   "venue": "Walt Disney World Swan and Dolphin",
+   "address": "1200 Epcot Resorts Blvd",
+   "city": "Lake Buena Vista",
+   "price": "$215 / person",
+   "ages": null,
+   "parking": null,
+   "note": "Also Sat Nov 21 · different menus each night · 10% off two-night bundle",
+   "tags": [
+    "Food festival"
+   ],
+   "blurb": "The splurge date night of the season: the Swan and Dolphin's annual Food & Wine Classic takes over the resort causeway with unlimited tastings from 23 restaurants and lounges, wine and cocktail seminars, and live entertainment. One ticket, all the food — Friday and Saturday menus differ, so pick your night.",
+   "photo": null,
+   "source": "Walt Disney World Swan and Dolphin",
+   "sourceUrl": "https://swandolphin.com/media-assets/press/2026FWCOnSale.pdf",
+   "id": "swan-dolphin-food-wine-classic--2026-11-20",
+   "date": "2026-11-20",
+   "anytime": false,
+   "distanceMi": 14.3,
+   "driveMin": 27,
+   "lat": 28.3656,
+   "lng": -81.55936
   },
   {
    "tab": "local",
@@ -2269,6 +2321,32 @@
    "driveMin": 16,
    "lat": 28.550233,
    "lng": -81.476988
+  },
+  {
+   "tab": "local",
+   "title": "Jingle Eve in Ivanhoe Village",
+   "timeLabel": "4:30 – 9:00 PM",
+   "venue": "Gaston Edwards Park — Ivanhoe Village",
+   "address": "1236 N Orange Ave",
+   "city": "Orlando",
+   "price": "Free",
+   "ages": null,
+   "parking": null,
+   "note": "Fireworks over Lake Ivanhoe at close · wine walk is a paid add-on",
+   "tags": [
+    "Holiday"
+   ],
+   "blurb": "Ivanhoe Village's free holiday kickoff along Orange Avenue and Gaston Edwards Park: a children's holiday village, the Bubble Bus, bounce houses, and Santa, with the grown-ups' 12 Wines of Christmas walk alongside. Go early with a toddler — fireworks over Lake Ivanhoe close the night and may be loud.",
+   "photo": null,
+   "source": "Ivanhoe Village Main Street",
+   "sourceUrl": "https://ivanhoevillage.org/events/today/",
+   "id": "jingle-eve-ivanhoe--2026-11-21",
+   "date": "2026-11-21",
+   "anytime": false,
+   "distanceMi": 13.8,
+   "driveMin": 25,
+   "lat": 28.56295,
+   "lng": -81.37331
   },
   {
    "tab": "local",
