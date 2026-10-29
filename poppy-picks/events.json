@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-10-29T06:21:11-04:00",
+ "updatedAt": "2026-10-29T08:44:14-04:00",
  "events": [
   {
    "tab": "local",
@@ -2529,6 +2529,32 @@
    "driveMin": 99,
    "lat": 27.94407,
    "lng": -82.44488
+  },
+  {
+   "tab": "far",
+   "title": "Rocket Launch: Vulcan — Amazon Leo (LV-01)",
+   "timeLabel": "Liftoff time TBA",
+   "venue": "Kennedy Space Center Visitor Complex",
+   "address": "Space Commerce Way",
+   "city": "Merritt Island",
+   "price": "Viewing incl. w/ KSC admission · free from the coast",
+   "ages": "All",
+   "parking": "$15 / car",
+   "note": "Time pending: ULA hasn't announced the liftoff time yet, and launch dates slip — check again the day before. If the time lands overnight, it's a skip for a toddler outing.",
+   "tags": [
+    "Space"
+   ],
+   "blurb": "ULA's big Vulcan rocket returns to flight from Cape Canaveral's SLC-41, carrying 40 Amazon Leo internet satellites — its first launch with six strap-on boosters. A launch makes a spectacular day trip: watch from the Visitor Complex viewing areas (included with admission) or free from the coast. Targeted for Fri Nov 13, pending range approval.",
+   "photo": null,
+   "source": "ULA / Spaceflight Now",
+   "sourceUrl": "https://spaceflightnow.com/2026/10/28/united-launch-alliance-announces-mid-november-return-to-flight-for-vulcan-rocket/",
+   "id": "rocket-launch-ula-amazon-leo--2026-11-13",
+   "date": "2026-11-13",
+   "anytime": false,
+   "distanceMi": 59.7,
+   "driveMin": 87,
+   "lat": 28.52428,
+   "lng": -80.68186
   }
  ]
 }
