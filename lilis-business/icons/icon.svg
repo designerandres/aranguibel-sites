@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="108" fill="#FBF7EE"/>
+  <rect x="14" y="14" width="484" height="484" rx="96" fill="none" stroke="#0E6B5C" stroke-width="10"/>
+  <!-- road -->
+  <path d="M56 392 H456" stroke="#C99A2E" stroke-width="10" stroke-linecap="round" stroke-dasharray="34 26"/>
+  <!-- black car body -->
+  <path d="M84 356 L96 300 Q100 282 124 276 L168 268 L206 214 Q214 202 232 202 L322 202 Q338 202 348 216 L382 266 L412 274 Q434 280 436 302 L438 356 Q438 368 426 368 L398 368 A46 46 0 0 0 306 368 L212 368 A46 46 0 0 0 120 368 L96 368 Q84 368 84 356 Z" fill="#1E2A26"/>
+  <!-- windows -->
+  <path d="M222 220 L246 220 L246 262 L192 270 Q200 244 222 220 Z" fill="#BFE0D6"/>
+  <path d="M260 220 L318 220 Q328 220 336 232 L358 264 L260 264 Z" fill="#BFE0D6"/>
+  <!-- wheels -->
+  <circle cx="166" cy="368" r="34" fill="#101613"/>
+  <circle cx="166" cy="368" r="15" fill="#E9E2D0"/>
+  <circle cx="352" cy="368" r="34" fill="#101613"/>
+  <circle cx="352" cy="368" r="15" fill="#E9E2D0"/>
+  <!-- headlight + trim -->
+  <path d="M420 306 L436 310 L436 326 L418 324 Z" fill="#EFC25E"/>
+  <path d="M120 318 H398" stroke="#0E6B5C" stroke-width="7" stroke-linecap="round"/>
+  <!-- location pin -->
+  <path d="M256 66 C228 66 208 86 208 112 C208 146 256 184 256 184 C256 184 304 146 304 112 C304 86 284 66 256 66 Z" fill="#C0392B"/>
+  <circle cx="256" cy="112" r="17" fill="#FBF7EE"/>
+</svg>
