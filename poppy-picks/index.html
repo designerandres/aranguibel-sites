@@ -137,7 +137,7 @@
   #scrim{position:fixed;inset:0;background:rgba(20,34,47,.48);z-index:72}
   #sheet{position:fixed;left:50%;transform:translateX(-50%);width:min(430px,100vw);bottom:0;top:56px;z-index:75;
     background:rgba(251,245,234,.9);backdrop-filter:blur(20px) saturate(1.5);-webkit-backdrop-filter:blur(20px) saturate(1.5);
-    border-radius:30px 30px 0 0;padding:12px 20px calc(24px + env(safe-area-inset-bottom));overflow-y:auto;box-shadow:var(--shadow-lg);
+    border-radius:30px 30px 0 0;padding:12px 20px calc(24px + env(safe-area-inset-bottom));overflow-y:auto;overflow-x:hidden;box-shadow:var(--shadow-lg);
     transition:transform .3s cubic-bezier(.32,.72,.24,1);will-change:transform;overscroll-behavior:contain}
   .grab{width:44px;height:5px;border-radius:3px;background:#D8CCB2;margin:0 auto 14px}
   .mapbox{height:180px;border-radius:20px;overflow:hidden;border:1px solid var(--line);background:#DCEBD8;position:relative}
@@ -183,8 +183,10 @@
   .infochip svg{width:14.5px;height:14.5px}
   .picon{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:5px;
     background:var(--sky);color:#fff;font-size:10.5px;font-weight:900}
-  .sheetbtns{display:flex;gap:9px;margin-top:17px}
-  .sbtn{flex:1;display:flex;align-items:center;justify-content:center;gap:7px;padding:13px 4px;border-radius:16px;
+  .sheetbtns{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:17px}
+  .sheetbtns .fav{grid-column:1 / -1}
+  .sheetbtns > :last-child:nth-child(even){grid-column:1 / -1}
+  .sbtn{flex:1;display:flex;align-items:center;justify-content:center;gap:7px;padding:13px 4px;border-radius:16px;min-width:0;white-space:nowrap;
     font-size:13px;font-weight:900;background:rgba(255,255,255,.85);border:1.5px solid var(--line);color:var(--ink)}
   .sbtn svg{width:15.5px;height:15.5px}
   .sbtn.fav{background:rgba(255,255,255,.85);color:var(--ink)}
