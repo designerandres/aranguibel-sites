@@ -212,6 +212,24 @@
     -webkit-tap-highlight-color:transparent}
   .mv button[disabled]{opacity:.3; cursor:default}
 
+  /* ============ THE ARCHIVE — sealed entries at the back of the log ============ */
+  .archivebox{margin-top:34px}
+  .archbar{width:100%; display:flex; align-items:center; gap:12px; cursor:pointer; text-align:left;
+    padding:13px 16px; border-radius:10px; color:var(--ink);
+    background:var(--grain), linear-gradient(180deg,#E9D9AE,#DCC793);
+    border:1.5px dashed #A5854C;
+    box-shadow:0 10px 20px -12px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,251,239,.6);
+    -webkit-tap-highlight-color:transparent}
+  .archbar .archlbl{font-family:"Special Elite",monospace; font-size:12.5px; letter-spacing:.2em; text-transform:uppercase; color:var(--ink-soft)}
+  .archbar .archcount{font-style:italic; font-size:14.5px; color:var(--faded)}
+  .archbar .archact{margin-left:auto; font-family:"Special Elite",monospace; font-size:11.5px; letter-spacing:.13em; text-transform:uppercase; color:var(--teal); display:flex; align-items:center; gap:6px; white-space:nowrap}
+  .archbar .archchev{display:inline-block; transition:transform .2s ease; font-size:11px}
+  .archivebox.open .archbar .archchev{transform:rotate(180deg)}
+  .archentries{margin-top:16px}
+  .archivebox .mv{display:none !important}
+  .entry.archived{filter:saturate(.7) contrast(.985)}
+  .entry.archived .stamp{transform:rotate(3deg)}
+
   footer{margin-top:36px; text-align:center; color:#C9B586}
   footer .rope{height:8px; border-radius:4px; margin-bottom:24px;
     background:repeating-linear-gradient(45deg,#8A6A3B 0 7px,#6E5229 7px 14px); box-shadow:inset 0 1px 2px rgba(0,0,0,.5)}
@@ -308,6 +326,17 @@
   <section class="tabpage" data-page="personal" hidden>
     <p class="tabintro">Voyages from the skipper&rsquo;s own charts — the household, the craft, and one very good ship.</p>
     <div class="entries"></div>
+  </section>
+
+  <section class="archivebox" id="archiveBox" hidden>
+    <div class="loghead"><h2>The Archive</h2><div class="rope"></div></div>
+    <p class="tabintro">Completed expeditions, sealed in the back of the log — out of the day&rsquo;s way, but kept safe should the skipper need them again.</p>
+    <button class="archbar" id="archToggle" type="button" aria-expanded="false">
+      <span class="archlbl">Sealed entries</span>
+      <span class="archcount"></span>
+      <span class="archact"><span class="lbl">Unseal</span><span class="archchev">▾</span></span>
+    </button>
+    <div class="archentries" hidden></div>
   </section>
 
   <div class="notice">
@@ -419,6 +448,7 @@
       icon: "wish-day-guide/icons/icon.svg",
       monogram: "W",
       tab: "personal",
+      archive: true,
       section: "The High Seas",
       territory: "Port Canaveral & the High Seas",
       teaser: "A one-day boarding guide for the good ship Wish — Friday, Oct 30.",
@@ -438,6 +468,8 @@
       icon: "lilis-business/icons/icon.svg",
       monogram: "L",
       tab: "personal",
+      archive: true,
+      archiveStamp: "Delivered",
       section: "The Honest Charts",
       territory: "the Tourist Corridors of Orlando",
       teaser: "Soundings on a new private-car venture — proceed with caution.",
@@ -468,7 +500,8 @@
     displaySites = next;
   }
 
-  function sitesInTab(tab) { return displaySites.filter(s => s.tab === tab); }
+  function sitesInTab(tab) { return displaySites.filter(s => s.tab === tab && !s.archive); }
+  function archivedSites() { return displaySites.filter(s => s.archive); }
 
   function setOpen(entryEl, open) {
     entryEl.classList.toggle("collapsed", !open);
@@ -479,6 +512,7 @@
     const art = document.createElement("article");
     art.className = "entry collapsed";
     art.dataset.path = site.path;
+    if (site.archive) art.classList.add("archived");
     const num = String(idx + 1).padStart(3, "0");
     const visual = site.icon
       ? '<img src="" alt="" width="512" height="512">'
@@ -499,7 +533,7 @@
       '<button type="button" data-mv="1" aria-label="Move down">\u2193</button></span></div>';
     if (site.icon) art.querySelector(".frame img").src = site.icon;
     else art.querySelector(".mono").textContent = site.monogram;
-    art.querySelector(".stamp").textContent = site.stamp;
+    art.querySelector(".stamp").textContent = site.archive ? (site.archiveStamp || "Voyage Complete") : site.stamp;
     art.querySelector("figcaption").textContent = "Fig. " + (idx + 1) + " \u2014 " + site.fig;
     art.querySelector("h3").textContent = site.title;
     art.querySelector(".territory").textContent = "Territory: " + site.territory;
@@ -513,7 +547,7 @@
     art.querySelector(".readtoggle").addEventListener("click", () => {
       const willOpen = art.classList.contains("collapsed");
       openByTab[site.tab] = willOpen ? site.path : null;
-      art.closest(".tabpage").querySelectorAll(".entry").forEach(e => setOpen(e, false));
+      art.closest(".tabpage, .archivebox").querySelectorAll(".entry").forEach(e => setOpen(e, false));
       if (willOpen) setOpen(art, true);
     });
     const btns = art.querySelectorAll(".mv button");
@@ -548,6 +582,15 @@
       t.classList.toggle("active", on);
       t.setAttribute("aria-selected", on ? "true" : "false");
     });
+    const arch = archivedSites();
+    const abox = document.getElementById("archiveBox");
+    abox.hidden = arch.length === 0;
+    if (arch.length) {
+      const holder = abox.querySelector(".archentries");
+      holder.innerHTML = "";
+      arch.forEach((site, i) => holder.appendChild(buildEntry(site, i, arch.length)));
+      abox.querySelector(".archcount").textContent = arch.length + (arch.length === 1 ? " expedition" : " expeditions");
+    }
     document.querySelectorAll(".tabcount").forEach(c => {
       const n = sitesInTab(c.dataset.count).length;
       c.textContent = n + (n === 1 ? " entry" : " entries");
@@ -561,6 +604,16 @@
     renderEntries();
   }
   document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => showTab(t.dataset.tab)));
+  const archToggle = document.getElementById("archToggle");
+  archToggle.addEventListener("click", () => {
+    const box = document.getElementById("archiveBox");
+    const body = box.querySelector(".archentries");
+    const open = body.hidden;
+    body.hidden = !open;
+    box.classList.toggle("open", open);
+    archToggle.setAttribute("aria-expanded", open ? "true" : "false");
+    archToggle.querySelector(".archact .lbl").textContent = open ? "Seal away" : "Unseal";
+  });
   renderEntries();
 
   // Shared order: the server copy wins over the baked-in list order, so a
