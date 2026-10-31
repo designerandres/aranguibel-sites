@@ -8,7 +8,7 @@
 <link rel="icon" href="/assets/icons/cycles.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600&family=Cinzel:wght@700&family=Lora:wght@600&display=swap" rel="stylesheet">
 <style>
   :root{ --ink:#eef1ff; --ink2:#aab3d6; --line:rgba(255,255,255,.14); --card:rgba(255,255,255,.07);
          --accent:#7cc4ff; --accent2:#b79cff; --danger:#ff9d9d; --radius:22px;
@@ -37,7 +37,7 @@
   button[disabled]{ opacity:.55; }
   label{ display:block; font-size:13px; color:var(--ink2); margin-top:14px; }
   input{ font:inherit; font-size:16px; color:var(--ink); width:100%; margin-top:6px; padding:12px 14px;
-         background:rgba(0,0,0,.25); border:1px solid var(--line); border-radius:12px; outline:none; }
+         background:var(--inputbg, rgba(0,0,0,.25)); border:1px solid var(--line); border-radius:12px; outline:none; }
   input:focus{ border-color:var(--accent); }
   .error{ color:var(--danger); font-size:14px; margin-top:12px; min-height:18px; line-height:1.4; }
   .divider{ display:flex; align-items:center; gap:12px; margin:20px 0 4px; color:var(--ink2); font-size:12.5px; }
@@ -55,12 +55,21 @@
   .scopehint{ font-size:13px; color:var(--ink2); line-height:1.45; margin-top:6px; }
   .covers{ font-size:13.5px; color:var(--ink2); margin-top:8px; line-height:1.45; }
   [hidden]{ display:none !important; }
+  /* --- themed single-app invite panel --- */
+  #panel-invite{ text-align:center; padding:28px 22px; }
+  #panel-invite img.appicon{ width:78px; height:78px; border-radius:19px; box-shadow:0 12px 30px rgba(0,0,0,.35); }
+  .inv-headline{ font-size:27px; line-height:1.25; margin-top:16px; }
+  #panel-invite .sub{ margin-top:8px; }
+  #panel-invite label{ text-align:left; }
+  .openlink{ display:block; text-decoration:none; font-weight:700; font-size:17px; color:#0b1026; border-radius:14px;
+             padding:14px 18px; margin-top:14px; background:linear-gradient(135deg,var(--accent),var(--accent2)); }
+  body.themed button{ color:var(--btnink, #0b1026); }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <h1>Aranguibel Apps</h1>
-  <p class="sub">Sign in once with Face ID — your passkey lives on your devices, never a typed password.</p>
+  <h1 id="page-title">Aranguibel Apps</h1>
+  <p class="sub" id="page-sub">Sign in once with Face ID — your passkey lives on your devices, never a typed password.</p>
 
   <div class="card" id="panel-loading"><p>Checking your sign-in…</p></div>
 
@@ -90,6 +99,22 @@
       <button class="secondary" id="btn-copy" hidden>Copy invite link</button>
       <div class="covers" id="inv-covers" hidden></div>
       <p style="margin-top:8px">Send them the link yourself (Messages, in person…). It works once, for that email, for 7 days.</p>
+    </div>
+  </div>
+
+  <div class="card" id="panel-invite" hidden>
+    <img class="appicon" id="inv-app-icon" alt="">
+    <h1 class="inv-headline" id="inv-headline"></h1>
+    <p class="sub">Create your passkey to open it — you'll sign in with Face ID from then on. No password, ever.</p>
+    <div id="inv-form">
+      <label for="inv-email2">Your email</label>
+      <input id="inv-email2" type="email" autocomplete="email" placeholder="name@example.com">
+      <button id="btn-invite-register">Create passkey with Face ID</button>
+    </div>
+    <div id="inv-done" hidden>
+      <p style="font-size:16px; margin-top:16px">You're in — your passkey is created.</p>
+      <a class="openlink" id="inv-open" href="/">Open the app</a>
+      <p class="sub" style="margin-top:10px">Next time, just sign in with Face ID.</p>
     </div>
   </div>
 
@@ -165,6 +190,72 @@ async function login(){
   } catch (e) { showError(e.message); btn.disabled = false; }
 }
 
+/* Standing rule: a single-app invite link opens a landing page themed to
+   that app — its icon, palette, and display type — with just the email
+   field and the create-passkey button, and a straight link into the app
+   once the passkey exists. Full/multi-app invites keep the generic page. */
+const APP_THEMES = {
+  "jollywood-fam-2026": { name: "Jollywood Fam 2026", icon: "/jollywood-fam-2026/icons/icon.svg",
+    bg: "radial-gradient(900px 480px at 85% -10%, rgba(232,196,118,.20), transparent 60%), linear-gradient(168deg,#0E2F20,#071A11 72%)",
+    vars: { "--ink":"#FFF9E3", "--ink2":"#CFC7A8", "--card":"rgba(14,40,26,.78)", "--line":"rgba(232,196,118,.35)", "--accent":"#F6DE9C", "--accent2":"#C08A2D", "--inputbg":"rgba(255,255,255,.65)", "--inputbg":"rgba(255,255,255,.65)", "--inputbg":"rgba(255,255,255,.65)", "--inputbg":"rgba(255,255,255,.65)", "--btnink":"#23180A" }, font: '"Cinzel",serif' },
+  "poppy-picks": { name: "Poppy's Picks", icon: "/poppy-picks/icons/icon.svg",
+    bg: "radial-gradient(900px 480px at 85% -10%, rgba(255,182,39,.35), transparent 60%), linear-gradient(180deg,#FBF5EA,#FDEEE0)",
+    vars: { "--ink":"#17334E", "--ink2":"#47617A", "--card":"rgba(255,255,255,.85)", "--line":"#EADFCB", "--accent":"#FF6B4A", "--accent2":"#FFB627", "--btnink":"#FFFFFF" }, font: '"Fraunces",serif' },
+  "cycles": { name: "Cycles", icon: "/cycles/favicon.svg",
+    bg: "radial-gradient(900px 480px at 85% -10%, rgba(92,198,223,.30), transparent 60%), linear-gradient(180deg,#F5F9FC,#E2EFF5)",
+    vars: { "--ink":"#0E2A52", "--ink2":"#51708F", "--card":"rgba(255,255,255,.82)", "--line":"rgba(14,54,92,.16)", "--accent":"#1F7FA8", "--accent2":"#5CC6DF", "--btnink":"#FFFFFF" }, font: '"Fraunces",serif' },
+  "max-pocket-agenda": { name: "MAX Pocket Agenda", icon: "/max-pocket-agenda/favicon.svg",
+    bg: "radial-gradient(900px 480px at 85% -10%, rgba(255,77,141,.22), transparent 60%), radial-gradient(700px 420px at -10% 110%, rgba(180,0,240,.16), transparent 55%), linear-gradient(180deg,#F5F9FC,#EDF2F9)",
+    vars: { "--ink":"#0E2A52", "--ink2":"#51708F", "--card":"rgba(255,255,255,.82)", "--line":"rgba(14,54,92,.16)", "--accent":"#FF4D8D", "--accent2":"#B400F0", "--btnink":"#FFFFFF" }, font: '"Fraunces",serif' },
+  "lodge-boys-2026": { name: "Lodge Boys 2026", icon: "/lodge-boys-2026/icons/icon.svg",
+    bg: "radial-gradient(900px 480px at 85% -10%, rgba(238,194,106,.16), transparent 60%), linear-gradient(170deg,#0C2316,#081A10)",
+    vars: { "--ink":"#F4EEDD", "--ink2":"#C6BDA1", "--card":"rgba(18,52,32,.85)", "--line":"rgba(244,238,221,.18)", "--accent":"#EEC26A", "--accent2":"#D9A94A", "--btnink":"#241A05" }, font: '"Lora",serif' },
+  "wish-day-guide": { name: "Wish Day Guide", icon: "/wish-day-guide/icons/icon.svg",
+    bg: "radial-gradient(900px 480px at 85% -10%, rgba(201,161,74,.25), transparent 60%), linear-gradient(180deg,#F5F9FC,#EAF1F7)",
+    vars: { "--ink":"#0E2A52", "--ink2":"#51708F", "--card":"rgba(255,255,255,.82)", "--line":"rgba(14,54,92,.16)", "--accent":"#C9A14A", "--accent2":"#0E2A52", "--btnink":"#FFFFFF" }, font: '"Fraunces",serif' },
+};
+let inviteTheme = null;
+function applyInviteTheme(slug, info) {
+  const t = APP_THEMES[slug];
+  if (!t) return false;
+  inviteTheme = { slug, ...t };
+  const root = document.documentElement;
+  for (const [k, v] of Object.entries(t.vars)) root.style.setProperty(k, v);
+  document.body.style.background = t.bg;
+  document.body.classList.add("themed");
+  $("inv-app-icon").src = t.icon;
+  $("inv-headline").textContent = "Andr\u00e9s is inviting you to join the " + t.name + " app!";
+  $("inv-headline").style.fontFamily = t.font;
+  if (info.email) $("inv-email2").value = info.email;
+  $("page-title").hidden = true; $("page-sub").hidden = true;
+  $("panel-loading").hidden = true; $("panel-out").hidden = true; $("panel-in").hidden = true;
+  $("panel-invite").hidden = false;
+  document.title = "You're invited — " + t.name;
+  return true;
+}
+async function registerInvite() {
+  showError("");
+  const email = $("inv-email2").value.trim();
+  if (!email) { showError("Enter your email first."); return; }
+  const btn = $("btn-invite-register"); btn.disabled = true;
+  try {
+    const options = await api("POST", "/api/auth/register/options", { email, inviteCode: inviteFromLink });
+    options.user.id = b64urlToBuf(options.user.id);
+    options.challenge = b64urlToBuf(options.challenge);
+    const cred = await navigator.credentials.create({ publicKey: options });
+    const payload = { credential: {
+      id: bufToB64url(cred.rawId), rawId: bufToB64url(cred.rawId), type: cred.type,
+      response: { attestationObject: bufToB64url(cred.response.attestationObject), clientDataJSON: bufToB64url(cred.response.clientDataJSON) },
+    }};
+    await api("POST", "/api/auth/register/verify", payload);
+    $("inv-form").hidden = true;
+    const open = $("inv-open");
+    open.href = "/" + inviteTheme.slug + "/";
+    open.textContent = "Open " + inviteTheme.name;
+    $("inv-done").hidden = false;
+  } catch (e) { showError(e.message); btn.disabled = false; }
+}
+
 async function init(){
   let me = null;
   try { me = await api("GET", "/api/auth/me"); } catch { me = null; }
@@ -174,6 +265,12 @@ async function init(){
     $("in-email").textContent = me.email;
     if (me.role === "admin") $("admin-zone").hidden = false;
     return;
+  }
+  if (inviteFromLink) {
+    try {
+      const info = await api("GET", "/api/auth/invite-info?token=" + encodeURIComponent(inviteFromLink));
+      if (info && info.ok && Array.isArray(info.scope) && info.scope.length === 1 && applyInviteTheme(info.scope[0], info)) return;
+    } catch { /* fall through to the generic invite flow */ }
   }
   $("panel-out").hidden = false;
   if (me && me.signedIn && me.via === "access" && !me.registered) {
@@ -194,6 +291,7 @@ async function init(){
 
 $("btn-login").addEventListener("click", login);
 $("btn-register").addEventListener("click", register);
+$("btn-invite-register").addEventListener("click", registerInvite);
 $("btn-addpasskey").addEventListener("click", async () => {
   $("panel-in").hidden = true; $("panel-out").hidden = false;
   $("register-zone").hidden = false; $("btn-show-register").hidden = true;
