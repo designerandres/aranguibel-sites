@@ -60,10 +60,27 @@ export async function householdFor(env, identity) {
   return target;
 }
 
+// The founding pair belong to household #1 by rule (householdFor), but a
+// membership row is only written when that account next calls the API —
+// so a founder who hasn't opened the app since households launched would
+// be missing from the roster even though their picks are already there.
+// Sweep the (tiny) users table and materialize any missing founder rows.
+async function ensureFounderMembers(db) {
+  const { results } = await db.prepare("SELECT email, name FROM users").all();
+  for (const u of results || []) {
+    const nm = displayName({ name: u.name, email: u.email });
+    if (nm === "Andres" || nm === "Sarah") {
+      await db.prepare("INSERT OR IGNORE INTO poppy_household_members (email, household_id, joined_at) VALUES (?1, ?2, ?3)")
+        .bind(String(u.email).toLowerCase(), FOUNDER_HOUSEHOLD, new Date().toISOString()).run();
+    }
+  }
+}
+
 export async function householdInfo(env, householdId) {
   const db = env.DB;
   const hh = await db.prepare("SELECT id, name FROM poppy_households WHERE id = ?1").bind(householdId).first();
   if (!hh) return null;
+  if (householdId === FOUNDER_HOUSEHOLD) await ensureFounderMembers(db).catch(() => {});
   const { results } = await db.prepare("SELECT email, joined_at FROM poppy_household_members WHERE household_id = ?1 ORDER BY joined_at ASC").bind(householdId).all();
   return { id: hh.id, name: hh.name, members: results || [] };
 }
