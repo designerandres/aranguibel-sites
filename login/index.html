@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600&family=Cinzel:wght@700&family=Lora:wght@600&display=swap" rel="stylesheet">
 <style>
-  :root{ --ink:#eef1ff; --ink2:#aab3d6; --line:rgba(255,255,255,.14); --card:rgba(255,255,255,.07);
+  :root{ color-scheme:dark; --ink:#eef1ff; --ink2:#aab3d6; --line:rgba(255,255,255,.14); --card:rgba(255,255,255,.07);
          --accent:#7cc4ff; --accent2:#b79cff; --danger:#ff9d9d; --radius:22px;
          --safe-b:env(safe-area-inset-bottom,0px); }
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -21,7 +21,8 @@
           radial-gradient(900px 500px at -10% 110%, rgba(183,156,255,.18), transparent 55%),
           linear-gradient(180deg,#0b1026,#101736 55%,#0b1026);
         display:flex; align-items:flex-start; justify-content:center; }
-  .wrap{ width:100%; max-width:430px; margin-top:6vh; }
+  .wrap{ width:100%; max-width:430px; margin-top:6vh; position:relative; z-index:1; }
+  #bgpattern{ position:fixed; inset:0; z-index:0; pointer-events:none; background-repeat:repeat; background-size:144px; background-position:top left; }
   h1{ font-family:"Fraunces",serif; font-weight:600; font-size:30px; letter-spacing:.2px; }
   .sub{ color:var(--ink2); font-size:15px; margin-top:6px; line-height:1.45; }
   .card{ margin-top:20px; background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
@@ -37,7 +38,8 @@
   button[disabled]{ opacity:.55; }
   label{ display:block; font-size:13px; color:var(--ink2); margin-top:14px; }
   input{ font:inherit; font-size:16px; color:var(--ink); width:100%; margin-top:6px; padding:12px 14px;
-         background:var(--inputbg, rgba(0,0,0,.25)); border:1px solid var(--line); border-radius:12px; outline:none; }
+         background:var(--fieldbg, rgba(0,0,0,.25)); border:1px solid var(--line); border-radius:12px; outline:none; caret-color:var(--ink); }
+  input:-webkit-autofill{ -webkit-box-shadow:0 0 0 60px var(--fieldbg, #171F42) inset; -webkit-text-fill-color:var(--ink); caret-color:var(--ink); }
   input:focus{ border-color:var(--accent); }
   .error{ color:var(--danger); font-size:14px; margin-top:12px; min-height:18px; line-height:1.4; }
   .divider{ display:flex; align-items:center; gap:12px; margin:20px 0 4px; color:var(--ink2); font-size:12.5px; }
@@ -67,6 +69,7 @@
 </style>
 </head>
 <body>
+<div id="bgpattern" hidden></div>
 <div class="wrap">
   <h1 id="page-title">Aranguibel Apps</h1>
   <p class="sub" id="page-sub">Sign in once with Face ID — your passkey lives on your devices, never a typed password.</p>
@@ -197,22 +200,22 @@ async function login(){
 const APP_THEMES = {
   "jollywood-fam-2026": { name: "Jollywood Fam 2026", icon: "/jollywood-fam-2026/icons/icon.svg",
     bg: "radial-gradient(900px 480px at 85% -10%, rgba(232,196,118,.20), transparent 60%), linear-gradient(168deg,#0E2F20,#071A11 72%)",
-    vars: { "--ink":"#FFF9E3", "--ink2":"#CFC7A8", "--card":"rgba(14,40,26,.78)", "--line":"rgba(232,196,118,.35)", "--accent":"#F6DE9C", "--accent2":"#C08A2D", "--inputbg":"rgba(255,255,255,.65)", "--inputbg":"rgba(255,255,255,.65)", "--inputbg":"rgba(255,255,255,.65)", "--inputbg":"rgba(255,255,255,.65)", "--btnink":"#23180A" }, font: '"Cinzel",serif' },
+    vars: { "--ink":"#FFF9E3", "--ink2":"#CFC7A8", "--card":"rgba(14,40,26,.78)", "--line":"rgba(232,196,118,.35)", "--accent":"#F6DE9C", "--accent2":"#C08A2D", "--fieldbg":"#0B2517", "--btnink":"#23180A" }, scheme: "dark", pattern: "/jollywood-fam-2026/deco-fan.svg", font: '"Cinzel",serif' },
   "poppy-picks": { name: "Poppy's Picks", icon: "/poppy-picks/icons/icon.svg",
     bg: "radial-gradient(900px 480px at 85% -10%, rgba(255,182,39,.35), transparent 60%), linear-gradient(180deg,#FBF5EA,#FDEEE0)",
-    vars: { "--ink":"#17334E", "--ink2":"#47617A", "--card":"rgba(255,255,255,.85)", "--line":"#EADFCB", "--accent":"#FF6B4A", "--accent2":"#FFB627", "--btnink":"#FFFFFF" }, font: '"Fraunces",serif' },
+    vars: { "--ink":"#17334E", "--ink2":"#47617A", "--card":"rgba(255,255,255,.85)", "--line":"#EADFCB", "--accent":"#FF6B4A", "--accent2":"#FFB627", "--fieldbg":"#FFFFFF", "--btnink":"#FFFFFF" }, scheme: "light", font: '"Fraunces",serif' },
   "cycles": { name: "Cycles", icon: "/cycles/favicon.svg",
     bg: "radial-gradient(900px 480px at 85% -10%, rgba(92,198,223,.30), transparent 60%), linear-gradient(180deg,#F5F9FC,#E2EFF5)",
-    vars: { "--ink":"#0E2A52", "--ink2":"#51708F", "--card":"rgba(255,255,255,.82)", "--line":"rgba(14,54,92,.16)", "--accent":"#1F7FA8", "--accent2":"#5CC6DF", "--btnink":"#FFFFFF" }, font: '"Fraunces",serif' },
+    vars: { "--ink":"#0E2A52", "--ink2":"#51708F", "--card":"rgba(255,255,255,.82)", "--line":"rgba(14,54,92,.16)", "--accent":"#1F7FA8", "--accent2":"#5CC6DF", "--fieldbg":"#FFFFFF", "--btnink":"#FFFFFF" }, scheme: "light", font: '"Fraunces",serif' },
   "max-pocket-agenda": { name: "MAX Pocket Agenda", icon: "/max-pocket-agenda/favicon.svg",
     bg: "radial-gradient(900px 480px at 85% -10%, rgba(255,77,141,.22), transparent 60%), radial-gradient(700px 420px at -10% 110%, rgba(180,0,240,.16), transparent 55%), linear-gradient(180deg,#F5F9FC,#EDF2F9)",
-    vars: { "--ink":"#0E2A52", "--ink2":"#51708F", "--card":"rgba(255,255,255,.82)", "--line":"rgba(14,54,92,.16)", "--accent":"#FF4D8D", "--accent2":"#B400F0", "--btnink":"#FFFFFF" }, font: '"Fraunces",serif' },
+    vars: { "--ink":"#0E2A52", "--ink2":"#51708F", "--card":"rgba(255,255,255,.82)", "--line":"rgba(14,54,92,.16)", "--accent":"#FF4D8D", "--accent2":"#B400F0", "--fieldbg":"#FFFFFF", "--btnink":"#FFFFFF" }, scheme: "light", font: '"Fraunces",serif' },
   "lodge-boys-2026": { name: "Lodge Boys 2026", icon: "/lodge-boys-2026/icons/icon.svg",
     bg: "radial-gradient(900px 480px at 85% -10%, rgba(238,194,106,.16), transparent 60%), linear-gradient(170deg,#0C2316,#081A10)",
-    vars: { "--ink":"#F4EEDD", "--ink2":"#C6BDA1", "--card":"rgba(18,52,32,.85)", "--line":"rgba(244,238,221,.18)", "--accent":"#EEC26A", "--accent2":"#D9A94A", "--btnink":"#241A05" }, font: '"Lora",serif' },
+    vars: { "--ink":"#F4EEDD", "--ink2":"#C6BDA1", "--card":"rgba(18,52,32,.85)", "--line":"rgba(244,238,221,.18)", "--accent":"#EEC26A", "--accent2":"#D9A94A", "--fieldbg":"#0E2C1D", "--btnink":"#241A05" }, scheme: "dark", font: '"Lora",serif' },
   "wish-day-guide": { name: "Wish Day Guide", icon: "/wish-day-guide/icons/icon.svg",
     bg: "radial-gradient(900px 480px at 85% -10%, rgba(201,161,74,.25), transparent 60%), linear-gradient(180deg,#F5F9FC,#EAF1F7)",
-    vars: { "--ink":"#0E2A52", "--ink2":"#51708F", "--card":"rgba(255,255,255,.82)", "--line":"rgba(14,54,92,.16)", "--accent":"#C9A14A", "--accent2":"#0E2A52", "--btnink":"#FFFFFF" }, font: '"Fraunces",serif' },
+    vars: { "--ink":"#0E2A52", "--ink2":"#51708F", "--card":"rgba(255,255,255,.82)", "--line":"rgba(14,54,92,.16)", "--accent":"#C9A14A", "--accent2":"#0E2A52", "--fieldbg":"#FFFFFF", "--btnink":"#FFFFFF" }, scheme: "light", font: '"Fraunces",serif' },
 };
 let inviteTheme = null;
 function applyInviteTheme(slug, info) {
@@ -223,6 +226,8 @@ function applyInviteTheme(slug, info) {
   for (const [k, v] of Object.entries(t.vars)) root.style.setProperty(k, v);
   document.body.style.background = t.bg;
   document.body.classList.add("themed");
+  document.documentElement.style.colorScheme = t.scheme || "";
+  if (t.pattern) { const bp = $("bgpattern"); bp.style.backgroundImage = "url(" + t.pattern + ")"; bp.hidden = false; }
   $("inv-app-icon").src = t.icon;
   $("inv-headline").textContent = "Andr\u00e9s is inviting you to join the " + t.name + " app!";
   $("inv-headline").style.fontFamily = t.font;
