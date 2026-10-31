@@ -33,10 +33,13 @@
     background:
       radial-gradient(900px 480px at 12% -6%, rgba(232,196,118,.14), transparent 60%),
       radial-gradient(760px 520px at 108% 16%, rgba(30,92,61,.35), transparent 55%),
-      linear-gradient(168deg,#0C2B1C 0%, var(--g850) 38%, #07160F 100%);
+      linear-gradient(175deg, #07160F 0%, #0A2318 55%, #0E2F20 130%);
     background-attachment:fixed;
     -webkit-font-smoothing:antialiased;
   }
+
+  body::before{content:""; position:fixed; inset:0; z-index:0; pointer-events:none;
+    background:url("deco-fan.svg") repeat; background-size:144px 144px}
   #snow{position:fixed; inset:0; pointer-events:none; z-index:90}
   .wrap{position:relative; z-index:1; max-width:580px; margin:0 auto; padding:calc(6px + env(safe-area-inset-top)) 16px 118px}
 
@@ -46,11 +49,23 @@
     animation:shimmer 7s linear infinite;
   }
   @keyframes shimmer{to{background-position:220% 0}}
-  @media (prefers-reduced-motion: reduce){ .shimmer{animation:none} }
+  @media (prefers-reduced-motion: reduce){ .shimmer, .hero h2, .secttl h3, .sumchip b, .card::before, .hero::before, nav.tabbar::before{animation:none} }
+
+
+  .hero h2, .secttl h3, .sumchip b{
+    background:linear-gradient(100deg, var(--gold-deep) 0%, var(--gold) 32%, #FFF3C4 50%, var(--gold) 68%, var(--gold-deep) 100%);
+    background-size:220% 100%; -webkit-background-clip:text; background-clip:text; color:transparent;
+    animation:shimmer 9s linear infinite}
+  .card{position:relative}
+  .card::before, .hero::before, nav.tabbar::before{content:""; position:absolute; top:0; left:8%; right:8%; height:1px; z-index:3;
+    background:linear-gradient(90deg, transparent, rgba(246,222,156,0) 22%, rgba(246,222,156,.85) 50%, rgba(246,222,156,0) 78%, transparent);
+    background-size:200% 100%; animation:hairline 7.5s linear infinite}
+  @keyframes hairline{from{background-position:190% 0} to{background-position:-90% 0}}
+  .timechip{background:linear-gradient(180deg, rgba(246,222,156,.16), rgba(185,138,47,.10)), rgba(8,26,18,.5)}
 
   /* ============ GATE ============ */
   #gate{position:fixed; inset:0; z-index:40; display:flex; align-items:center; justify-content:center; overflow-y:auto;
-    background:radial-gradient(800px 420px at 50% -6%, rgba(232,196,118,.16), transparent 60%), linear-gradient(168deg,#0C2B1C 0%, var(--g850) 45%, #07160F 100%)}
+    background:url("deco-fan.svg") 0 0/144px 144px repeat, radial-gradient(800px 420px at 50% -6%, rgba(232,196,118,.16), transparent 60%), linear-gradient(168deg,#0C2B1C 0%, var(--g850) 45%, #07160F 100%)}
   .gateart{display:block; width:100%; border-radius:18px; border:1px solid var(--glass-brd); box-shadow:0 16px 30px -14px rgba(0,0,0,.65); margin-bottom:18px}
   .gatecard{width:min(560px, 100%); margin:0 14px calc(20px + env(safe-area-inset-bottom)); text-align:center;
     background:var(--glass); border:1px solid var(--glass-brd); border-radius:28px; padding:30px 26px 26px;

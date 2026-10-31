@@ -1,4 +1,4 @@
-const CACHE = "jollywood-v2";
+const CACHE = "jollywood-v3";
 const SHELL = [
   ".",
   "index.html",
@@ -7,6 +7,7 @@ const SHELL = [
   "icons/icon-512.png",
   "img/hero.jpg",
   "img/event-keyart.jpg",
+  "deco-fan.svg",
 ];
 
 self.addEventListener("install", (e) => {
@@ -29,8 +30,10 @@ self.addEventListener("fetch", (e) => {
     // Photos: cache-first (they never change within a season)
     e.respondWith(
       caches.match(e.request).then((hit) => hit || fetch(e.request).then((res) => {
-        const copy = res.clone();
-        caches.open(CACHE).then((c) => c.put(e.request, copy));
+        if (res.ok) {
+          const copy = res.clone();
+          caches.open(CACHE).then((c) => c.put(e.request, copy));
+        }
         return res;
       }))
     );
@@ -39,8 +42,10 @@ self.addEventListener("fetch", (e) => {
   // Pages & shell: network-first so updates land, cache as the fallback
   e.respondWith(
     fetch(e.request).then((res) => {
-      const copy = res.clone();
-      caches.open(CACHE).then((c) => c.put(e.request, copy));
+      if (res.ok) {
+        const copy = res.clone();
+        caches.open(CACHE).then((c) => c.put(e.request, copy));
+      }
       return res;
     }).catch(() => caches.match(e.request, { ignoreSearch: true }))
   );
