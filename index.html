@@ -187,6 +187,43 @@
   .entry:not(.collapsed) .teaser{display:none}
 
   /* card footer: read toggle / board hint / reorder arrows */
+  .invitecrew{font-family:"IM Fell English SC",serif; letter-spacing:.1em; font-size:14.5px; cursor:pointer; white-space:nowrap;
+    color:var(--ink); background:linear-gradient(180deg,var(--paper-hi),var(--kraft));
+    padding:9px 16px 8px; border-radius:999px; border:1px solid rgba(120,90,40,.55);
+    box-shadow:0 6px 14px -6px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.5)}
+  .invitecrew:active{transform:scale(.98)}
+  /* --- Invite Crew bottom sheet --- */
+  #crewSheet{position:fixed; inset:0; z-index:120}
+  #crewSheet .csback{position:absolute; inset:0; background:rgba(6,16,10,.62); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px)}
+  #crewSheet .cssheet{position:absolute; left:0; right:0; bottom:0; max-height:90dvh; overflow-y:auto; -webkit-overflow-scrolling:touch;
+    border-radius:24px 24px 0 0; border:1px solid rgba(217,161,59,.45); border-bottom:none; padding:26px 20px calc(22px + env(safe-area-inset-bottom));
+    background:linear-gradient(168deg,#1C3A2A,#122619 75%); color:var(--paper); box-shadow:0 -24px 60px rgba(0,0,0,.6);
+    animation:csup .32s cubic-bezier(.2,.9,.3,1)}
+  @keyframes csup{from{transform:translateY(46px); opacity:.4} to{transform:none; opacity:1}}
+  #crewSheet .sheetgrab{position:absolute; top:9px; left:50%; transform:translateX(-50%); width:46px; height:5px; border-radius:99px;
+    background:rgba(239,194,94,.55); box-shadow:0 1px 5px rgba(0,0,0,.45); touch-action:none; cursor:grab}
+  .csx{position:absolute; top:14px; right:14px; width:36px; height:36px; border-radius:50%; cursor:pointer; color:var(--paper);
+    display:flex; align-items:center; justify-content:center; border:1px solid rgba(241,229,198,.4); background:rgba(0,0,0,.3)}
+  .csx svg{width:14px; height:14px}
+  .cstitle{font-family:"IM Fell English SC",serif; font-weight:400; font-size:27px; color:var(--paper-hi); letter-spacing:.02em}
+  .csapp{margin-top:5px; font-size:15px; color:var(--ochre-hi); line-height:1.45}
+  .csnote{margin-top:8px; font-size:13.5px; line-height:1.5; color:rgba(241,229,198,.75)}
+  #crewSheet label{display:block; font-size:13px; letter-spacing:.05em; color:rgba(241,229,198,.8); margin-top:16px}
+  #crewSheet input{font:inherit; font-size:16px; color:var(--paper-hi); width:100%; margin-top:6px; padding:12px 14px;
+    background:#0C2113; border:1px solid rgba(241,229,198,.35); border-radius:12px; outline:none; caret-color:var(--paper-hi)}
+  #crewSheet input:focus{border-color:var(--ochre)}
+  #crewSheet input:-webkit-autofill{-webkit-box-shadow:0 0 0 60px #0C2113 inset; -webkit-text-fill-color:var(--paper-hi)}
+  .cserr{color:#F0A58E; font-size:13.5px; min-height:17px; margin-top:8px}
+  .csgo{font:inherit; font-weight:700; font-size:16px; color:#2E2416; width:100%; margin-top:12px; padding:13px 18px; cursor:pointer;
+    border:0; border-radius:13px; background:linear-gradient(180deg,var(--ochre-hi),var(--ochre))}
+  .csgo[disabled]{opacity:.55}
+  .csurl{word-break:break-all; font-size:13.5px; background:rgba(0,0,0,.35); border:1px solid rgba(241,229,198,.3);
+    border-radius:12px; padding:11px 12px; margin-top:14px; color:var(--paper-hi)}
+  .csrow{display:flex; gap:9px; margin-top:11px}
+  .csrow .csgo{margin-top:0}
+  .csalt{font:inherit; font-weight:600; font-size:15px; color:var(--paper-hi); padding:12px 16px; cursor:pointer; flex:1;
+    border-radius:13px; border:1px solid rgba(241,229,198,.4); background:rgba(0,0,0,.25)}
+  .csagain{width:100%; margin-top:9px; flex:none}
   .cardfoot{position:relative; z-index:2; display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:13px; padding-top:10px; border-top:1.5px solid rgba(120,90,40,.28); pointer-events:none}
   .entry.collapsed .cardfoot{border-top:none; margin-top:8px; padding-top:0}
   .readtoggle{background:none; border:none; cursor:pointer; padding:2px 0; white-space:nowrap; pointer-events:auto; position:relative; z-index:3;
@@ -509,6 +546,8 @@
   let activeTab = "family";
   try { const t = sessionStorage.getItem("skipperslog.tab"); if (TABS.includes(t)) activeTab = t; } catch (e) {}
   const openByTab = { family: null, personal: null }; // path of the expanded entry per tab
+  let crewAdmin = false; // Invite Crew is the skipper's alone: set from /api/auth/me
+  const INVITABLE_SLUGS = ["jollywood-fam-2026", "poppy-picks", "cycles", "max-pocket-agenda", "lodge-boys-2026", "wish-day-guide"];
 
   function applyOrder(order) {
     if (!Array.isArray(order)) return;
@@ -544,7 +583,7 @@
       '<figcaption></figcaption></figure>' +
       '<div class="txt"><h3></h3><div class="territory"></div><p class="teaser"></p>' +
       '<div class="more"><p class="story"></p><span class="marginalia"></span>' +
-      '<div class="meta"><div class="paddle"></div><a class="board" href="' + site.path + '">Board this expedition \u2192</a></div></div>' +
+      '<div class="meta"><div class="paddle"></div><a class="board" href="' + site.path + '">Board this expedition \u2192</a><button class="invitecrew" type="button" hidden>Invite Crew</button></div></div>' +
       '</div></div>' +
       '<div class="cardfoot"><button class="readtoggle" type="button"><span class="lbl">Read log entry</span><span class="chev">\u25BE</span></button>' +
       '<span class="gohint"><span class="lbl">Tap to board</span><span class="gobtn">\u2192</span></span>' +
@@ -562,6 +601,12 @@
     marg.textContent = site.marginalia;
     if (site.marginaliaClass) marg.classList.add(site.marginaliaClass);
     art.querySelector(".paddle").innerHTML = "<span>Waters:</span> " + site.waters.replace(/</g, "&lt;") + " \u00B7 <span>Bearings:</span> " + site.bearings.replace(/</g, "&lt;");
+    const crewBtn = art.querySelector(".invitecrew");
+    const crewSlug = site.path.replace(/^\/+|\/+$/g, "");
+    if (crewAdmin && INVITABLE_SLUGS.includes(crewSlug)) {
+      crewBtn.hidden = false;
+      crewBtn.addEventListener("click", () => openCrew(site, crewSlug));
+    }
 
     art.querySelector(".readtoggle").addEventListener("click", () => {
       const willOpen = art.classList.contains("collapsed");
@@ -694,6 +739,79 @@
   // needed, so there is nothing extra to find.
   btnEdit.hidden = false;
 
+  /* ---------- Invite Crew (admin only) ---------- */
+  const cel = id => document.getElementById(id);
+  let crewSlug = null, crewSite = null, crewUrl = "";
+  function openCrew(site, slug) {
+    crewSite = site; crewSlug = slug; crewUrl = "";
+    cel("csApp").textContent = "For " + site.title + " — this invite opens only this app.";
+    cel("csErr").textContent = ""; cel("csEmail").value = "";
+    cel("csForm").hidden = false; cel("csDone").hidden = true;
+    cel("crewSheet").hidden = false;
+    document.body.style.overflow = "hidden";
+  }
+  function closeCrew() { cel("crewSheet").hidden = true; document.body.style.overflow = ""; }
+  document.addEventListener("DOMContentLoaded", () => {
+  cel("csCreate").addEventListener("click", async () => {
+    const email = cel("csEmail").value.trim();
+    cel("csErr").textContent = "";
+    if (!email || !email.includes("@")) { cel("csErr").textContent = "Enter their email first."; return; }
+    const btn = cel("csCreate"); btn.disabled = true;
+    try {
+      const inv = await api("POST", "/api/auth/invite", { email, scope: [crewSlug] });
+      crewUrl = inv.url;
+      cel("csUrl").textContent = crewUrl;
+      cel("csForm").hidden = true; cel("csDone").hidden = false;
+    } catch (e) { cel("csErr").textContent = e.message || "That didn't work — try again."; }
+    btn.disabled = false;
+  });
+  cel("csCopy").addEventListener("click", async () => {
+    try { await navigator.clipboard.writeText(crewUrl); cel("csCopy").textContent = "Copied!"; setTimeout(() => cel("csCopy").textContent = "Copy link", 1600); } catch {}
+  });
+  cel("csShare").addEventListener("click", async () => {
+    if (navigator.share) { try { await navigator.share({ title: crewSite.title, text: "You're invited to " + crewSite.title + " — create your passkey to open it:", url: crewUrl }); } catch {} }
+    else { try { await navigator.clipboard.writeText(crewUrl); cel("csShare").textContent = "Copied!"; setTimeout(() => cel("csShare").textContent = "Share…", 1600); } catch {} }
+  });
+  cel("csAgain").addEventListener("click", () => { cel("csEmail").value = ""; cel("csErr").textContent = ""; cel("csDone").hidden = true; cel("csForm").hidden = false; });
+  document.querySelectorAll("[data-crewclose]").forEach(n => n.addEventListener("click", closeCrew));
+  /* Standing rule: bottom sheets close with a full swipe down. */
+  (function crewSwipe() {
+    const sheet = document.querySelector("#crewSheet .cssheet"), back = document.querySelector("#crewSheet .csback");
+    if (!sheet) return;
+    let startY = 0, dy = 0, pid = null, candidate = false, dragging = false;
+    const fromTop = t => !!t.closest(".sheetgrab, .cstitle, .csapp");
+    function engage() { dragging = true; sheet.style.transition = "none"; sheet.style.animation = "none"; sheet.style.overflowY = "hidden"; }
+    function reset() { candidate = false; dragging = false; pid = null; dy = 0; sheet.style.overflowY = ""; if (back) back.style.opacity = ""; }
+    sheet.addEventListener("pointerdown", e => {
+      if (e.target.closest("button, input, a")) return;
+      startY = e.clientY; dy = 0; pid = e.pointerId;
+      if (fromTop(e.target)) { candidate = true; engage(); e.preventDefault(); try { sheet.setPointerCapture(pid); } catch {} }
+      else if (sheet.scrollTop <= 0) { candidate = true; try { sheet.setPointerCapture(pid); } catch {} }
+    });
+    sheet.addEventListener("pointermove", e => {
+      if (!candidate || e.pointerId !== pid) return;
+      const d = e.clientY - startY;
+      if (!dragging) { if (d > 7) engage(); else if (d < -7) { reset(); return; } else return; }
+      dy = Math.max(0, d);
+      sheet.style.transform = "translateY(" + dy + "px)";
+      if (back) back.style.opacity = String(Math.max(0.2, 1 - dy / (sheet.offsetHeight * 1.5)));
+    });
+    function release() {
+      if (!candidate && !dragging) return;
+      const was = dragging, fin = dy, th = Math.min(170, sheet.offsetHeight * 0.32);
+      reset();
+      if (was && fin > th) { sheet.style.transition = "transform .26s ease-in"; sheet.style.transform = "translateY(105%)"; setTimeout(() => { closeCrew(); sheet.style.transition = ""; sheet.style.transform = ""; sheet.style.animation = ""; }, 235); }
+      else if (was) { sheet.style.transition = "transform .32s cubic-bezier(.2,.9,.3,1)"; sheet.style.transform = ""; setTimeout(() => { sheet.style.transition = ""; sheet.style.animation = ""; }, 340); }
+    }
+    sheet.addEventListener("pointerup", release);
+    sheet.addEventListener("pointercancel", release);
+  })();
+  });
+  fetch("/api/auth/me", { cache: "no-store" })
+    .then(r => (r.ok ? r.json() : null))
+    .then(j => { if (j && j.role === "admin") { crewAdmin = true; if (!document.body.classList.contains("editing")) renderEntries(); } })
+    .catch(() => {});
+
   // Freshness: this page is often resumed from the home-screen app without a
   // real reload, which can leave a stale app list on screen (a newly added
   // site missing until the app is fully closed and reopened). On load, and
@@ -737,5 +855,27 @@
     });
   }
 </script>
+<div id="crewSheet" hidden>
+  <div class="csback" data-crewclose></div>
+  <div class="cssheet" role="dialog" aria-label="Invite crew">
+    <div class="sheetgrab" aria-hidden="true"></div>
+    <button class="csx" data-crewclose type="button" aria-label="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg></button>
+    <h3 class="cstitle">Invite Crew</h3>
+    <p class="csapp" id="csApp"></p>
+    <p class="csnote">They'll land on a page themed to the app, add their name, and create a passkey — then the link takes them straight in.</p>
+    <div id="csForm">
+      <label for="csEmail">Their email</label>
+      <input id="csEmail" type="email" autocomplete="off" placeholder="name@example.com">
+      <p class="cserr" id="csErr"></p>
+      <button class="csgo" id="csCreate" type="button">Create invite link</button>
+    </div>
+    <div id="csDone" hidden>
+      <div class="csurl" id="csUrl"></div>
+      <div class="csrow"><button class="csgo" id="csShare" type="button">Share…</button><button class="csalt" id="csCopy" type="button">Copy link</button></div>
+      <button class="csalt csagain" id="csAgain" type="button">Invite another</button>
+      <p class="csnote">Works once, for that email, for 7 days.</p>
+    </div>
+  </div>
+</div>
 </body>
 </html>
