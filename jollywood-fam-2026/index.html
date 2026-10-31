@@ -146,9 +146,59 @@
   .picon svg{width:15px; height:15px}
   .picon.drink{border-color:rgba(169,223,194,.55); color:#A9DFC2; background:rgba(169,223,194,.1)}
   .picon.act{border-color:rgba(231,163,178,.55); color:#E7A3B2; background:rgba(231,163,178,.1)}
-  .pmeta{min-width:0; flex:1 1 auto; align-self:center; padding:15px 16px 15px 15px}
-  .pmeta .pname{font-weight:600; font-size:19px; line-height:1.25}
-  .pmeta .psub{font-size:13.5px; color:var(--cream-dim); margin-top:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .pmeta{min-width:0; flex:1 1 auto; align-self:center; padding:18px 18px 17px 16px}
+  .pmeta .pname{font-family:"Cinzel",serif; font-weight:700; font-size:21px; line-height:1.2; color:var(--cream); letter-spacing:.015em}
+  .pmeta .pblurb{margin-top:8px; font-size:14.5px; line-height:1.55; color:var(--cream-dim)}
+  .ploc{display:flex; align-items:center; margin-top:14px; padding-top:13px; border-top:1px solid rgba(232,196,118,.16)}
+  .ploc .picon{flex:0 0 auto; margin-right:10px}
+  .pwhere{min-width:0; flex:1 1 auto}
+  .pvenue{display:block; font-size:14.5px; font-weight:600; color:var(--cream); line-height:1.3}
+  .pstars{display:block; font-size:12.5px; color:var(--cream-faint); margin-top:2px}
+  .pinbtn{flex:0 0 auto; margin-left:10px; width:38px; height:38px; border-radius:50%; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; color:var(--gold-hi);
+    border:1.5px solid rgba(232,196,118,.5); background:rgba(8,26,18,.45); -webkit-tap-highlight-color:transparent}
+  .pinbtn svg{width:18px; height:18px}
+  .pinbtn:active{transform:scale(.94); background:rgba(232,196,118,.2)}
+  /* ============ PARK MAP FAB + SHEET ============ */
+  #mapFab{position:fixed; right:16px; bottom:calc(96px + env(safe-area-inset-bottom)); z-index:65; width:58px; height:58px;
+    border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#23180A;
+    background:linear-gradient(180deg, var(--gold-hi), var(--gold-deep)); border:1.5px solid rgba(255,249,227,.85);
+    box-shadow:0 16px 32px -10px rgba(0,0,0,.75), inset 0 1px 0 rgba(255,255,255,.5); -webkit-tap-highlight-color:transparent}
+  #mapFab svg{width:27px; height:27px}
+  #mapFab:active{transform:scale(.95)}
+  #mapSheet{position:fixed; inset:0; z-index:90}
+  #mapSheet .sheetback{position:absolute; inset:0; background:rgba(3,10,6,.62); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px)}
+  #mapSheet .sheet{position:absolute; left:0; right:0; bottom:0; max-height:90dvh; overflow-y:auto; -webkit-overflow-scrolling:touch;
+    border-radius:26px 26px 0 0; border:1px solid rgba(232,196,118,.35); border-bottom:none; padding:20px 18px calc(22px + env(safe-area-inset-bottom));
+    background:linear-gradient(168deg, #0E2F20, #081C12 70%); box-shadow:0 -24px 60px rgba(0,0,0,.6);
+    animation:sheetup .32s cubic-bezier(.2,.9,.3,1)}
+  @keyframes sheetup{from{transform:translateY(46px); opacity:.4} to{transform:none; opacity:1}}
+  .sheethead{display:flex; align-items:flex-start; gap:12px}
+  .sheethead h3{font-family:"Cinzel",serif; font-size:21px; letter-spacing:.06em; color:var(--gold-hi)}
+  .sheethead .sheetsub{font-size:13px; color:var(--cream-dim); margin-top:3px}
+  .sheetx{margin-left:auto; flex:0 0 auto; width:36px; height:36px; border-radius:50%; cursor:pointer; color:var(--cream);
+    display:flex; align-items:center; justify-content:center; border:1px solid rgba(232,196,118,.4); background:rgba(8,26,18,.5)}
+  .sheetx svg{width:15px; height:15px}
+  .mapwrap{margin-top:14px; border-radius:18px; overflow:hidden; border:1px solid rgba(232,196,118,.25);
+    background:radial-gradient(120% 120% at 50% 0%, #103824, #071A10)}
+  .mapwrap svg{display:block; width:100%; height:auto}
+  .zone rect, .zone ellipse, .zone circle{fill:rgba(255,255,255,.045); stroke:rgba(232,196,118,.35); stroke-width:1}
+  .zone.context rect{fill:rgba(255,255,255,.02); stroke:rgba(232,196,118,.16)}
+  .zone.haspicks rect, .zone.haspicks ellipse, .zone.haspicks circle{stroke:rgba(232,196,118,.75)}
+  .zone.focus rect, .zone.focus ellipse, .zone.focus circle{stroke:var(--gold-hi); stroke-width:2.4}
+  .zlabel{font-family:"Jost",sans-serif; font-weight:600; letter-spacing:.13em; fill:var(--cream-dim); text-anchor:middle}
+  .zone.haspicks .zlabel{fill:var(--gold-hi)}
+  .zone.context .zlabel{fill:rgba(238,234,216,.32)}
+  .zcount{fill:#23180A; font-family:"Jost",sans-serif; font-weight:700}
+  .zcountbg{fill:var(--gold); stroke:rgba(255,249,227,.85); stroke-width:1.2}
+  .mapcap{margin-top:9px; font-size:12px; color:var(--cream-faint); text-align:center; letter-spacing:.04em}
+  .mapgroup{margin-top:16px; padding:13px 15px; border-radius:16px; background:rgba(255,255,255,.04); border:1px solid rgba(232,196,118,.18)}
+  .mapgroup.focus{border-color:var(--gold-hi); box-shadow:0 0 0 1px var(--gold-hi)}
+  .mapgroup h5{font-family:"Cinzel",serif; font-size:13.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--gold-hi)}
+  .mapvenue{margin-top:9px}
+  .mapvenue .mvname{font-size:14.5px; font-weight:600; color:var(--cream)}
+  .mappick{font-size:13.5px; color:var(--cream-dim); margin-top:2px; padding-left:14px}
+  .mappick b{color:var(--gold-hi); font-weight:600}
   .pmeta .pshows{font-size:13px; font-weight:600; letter-spacing:.02em; color:var(--gold-hi); margin-top:4px; line-height:1.4}
   .pmeta .pshows.tba{color:var(--cream-dim); font-weight:500; font-style:italic}
   .ordctl{flex:0 0 auto; display:flex; flex-direction:column; gap:8px; justify-content:center; padding:12px 12px 12px 0}
@@ -401,6 +451,23 @@
   </button>
 </nav>
 
+<button id="mapFab" type="button" aria-label="Open the park map" hidden>
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4L3 6.2V20l6-2.2L15 20l6-2.2V4l-6 2.2L9 4zM9 4v13.8M15 6.2V20"/></svg>
+</button>
+
+<div id="mapSheet" hidden>
+  <div class="sheetback" data-mapclose></div>
+  <div class="sheet" role="dialog" aria-label="Park map">
+    <div class="sheethead">
+      <div><h3>Park Map</h3><div class="sheetsub">Disney's Hollywood Studios · the fam's stops in gold</div></div>
+      <button class="sheetx" data-mapclose type="button" aria-label="Close map"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg></button>
+    </div>
+    <div class="mapwrap" id="mapSvgWrap"></div>
+    <p class="mapcap">A schematic of the lands and our stops — not to scale.</p>
+    <div id="mapList"></div>
+  </div>
+</div>
+
 <div id="toast" role="status"></div>
 
 <script>
@@ -586,6 +653,7 @@ const KIND_ICON = {
   drink: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 5.5h15L12 13.2zM12 13.2V19M8.6 21h6.8M14.1 9.6l2.9-3.9"/><circle cx="15.4" cy="8.4" r="1.2" fill="currentColor" stroke="none"/></svg>',
   act: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M12 3.5l2.5 5.3 5.8.7-4.3 4 1.1 5.7L12 16.4l-5.1 2.8L8 13.5l-4.3-4 5.8-.7z"/></svg>',
 };
+const PIN_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21.5S5 15.6 5 9.9A7 7 0 0 1 19 9.9c0 5.7-7 11.6-7 11.6z"/><circle cx="12" cy="10" r="2.6"/></svg>';
 function planRow(p, idx, total) {
   const fig = p.img
     ? `<div class="pfig"><img src="${esc(p.img)}" alt="" loading="lazy" decoding="async"><span class="pnum">${idx + 1}</span></div>`
@@ -597,8 +665,9 @@ function planRow(p, idx, total) {
       <button class="ordbtn" data-move="${esc(p.id)}:down" type="button" aria-label="Move down" ${idx === total - 1 ? "disabled" : ""}>${CHEV_DN}</button>
     </div>` : "";
   return `<div class="prow">${fig}
-    <div class="pmeta"><div class="pname">${esc(p.name)}</div>
-    <div class="psub"><span class="picon ${p.kind === "drink" ? "drink" : p.kind === "act" ? "act" : "food"}" role="img" aria-label="${p.kind === "drink" ? "Drink" : p.kind === "act" ? "Activity" : "Food"}">${KIND_ICON[p.kind] || KIND_ICON.food}</span>${esc(p.sub)} \u2014 \u2605 ${esc(names)}</div>${showsHtml(p, "pshows")}</div>${ctl}</div>`;
+    <div class="pmeta"><div class="pname">${esc(p.name)}</div>${showsHtml(p, "pshows")}
+    ${p.desc ? `<p class="pblurb">${esc(p.desc)}</p>` : ""}
+    <div class="ploc"><span class="picon ${p.kind === "drink" ? "drink" : p.kind === "act" ? "act" : "food"}" role="img" aria-label="${p.kind === "drink" ? "Drink" : p.kind === "act" ? "Activity" : "Food"}">${KIND_ICON[p.kind] || KIND_ICON.food}</span><span class="pwhere"><span class="pvenue">${esc(p.sub)}</span><span class="pstars">\u2605 ${esc(names)}</span></span><button class="pinbtn" data-mapzone="${esc(zoneOf(p.area))}" type="button" aria-label="Find ${esc(p.name)} on the park map">${PIN_SVG}</button></div></div>${ctl}</div>`;
 }
 function renderGameplan() {
   const picks = picksList();
@@ -639,6 +708,72 @@ document.addEventListener("click", async (e) => {
     toast("That move didn't save \u2014 try again.");
     try { const p = await api("GET", "/api/jollywood/plan"); orderIds = Array.isArray(p.order) ? p.order : []; renderGameplan(); } catch {}
   }
+});
+
+/* ---------- park map ---------- */
+function zoneOf(area) {
+  const a = String(area || "").toLowerCase();
+  if (a.includes("sunset") || a.includes("tower of terror") || a.includes("beverly")) return "sunset";
+  if (a.includes("echo lake")) return "echo";
+  if (a.includes("animation")) return "animation";
+  if (a.includes("pixar")) return "pixar";
+  if (a.includes("commissary")) return "commissary";
+  if (a.includes("grand avenue")) return "grand";
+  if (a.includes("hollywood")) return "hollywood";
+  return "hollywood";
+}
+const ZONES = [
+  { id: "galaxy", label: ["GALAXY'S EDGE"], shape: '<rect x="10" y="16" width="116" height="72" rx="14"/>', lx: 68, ly: 56, context: true },
+  { id: "pixar", label: ["PIXAR PLAZA"], shape: '<rect x="196" y="20" width="96" height="50" rx="12"/>', lx: 244, ly: 49 },
+  { id: "toy", label: ["TOY STORY", "LAND"], shape: '<rect x="300" y="16" width="52" height="72" rx="12"/>', lx: 326, ly: 48, context: true },
+  { id: "animation", label: ["ANIMATION", "COURTYARD"], shape: '<rect x="228" y="96" width="122" height="80" rx="14"/>', lx: 289, ly: 132 },
+  { id: "echo", label: ["ECHO LAKE"], shape: '<ellipse cx="88" cy="148" rx="68" ry="44"/>', lx: 88, ly: 152 },
+  { id: "hub", label: ["THE HUB"], shape: '<circle cx="184" cy="168" r="27"/>', lx: 184, ly: 172, context: true },
+  { id: "hollywood", label: ["HOLLYWOOD", "BOULEVARD"], shape: '<rect x="156" y="182" width="56" height="106" rx="12"/>', lx: 184, ly: 230 },
+  { id: "sunset", label: ["SUNSET", "BOULEVARD"], shape: '<rect x="222" y="192" width="128" height="88" rx="14"/>', lx: 278, ly: 231 },
+  { id: "commissary", label: ["COMMISSARY LN"], shape: '<rect x="24" y="206" width="104" height="42" rx="12"/>', lx: 76, ly: 231 },
+  { id: "grand", label: ["GRAND AVENUE"], shape: '<rect x="18" y="262" width="110" height="48" rx="12"/>', lx: 73, ly: 290 },
+];
+function zoneCounts() {
+  const counts = {};
+  for (const pr of picksList()) { const z = zoneOf(pr.area); counts[z] = (counts[z] || 0) + 1; }
+  return counts;
+}
+function renderMap(focusZone) {
+  const counts = zoneCounts();
+  const zonesSvg = ZONES.map((z) => {
+    const n = counts[z.id] || 0;
+    const label = z.label.map((line, i) => `<text class="zlabel" x="${z.lx}" y="${z.ly + (i - (z.label.length - 1) / 2) * 11}" font-size="${z.context ? 8 : 9.5}">${line}</text>`).join("");
+    const bubble = n ? `<g><circle class="zcountbg" cx="${z.lx + 34}" cy="${z.ly - 16}" r="10"/><text class="zcount" x="${z.lx + 34}" y="${z.ly - 12.5}" font-size="10.5" text-anchor="middle">${n}</text></g>` : "";
+    return `<g class="zone${z.context ? " context" : ""}${n ? " haspicks" : ""}${focusZone === z.id ? " focus" : ""}">${z.shape}${label}${bubble}</g>`;
+  }).join("");
+  $("#mapSvgWrap").innerHTML = `<svg viewBox="0 0 360 330" role="img" aria-label="Schematic map of Hollywood Studios">${zonesSvg}<text class="zlabel" x="184" y="322" font-size="8.5" fill="var(--gold)">\u2605 ENTRANCE</text></svg>`;
+  const groups = new Map();
+  const addPick = (zone, venueName, pickName) => {
+    if (!groups.has(zone)) groups.set(zone, new Map());
+    const g = groups.get(zone);
+    if (!g.has(venueName)) g.set(venueName, []);
+    g.get(venueName).push(pickName);
+  };
+  for (const pr of picksList()) addPick(zoneOf(pr.area), pr.sub, pr.name);
+  const zoneName = (id) => ({ sunset: "Sunset Boulevard", echo: "Echo Lake", animation: "Animation Courtyard", pixar: "Pixar Plaza", commissary: "Commissary Lane", grand: "Grand Avenue", hollywood: "Hollywood Boulevard" }[id] || id);
+  const order = ["hollywood", "sunset", "echo", "animation", "pixar", "commissary", "grand"];
+  $("#mapList").innerHTML = groups.size
+    ? order.filter((z) => groups.has(z)).map((z) => `<div class="mapgroup${focusZone === z ? " focus" : ""}" data-zone="${z}"><h5>${esc(zoneName(z))}</h5>${[...groups.get(z)].map(([venue, names]) => `<div class="mapvenue"><div class="mvname">${esc(venue)}</div>${names.map((nm) => `<div class="mappick"><b>\u2605</b> ${esc(nm)}</div>`).join("")}</div>`).join("")}</div>`).join("")
+    : `<div class="mapgroup"><h5>No stops yet</h5><div class="mappick">Star a few bites, sips, and shows and they'll be pinned here.</div></div>`;
+}
+function openMap(zone) {
+  renderMap(zone || null);
+  $("#mapSheet").hidden = false;
+  document.body.style.overflow = "hidden";
+  if (zone) setTimeout(() => { const el = document.querySelector(`.mapgroup[data-zone="${zone}"]`); if (el) el.scrollIntoView({ block: "center", behavior: "smooth" }); }, 90);
+}
+function closeMap() { $("#mapSheet").hidden = true; document.body.style.overflow = ""; }
+document.addEventListener("click", (e) => {
+  if (e.target.closest("#mapFab")) { openMap(null); return; }
+  const pin = e.target.closest("[data-mapzone]");
+  if (pin) { openMap(pin.dataset.mapzone); return; }
+  if (e.target.closest("[data-mapclose]")) closeMap();
 });
 
 /* ---------- countdown ---------- */
@@ -693,14 +828,15 @@ async function loadApp() {
   }
   INDEX.clear();
   for (const venue of guide.venues) for (const it of venue.items)
-    INDEX.set(it.id, { kind: it.drink ? "drink" : "food", name: it.name, sub: venue.name, img: it.img, motif: "star" });
+    INDEX.set(it.id, { kind: it.drink ? "drink" : "food", name: it.name, sub: venue.name, img: it.img, motif: "star", desc: it.desc || "", area: venue.area || "" });
   for (const a of guide.activities)
-    INDEX.set(a.id, { kind: "act", name: a.name, sub: a.where, img: a.img, motif: a.motif, shows: a.shows || null });
+    INDEX.set(a.id, { kind: "act", name: a.name, sub: a.where, img: a.img, motif: a.motif, shows: a.shows || null, desc: a.desc || "", area: a.where && a.where.includes("\u00b7") ? a.where.split("\u00b7").pop().trim() : (a.where || "") });
   if (me) {
     const chip = $("#meChip"); chip.textContent = "★ " + me; chip.hidden = false;
     $("#meCard").hidden = false;
     $("#meText").innerHTML = `You're signed in as <b>${esc(me)}</b> — your stars show in gold, and the fam's gameplan is built from everyone's picks together.`;
   }
+  $("#mapFab").hidden = false;
   renderFood(); renderDrinks(); renderActivities(); renderGameplan();
   tickCountdown(); setInterval(tickCountdown, 1000);
 }
