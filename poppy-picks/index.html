@@ -231,6 +231,21 @@
     font-size:16px;font-weight:900;box-shadow:0 12px 26px -10px rgba(90,20,0,.5)}
   #signin-btn[disabled]{opacity:.6}
   #signin-err{min-height:20px;margin-top:12px;font-size:13px;font-weight:800;color:#FFE1D6}
+  #hsToast{position:fixed;left:50%;transform:translateX(-50%);width:min(398px,calc(100vw - 32px));
+    bottom:calc(96px + env(safe-area-inset-bottom));z-index:89;display:flex;gap:12px;align-items:flex-start;
+    padding:15px 40px 15px 15px;border-radius:20px;background:#FFFDF8;border:1px solid var(--line);
+    box-shadow:var(--shadow-lg);color:var(--ink);animation:phsin .45s cubic-bezier(.2,.9,.3,1)}
+  @keyframes phsin{from{transform:translate(-50%,18px);opacity:0} to{transform:translate(-50%,0);opacity:1}}
+  #hsToast img{width:46px;height:46px;border-radius:11px;flex:0 0 auto;box-shadow:0 6px 16px rgba(23,51,78,.25)}
+  #hsToast p{font-size:14.5px;line-height:1.5;color:var(--ink-soft);font-weight:600}
+  #hsToast p b{color:var(--ink);font-weight:900}
+  #hsToast p b.coral{color:var(--coral-deep)}
+  #hsToast .shareic{display:inline-block;width:15px;height:15px;vertical-align:-2px;color:var(--coral-deep)}
+  #hsClose{position:absolute;top:8px;right:8px;width:28px;height:28px;border-radius:50%;cursor:pointer;color:var(--ink-soft);
+    display:flex;align-items:center;justify-content:center;border:1px solid var(--line);background:#fff;font:inherit}
+  #hsClose svg{width:11px;height:11px}
+  #hsToast .hstail{position:absolute;left:50%;bottom:-8px;width:17px;height:17px;transform:translateX(-50%) rotate(45deg);
+    background:#FFFDF8;border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
   #toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(96px + env(safe-area-inset-bottom));z-index:90;
     background:var(--ink);color:#fff;font-size:13.5px;font-weight:800;padding:11px 18px;border-radius:999px;
     box-shadow:var(--shadow-lg);max-width:88vw;text-align:center}
@@ -280,6 +295,12 @@
   </div>
 
   <div id="toast" hidden></div>
+  <div id="hsToast" hidden>
+    <img src="icons/icon.svg" alt="">
+    <p><b>Add Poppy's Picks to your Home Screen</b> so the family's plans are one tap away. Tap <svg class="shareic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4"/><path d="M8 7l4-4 4 4"/><path d="M6 12H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-1"/></svg> then <b class="coral">Add to Home Screen</b>.</p>
+    <button id="hsClose" type="button" aria-label="Dismiss"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg></button>
+    <span class="hstail"></span>
+  </div>
 </div>
 <script>
 
@@ -975,7 +996,19 @@ async function boot(){
   }
   try{ await loadAll(); }
   catch(e){ $("#signin").hidden = false; $("#signin-err").textContent = "Couldn't load your picks — try signing in again."; }
+  maybeShowHsToast();
 }
+function maybeShowHsToast(){
+  try{
+    if (!state.me || state.me.role === "admin") return;
+    if (window.navigator.standalone || window.matchMedia("(display-mode: standalone)").matches) return;
+    if (!/iPhone|iPad|iPod/.test(navigator.userAgent || "")) return;
+    if (localStorage.getItem("poppy.hstip")) return;
+    localStorage.setItem("poppy.hstip", "1");
+    setTimeout(() => { const t = $("#hsToast"); if (t) t.hidden = false; }, 1500);
+  }catch(e){}
+}
+document.addEventListener("click", (e) => { if (e.target.closest("#hsClose")) $("#hsToast").hidden = true; });
 boot();
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
 </script>
