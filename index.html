@@ -224,6 +224,10 @@
   .csalt{font:inherit; font-weight:600; font-size:15px; color:var(--paper-hi); padding:12px 16px; cursor:pointer; flex:1;
     border-radius:13px; border:1px solid rgba(241,229,198,.4); background:rgba(0,0,0,.25)}
   .csagain{width:100%; margin-top:9px; flex:none}
+  .csdiv{display:flex; align-items:center; gap:12px; margin:20px 2px 2px}
+  .csdiv::before, .csdiv::after{content:""; flex:1; height:1px; background:linear-gradient(90deg, transparent, rgba(239,194,94,.55), transparent)}
+  .csdiv span{color:var(--ochre-hi); font-size:13px}
+  .csrow a.csalt{text-decoration:none; display:flex; align-items:center; justify-content:center}
   .cardfoot{position:relative; z-index:2; display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:13px; padding-top:10px; border-top:1.5px solid rgba(120,90,40,.28); pointer-events:none}
   .entry.collapsed .cardfoot{border-top:none; margin-top:8px; padding-top:0}
   .readtoggle{background:none; border:none; cursor:pointer; padding:2px 0; white-space:nowrap; pointer-events:auto; position:relative; z-index:3;
@@ -741,10 +745,12 @@
 
   /* ---------- Invite Crew (admin only) ---------- */
   const cel = id => document.getElementById(id);
-  let crewSlug = null, crewSite = null, crewUrl = "";
+  let crewSlug = null, crewSite = null, crewUrl = "", crewAppUrl = "";
   function openCrew(site, slug) {
     crewSite = site; crewSlug = slug; crewUrl = "";
     cel("csApp").textContent = "For " + site.title + " — this invite opens only this app.";
+    crewAppUrl = location.origin + "/" + slug + "/";
+    cel("csTextApp").href = "sms:&body=" + encodeURIComponent("Here's the " + site.title + " app: " + crewAppUrl);
     cel("csErr").textContent = ""; cel("csEmail").value = "";
     cel("csForm").hidden = false; cel("csDone").hidden = true;
     cel("crewSheet").hidden = false;
@@ -771,6 +777,9 @@
   cel("csShare").addEventListener("click", async () => {
     if (navigator.share) { try { await navigator.share({ title: crewSite.title, text: "You're invited to " + crewSite.title + " — create your passkey to open it:", url: crewUrl }); } catch {} }
     else { try { await navigator.clipboard.writeText(crewUrl); cel("csShare").textContent = "Copied!"; setTimeout(() => cel("csShare").textContent = "Share…", 1600); } catch {} }
+  });
+  cel("csCopyApp").addEventListener("click", async () => {
+    try { await navigator.clipboard.writeText(crewAppUrl); cel("csCopyApp").textContent = "Copied!"; setTimeout(() => cel("csCopyApp").textContent = "Copy app link", 1600); } catch {}
   });
   cel("csAgain").addEventListener("click", () => { cel("csEmail").value = ""; cel("csErr").textContent = ""; cel("csDone").hidden = true; cel("csForm").hidden = false; });
   document.querySelectorAll("[data-crewclose]").forEach(n => n.addEventListener("click", closeCrew));
@@ -875,6 +884,9 @@
       <button class="csalt csagain" id="csAgain" type="button">Invite another</button>
       <p class="csnote">Works once, for that email, for 7 days.</p>
     </div>
+    <div class="csdiv"><span>✦</span></div>
+    <p class="csnote">Just want to send someone the app itself?</p>
+    <div class="csrow"><button class="csalt" id="csCopyApp" type="button">Copy app link</button><a class="csalt" id="csTextApp" href="#">Text app link</a></div>
   </div>
 </div>
 </body>
