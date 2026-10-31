@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Jollywood Fam 2026 — Our Gameplan</title>
-<meta name="description" content="The fam's ballot and gameplan for Disney Jollywood Nights — Saturday, November 14, 2026.">
+<meta name="description" content="The fam's ballot and gameplan for Disney Jollywood Nights — Saturday, November 28, 2026.">
 <meta name="theme-color" content="#0A2318">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -38,7 +38,7 @@
     -webkit-font-smoothing:antialiased;
   }
   #snow{position:fixed; inset:0; pointer-events:none; z-index:90}
-  .wrap{position:relative; z-index:1; max-width:580px; margin:0 auto; padding:0 16px 118px}
+  .wrap{position:relative; z-index:1; max-width:580px; margin:0 auto; padding:calc(6px + env(safe-area-inset-top)) 16px 118px}
 
   .shimmer{
     background:linear-gradient(100deg, var(--gold-deep) 0%, var(--gold) 32%, #FFF3C4 50%, var(--gold) 68%, var(--gold-deep) 100%);
@@ -69,7 +69,7 @@
   .gatemsg{min-height:20px; margin-top:12px; font-size:14px; color:#F0B9A8}
 
   /* ============ APP CHROME ============ */
-  header.topbar{position:sticky; top:10px; z-index:50; margin-top:12px;
+  header.topbar{position:sticky; top:calc(10px + env(safe-area-inset-top)); z-index:50; margin-top:12px;
     display:flex; align-items:center; gap:10px; padding:11px 16px; border-radius:999px;
     background:linear-gradient(160deg, rgba(18,59,39,.82), rgba(10,35,24,.82));
     border:1px solid var(--glass-brd); backdrop-filter:blur(16px) saturate(1.4); -webkit-backdrop-filter:blur(16px) saturate(1.4);
@@ -150,7 +150,7 @@
   .fchip{flex:0 0 auto; padding:9px 16px; border-radius:999px; cursor:pointer; font-family:"Jost",sans-serif; font-size:14px; font-weight:500;
     color:var(--cream-dim); background:rgba(255,255,255,.05); border:1px solid rgba(232,196,118,.25); -webkit-tap-highlight-color:transparent}
   .fchip.on{color:#23180A; font-weight:600; background:linear-gradient(180deg, var(--gold-hi), var(--gold)); border-color:var(--gold-hi)}
-  .venuehead{position:sticky; top:74px; z-index:20; margin:22px -6px 12px; padding:10px 14px; border-radius:14px;
+  .venuehead{position:sticky; top:calc(72px + env(safe-area-inset-top)); z-index:20; margin:22px -6px 12px; padding:10px 14px; border-radius:14px;
     background:linear-gradient(160deg, rgba(18,59,39,.92), rgba(10,35,24,.92)); border:1px solid rgba(232,196,118,.35);
     backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); box-shadow:0 12px 22px -12px rgba(0,0,0,.65)}
   .venuehead .vn{font-family:"Cinzel",serif; font-weight:700; font-size:16.5px; letter-spacing:.05em; color:var(--gold-hi); line-height:1.25}
@@ -225,7 +225,7 @@
     <div class="star">★</div>
     <h1 class="shimmer">Jollywood<br>Fam 2026</h1>
     <p class="sub">Our premiere at Disney Jollywood Nights — the foodie ballot, the gameplan, and the countdown, all in one place.</p>
-    <span class="datechip">Sat · Nov 14 · Hollywood Studios</span>
+    <span class="datechip">Sat · Nov 28 · Hollywood Studios</span>
     <button class="btn-gold" id="btnSignIn" type="button">Enter with Face ID</button>
     <p class="gatemsg" id="gateMsg" role="status"></p>
   </div>
@@ -241,7 +241,7 @@
   <section id="tab-gameplan">
     <div class="hero">
       <div class="hero-in">
-        <div class="eyebrow">Our Premiere · Sat, November 14</div>
+        <div class="eyebrow">Our Premiere · Sat, November 28</div>
         <h2 id="heroTitle">The countdown is on</h2>
         <div class="countrow" id="countRow">
           <div class="ctile"><b id="cdD">–</b><span>Days</span></div>
@@ -284,7 +284,7 @@
     <div class="secttl"><h3>More</h3><div class="rule"></div></div>
     <div class="infocard">
       <h4>The Night</h4>
-      <div class="kv"><span class="k">Our night</span><span class="v">Saturday, November 14, 2026</span></div>
+      <div class="kv"><span class="k">Our night</span><span class="v">Saturday, November 28, 2026</span></div>
       <div class="kv"><span class="k">Party hours</span><span class="v">7:30 PM – 12:30 AM</span></div>
       <div class="kv"><span class="k">Where</span><span class="v">Disney's Hollywood Studios</span></div>
       <div class="kv"><span class="k">Season</span><span class="v">Select nights · Nov 7 – Jan 5</span></div>
@@ -572,8 +572,8 @@ document.addEventListener("click", async (e) => {
 });
 
 /* ---------- countdown ---------- */
-const PARTY_START = new Date("2026-11-14T19:30:00-05:00").getTime();
-const PARTY_END = new Date("2026-11-15T00:30:00-05:00").getTime();
+const PARTY_START = new Date("2026-11-28T19:30:00-05:00").getTime();
+const PARTY_END = new Date("2026-11-29T00:30:00-05:00").getTime();
 function tickCountdown() {
   const now = Date.now();
   const dEl = $("#cdD"), hEl = $("#cdH"), mEl = $("#cdM"), sEl = $("#cdS");
@@ -587,7 +587,7 @@ function tickCountdown() {
     $("#heroNote").innerHTML = "It's Jollywood night — <b>the gameplan below is live</b>. Break a leg out there.";
     $("#countRow").hidden = true; return;
   }
-  const dayStart = new Date("2026-11-14T00:00:00-05:00").getTime();
+  const dayStart = new Date("2026-11-28T00:00:00-05:00").getTime();
   $("#heroTitle").textContent = now >= dayStart ? "Tonight's the night!" : "The countdown is on";
   let diff = Math.floor((PARTY_START - now) / 1000);
   const d = Math.floor(diff / 86400); diff -= d * 86400;
