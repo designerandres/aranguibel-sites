@@ -199,6 +199,10 @@
   .tbtn2{flex:0 0 auto; padding:10px 16px; border-radius:12px; cursor:pointer; font-family:"Jost",sans-serif; font-size:14px; font-weight:600;
     color:var(--gold-hi); background:rgba(8,26,18,.5); border:1px solid rgba(232,196,118,.5); -webkit-tap-highlight-color:transparent}
   .tbtn2.plain{color:var(--cream-dim); border-color:rgba(232,196,118,.25)}
+  .sheetgrab{position:absolute; top:9px; left:50%; transform:translateX(-50%); width:46px; height:5px; border-radius:99px;
+    background:rgba(246,222,156,.5); box-shadow:0 1px 5px rgba(0,0,0,.45); z-index:6; touch-action:none; cursor:grab}
+  #detailSheet .sheethead, #mapSheet .sheethead{touch-action:none}
+  .dphoto{touch-action:none}
   /* ============ PARK MAP FAB + SHEET ============ */
   #mapFab{position:fixed; right:16px; bottom:calc(96px + env(safe-area-inset-bottom)); z-index:65; width:58px; height:58px;
     border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#23180A;
@@ -501,6 +505,7 @@
 <div id="mapSheet" hidden>
   <div class="sheetback" data-mapclose></div>
   <div class="sheet" role="dialog" aria-label="Park map">
+    <div class="sheetgrab" aria-hidden="true"></div>
     <div class="sheethead">
       <div><h3>Park Map</h3><div class="sheetsub">Disney's Hollywood Studios · the fam's stops in gold</div></div>
       <button class="sheetx" data-mapclose type="button" aria-label="Close map"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg></button>
@@ -514,6 +519,7 @@
 <div id="detailSheet" hidden>
   <div class="sheetback" data-detailclose></div>
   <div class="sheet" role="dialog" aria-label="Item details">
+    <div class="sheetgrab" aria-hidden="true"></div>
     <button class="dclose" data-detailclose type="button" aria-label="Close details"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg></button>
     <div id="detailBody"></div>
   </div>
@@ -825,7 +831,7 @@ function zoneCounts() {
   for (const pr of picksList()) { const z = zoneOf(pr.area); counts[z] = (counts[z] || 0) + 1; }
   return counts;
 }
-function buildMapSvg(focusZone, counts) {
+function buildMapSvg(focusZone, counts, singlePinZone) {
   const defs = `<defs>
     <linearGradient id="goldgrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F8E3A1"/><stop offset="1" stop-color="#C08A2D"/></linearGradient>
     <linearGradient id="lakegrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1B5A4C"/><stop offset="1" stop-color="#0C352C"/></linearGradient>
@@ -837,8 +843,11 @@ function buildMapSvg(focusZone, counts) {
     const n = counts[z.id] || 0;
     const lines = z.label.map((line, i) => `<text class="zlabel" x="${z.lx}" y="${z.ly + (i - (z.label.length - 1) / 2) * 11}" font-size="${z.context ? 8 : 9.5}">${line}</text>`).join("");
     const label = z.rot ? `<g transform="rotate(${z.rot} ${z.lx} ${z.ly})">${lines}</g>` : lines;
-    const pin = n && z.pin ? `<g class="zbub" transform="translate(${z.pin[0]},${z.pin[1]})"><ellipse cx="0" cy="13" rx="4.5" ry="1.7" fill="rgba(0,0,0,.4)"/><path d="M0,12 C-2,5 -11,2 -11,-7 A11,11 0 1 1 11,-7 C11,2 2,5 0,12 Z" fill="url(#goldgrad)" stroke="#FFF6D8" stroke-width="1.6"/><text x="0" y="-7" dy=".36em" text-anchor="middle" font-size="11.5" font-weight="700" fill="#12291A" font-family="Jost,sans-serif">${n}</text></g>` : "";
-    return `<g class="zone${z.context ? " context" : ""}${n ? " haspicks" : ""}${focusZone === z.id ? " focus" : ""}">${z.shape}${z.mark || ""}${label}${pin}</g>`;
+    const pinInner = (txt, fs) => `<g class="zbub" transform="translate(${z.pin[0]},${z.pin[1]})"><ellipse cx="0" cy="13" rx="4.5" ry="1.7" fill="rgba(0,0,0,.4)"/><path d="M0,12 C-2,5 -11,2 -11,-7 A11,11 0 1 1 11,-7 C11,2 2,5 0,12 Z" fill="url(#goldgrad)" stroke="#FFF6D8" stroke-width="1.6"/><text x="0" y="-7" dy=".36em" text-anchor="middle" font-size="${fs}" font-weight="700" fill="#12291A" font-family="Jost,sans-serif">${txt}</text></g>`;
+    const pin = singlePinZone
+      ? (z.id === singlePinZone && z.pin ? pinInner("\u2605", 12) : "")
+      : (n && z.pin ? pinInner(n, 11.5) : "");
+    return `<g class="zone${z.context ? " context" : ""}${n || focusZone === z.id ? " haspicks" : ""}${focusZone === z.id ? " focus" : ""}">${z.shape}${z.mark || ""}${label}${pin}</g>`;
   }).join("");
   return `<svg viewBox="0 0 360 330" role="img" aria-label="Stylized map of Hollywood Studios">${defs}<path d="${MAP_BOUNDARY}" fill="#0A2317" stroke="rgba(232,196,118,.3)"/><path d="${MAP_BOUNDARY}" fill="url(#leaf)" opacity=".16"/>${routes}${zonesSvg}<text class="zlabel" x="180" y="322" font-size="8.5" fill="var(--gold)">\u2605 ENTRANCE</text></svg>`;
 }
@@ -910,7 +919,7 @@ function renderDetail() {
     ${tagChips(raw)}
     <div class="voterow">${voteRowHtml(detailId, meta.kind === "act" ? "Must-do" : "Must-try")}</div>
     <div class="dsect"><h5>Where it is</h5>
-      <div class="mapwrap" style="margin-top:12px">${buildMapSvg(zoneOf(meta.area), zoneCounts())}</div>
+      <div class="mapwrap" style="margin-top:12px">${buildMapSvg(zoneOf(meta.area), {}, zoneOf(meta.area))}</div>
     </div>
     <div class="dsect"><h5>Suggested time</h5>
       <p class="dnote">${note}</p>
@@ -932,6 +941,64 @@ async function setSuggestedTime(id, val) {
     toast("That time didn't save \u2014 try again.");
   }
 }
+/* Standing rule: every bottom sheet closes with a full swipe down.
+   Drag from the grab handle, the sheet header, or the detail photo —
+   or pull down from the top of the sheet's scroll. Past the threshold
+   it slides away; short of it, it springs back. */
+function makeSwipeable(sheetEl, backdropEl, onClose) {
+  if (!sheetEl) return;
+  let startY = 0, dy = 0, pid = null, candidate = false, dragging = false;
+  const fromTop = (t) => !!t.closest(".sheetgrab, .sheethead, .dphoto");
+  function engage() {
+    dragging = true;
+    sheetEl.style.transition = "none";
+    sheetEl.style.animation = "none";
+    sheetEl.style.overflowY = "hidden";
+  }
+  function reset() {
+    candidate = false; dragging = false; pid = null; dy = 0;
+    sheetEl.style.overflowY = "";
+    if (backdropEl) backdropEl.style.opacity = "";
+  }
+  sheetEl.addEventListener("pointerdown", (e) => {
+    if (e.target.closest("button, input, a, .tchip")) return;
+    startY = e.clientY; dy = 0; pid = e.pointerId;
+    if (fromTop(e.target)) { candidate = true; engage(); e.preventDefault(); try { sheetEl.setPointerCapture(pid); } catch {} }
+    else if (sheetEl.scrollTop <= 0) { candidate = true; try { sheetEl.setPointerCapture(pid); } catch {} }
+  });
+  sheetEl.addEventListener("pointermove", (e) => {
+    if (!candidate || e.pointerId !== pid) return;
+    const d = e.clientY - startY;
+    if (!dragging) {
+      if (d > 7) engage();
+      else if (d < -7) { reset(); return; }
+      else return;
+    }
+    dy = Math.max(0, d);
+    sheetEl.style.transform = `translateY(${dy}px)`;
+    if (backdropEl) backdropEl.style.opacity = String(Math.max(0.2, 1 - dy / (sheetEl.offsetHeight * 1.5)));
+  });
+  function release() {
+    if (!candidate && !dragging) return;
+    const wasDragging = dragging, finalDy = dy;
+    const threshold = Math.min(170, sheetEl.offsetHeight * 0.32);
+    reset();
+    if (wasDragging && finalDy > threshold) {
+      sheetEl.style.transition = "transform .26s ease-in";
+      sheetEl.style.transform = "translateY(105%)";
+      setTimeout(() => { onClose(); sheetEl.style.transition = ""; sheetEl.style.transform = ""; sheetEl.style.animation = ""; }, 235);
+    } else if (wasDragging) {
+      sheetEl.style.transition = "transform .32s cubic-bezier(.2,.9,.3,1)";
+      sheetEl.style.transform = "";
+      setTimeout(() => { sheetEl.style.transition = ""; sheetEl.style.animation = ""; }, 340);
+    }
+  }
+  sheetEl.addEventListener("pointerup", release);
+  sheetEl.addEventListener("pointercancel", release);
+}
+makeSwipeable($("#mapSheet .sheet"), $("#mapSheet .sheetback"), closeMap);
+makeSwipeable($("#detailSheet .sheet"), $("#detailSheet .sheetback"), closeDetail);
+
 document.addEventListener("click", (e) => {
   const card = e.target.closest("[data-detail]");
   if (card && !reorderMode && !e.target.closest("[data-move]")) openDetail(card.dataset.detail);
