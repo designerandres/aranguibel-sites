@@ -129,28 +129,28 @@
   .sumchip span{display:block; margin-top:1px; font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--cream-dim)}
 
   /* ============ GAMEPLAN ROWS ============ */
-  .prow{display:flex; gap:12px; align-items:center; padding:12px; margin-bottom:10px; border-radius:18px;
+  .prow{display:flex; gap:14px; align-items:center; padding:16px; margin-bottom:12px; border-radius:22px;
     background:var(--glass); border:1px solid rgba(232,196,118,.22);
     backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); box-shadow:0 12px 24px -14px rgba(0,0,0,.6)}
-  .timechip{flex:0 0 auto; width:78px; text-align:center; padding:9px 2px 7px; border-radius:13px; cursor:pointer;
-    border:1.5px solid var(--gold-dim); background:rgba(8,26,18,.5); color:var(--gold-hi);
-    font-family:"Cinzel",serif; font-weight:700; font-size:14.5px; line-height:1.15; -webkit-tap-highlight-color:transparent}
-  .timechip small{display:block; font-family:"Jost",sans-serif; font-weight:500; font-size:9.5px; letter-spacing:.18em; text-transform:uppercase; color:var(--cream-dim); margin-top:2px}
-  .timechip.unset{border-style:dashed; color:var(--cream-dim); font-family:"Jost",sans-serif; font-weight:500; font-size:12.5px; letter-spacing:.04em}
-  .pthumb{flex:0 0 auto; width:58px; height:58px; border-radius:14px; object-fit:cover; border:1px solid rgba(232,196,118,.3); background:var(--g700)}
-  .pmotif{flex:0 0 auto; width:58px; height:58px; border-radius:14px; display:flex; align-items:center; justify-content:center;
+  .pnum{flex:0 0 auto; width:26px; text-align:center; font-family:"Cinzel",serif; font-weight:700; font-size:17px; color:var(--gold-hi)}
+  .pthumb{flex:0 0 auto; width:96px; height:96px; border-radius:18px; object-fit:cover; border:1px solid rgba(232,196,118,.3); background:var(--g700)}
+  .pmotif{flex:0 0 auto; width:96px; height:96px; border-radius:18px; display:flex; align-items:center; justify-content:center;
     border:1px solid rgba(232,196,118,.3); background:radial-gradient(120% 120% at 30% 20%, var(--g600), var(--g800)); color:var(--gold)}
-  .pmotif svg{width:30px; height:30px}
+  .pmotif svg{width:44px; height:44px}
   .pmeta{min-width:0; flex:1 1 auto}
-  .pmeta .pname{font-weight:600; font-size:16.5px; line-height:1.25}
-  .pmeta .psub{font-size:13px; color:var(--cream-dim); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
-  .timeedit{display:flex; flex-wrap:wrap; gap:8px; align-items:center; padding:0 12px 12px; margin:-4px 0 10px;
-    border-radius:0 0 18px 18px}
-  .timeedit input[type="time"]{font-family:"Jost",sans-serif; font-size:16px; padding:9px 12px; border-radius:11px;
-    border:1px solid var(--gold-dim); background:rgba(8,26,18,.7); color:var(--cream); color-scheme:dark}
-  .tbtn{padding:9px 15px; border-radius:11px; border:1px solid var(--gold-dim); cursor:pointer; font-family:"Jost",sans-serif;
-    font-size:14px; font-weight:600; letter-spacing:.03em; background:rgba(232,196,118,.14); color:var(--gold-hi); -webkit-tap-highlight-color:transparent}
-  .tbtn.plain{background:transparent; color:var(--cream-dim)}
+  .pmeta .pname{font-weight:600; font-size:19px; line-height:1.25}
+  .pmeta .psub{font-size:13.5px; color:var(--cream-dim); margin-top:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .pmeta .pshows{font-size:13px; font-weight:600; letter-spacing:.02em; color:var(--gold-hi); margin-top:4px; line-height:1.4}
+  .pmeta .pshows.tba{color:var(--cream-dim); font-weight:500; font-style:italic}
+  .ordctl{flex:0 0 auto; display:flex; flex-direction:column; gap:8px}
+  .ordbtn{width:38px; height:38px; border-radius:12px; display:flex; align-items:center; justify-content:center; cursor:pointer;
+    border:1.5px solid var(--gold-dim); background:rgba(8,26,18,.5); color:var(--gold-hi); -webkit-tap-highlight-color:transparent}
+  .ordbtn svg{width:17px; height:17px}
+  .ordbtn:disabled{opacity:.28; cursor:default}
+  .ordbtn:active:not(:disabled){background:rgba(232,196,118,.22)}
+  .ashows{display:inline-block; margin-top:9px; padding:6px 11px; border-radius:999px; font-size:12.5px; font-weight:600; letter-spacing:.02em;
+    color:var(--gold-hi); border:1px solid rgba(232,196,118,.35); background:rgba(8,26,18,.4)}
+  .ashows.tba{color:var(--cream-dim); font-weight:500}
   .empty{padding:26px 22px; text-align:center; border-radius:var(--radius); border:1.5px dashed rgba(232,196,118,.4);
     background:rgba(8,26,18,.35); color:var(--cream-dim); font-size:15.5px; line-height:1.55}
   .empty .big{font-size:26px; display:block; margin-bottom:8px; color:var(--gold)}
@@ -289,7 +289,7 @@
     <div class="summary" id="summaryRow"></div>
 
     <div class="secttl"><h3>Tonight's Itinerary</h3><div class="rule"></div></div>
-    <p class="sectsub">Everything the fam starred, in running order. Tap a time to slot a pick into the night — times are shared, so the plan stays in sync for everyone.</p>
+    <p class="sectsub">Everything the fam starred, in the order you'll hit it. Use the arrows to arrange the running order — it's shared, so the night stays in sync for everyone.</p>
     <div id="planList"></div>
   </section>
 
@@ -414,11 +414,10 @@ async function passkeySignIn() {
 /* ---------- state ---------- */
 let guide = null, me = null;
 const votes = new Map();   // itemId -> [{by, mine, at}]
-let times = {};            // itemId -> "HH:MM"
-const INDEX = new Map();   // itemId -> {kind, name, sub, img, motif}
+let orderIds = [];         // shared running order: [itemId, ...]
+const INDEX = new Map();   // itemId -> {kind, name, sub, img, motif, shows}
 let foodFilter = "all";
 let drinkFilter = "all";
-let editingTimeFor = null;
 
 function toast(msg) {
   const t = $("#toast"); t.textContent = msg; t.classList.add("on");
@@ -537,6 +536,7 @@ function renderActivities() {
     return `<article class="card">${ph}<div class="bd">
       <h4>${esc(a.name)}</h4>
       <div class="where">${esc(a.where)}</div>
+      ${showsHtml(a, "ashows")}
       <p class="desc">${esc(a.desc)}</p>
       <div class="voterow">${voteRowHtml(a.id, "Must-do")}</div>
     </div></article>`;
@@ -544,11 +544,10 @@ function renderActivities() {
 }
 
 /* ---------- gameplan ---------- */
-function fmtTime(t) {
-  if (!t) return "";
-  let [h, m] = t.split(":").map(Number);
-  const ap = h >= 12 ? "PM" : "AM"; h = h % 12 || 12;
-  return `${h}:${String(m).padStart(2, "0")} ${ap}`;
+function showsHtml(meta, cls) {
+  if (!meta || !meta.shows) return "";
+  if (meta.shows === "TBA") return `<div class="${cls} tba">Showtimes TBA \u2014 Disney hasn't posted them yet</div>`;
+  return `<div class="${cls}">Shows \u00b7 ${esc(meta.shows)}</div>`;
 }
 function picksList() {
   const picks = [];
@@ -558,27 +557,27 @@ function picksList() {
   }
   return picks;
 }
-function planRow(p) {
-  const t = times[p.id];
-  const chip = t
-    ? `<button class="timechip" data-time="${esc(p.id)}" type="button">${esc(fmtTime(t))}<small>tap to edit</small></button>`
-    : `<button class="timechip unset" data-time="${esc(p.id)}" type="button">Set<br>time</button>`;
+function effectiveOrder(picks) {
+  const byId = new Map(picks.map((p) => [p.id, p]));
+  const ordered = [];
+  for (const id of orderIds) if (byId.has(id)) { ordered.push(byId.get(id)); byId.delete(id); }
+  const rest = [...byId.values()].sort((a, b) => b.votes.count - a.votes.count || a.name.localeCompare(b.name));
+  return ordered.concat(rest);
+}
+const CHEV_UP = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 14.5 12 7.5l7 7"/></svg>';
+const CHEV_DN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9.5 12 16.5l7-7"/></svg>';
+function planRow(p, idx, total) {
   const thumb = p.img
     ? `<img class="pthumb" src="${esc(p.img)}" alt="" loading="lazy" decoding="async">`
     : `<span class="pmotif">${motifSvg(p.motif)}</span>`;
-  const names = p.votes.list.map((v) => v.by).join(" · ");
-  let html = `<div class="prow">${chip}${thumb}
+  const names = p.votes.list.map((v) => v.by).join(" \u00b7 ");
+  return `<div class="prow"><div class="pnum">${idx + 1}</div>${thumb}
     <div class="pmeta"><div class="pname">${esc(p.name)}</div>
-    <div class="psub"><span class="pbadge ${p.kind === "drink" ? "drink" : p.kind === "act" ? "act" : "food"}">${p.kind === "drink" ? "Drink" : p.kind === "act" ? "Activity" : "Food"}</span>${esc(p.sub)} — ★ ${esc(names)}</div></div></div>`;
-  if (editingTimeFor === p.id) {
-    html += `<div class="timeedit">
-      <input type="time" id="timeInput" value="${esc(t || "19:30")}" step="300">
-      <button class="tbtn" data-timeset="${esc(p.id)}" type="button">Set time</button>
-      ${t ? `<button class="tbtn plain" data-timeclear="${esc(p.id)}" type="button">Clear</button>` : ""}
-      <button class="tbtn plain" data-timedone type="button">Done</button>
-    </div>`;
-  }
-  return html;
+    <div class="psub"><span class="pbadge ${p.kind === "drink" ? "drink" : p.kind === "act" ? "act" : "food"}">${p.kind === "drink" ? "Drink" : p.kind === "act" ? "Activity" : "Food"}</span>${esc(p.sub)} \u2014 \u2605 ${esc(names)}</div>${showsHtml(p, "pshows")}</div>
+    <div class="ordctl">
+      <button class="ordbtn" data-move="${esc(p.id)}:up" type="button" aria-label="Move up" ${idx === 0 ? "disabled" : ""}>${CHEV_UP}</button>
+      <button class="ordbtn" data-move="${esc(p.id)}:down" type="button" aria-label="Move down" ${idx === total - 1 ? "disabled" : ""}>${CHEV_DN}</button>
+    </div></div>`;
 }
 function renderGameplan() {
   const picks = picksList();
@@ -592,42 +591,29 @@ function renderGameplan() {
     <div class="sumchip"><b>${stops}</b><span>Stops</span></div>`;
   const host = $("#planList");
   if (!picks.length) {
-    host.innerHTML = `<div class="empty"><span class="big">★</span>No picks yet. Star the bites you want in <b>Food</b>, the sips in <b>Drinks</b>, and the shows you can't miss in <b>Activities</b> — they'll line up here as tonight's itinerary.</div>`;
+    host.innerHTML = `<div class="empty"><span class="big">\u2605</span>No picks yet. Star the bites you want in <b>Food</b>, the sips in <b>Drinks</b>, and the shows you can't miss in <b>Activities</b> \u2014 they'll line up here as tonight's itinerary.</div>`;
     return;
   }
-  const timed = picks.filter((p) => times[p.id]).sort((a, b) => times[a.id].localeCompare(times[b.id]));
-  const untimed = picks.filter((p) => !times[p.id]).sort((a, b) => b.votes.count - a.votes.count || a.name.localeCompare(b.name));
-  let html = "";
-  if (timed.length) {
-    html += `<div class="secttl"><h3 style="font-size:16px">The Running Order</h3><div class="rule"></div></div>`;
-    html += timed.map(planRow).join("");
-  }
-  if (untimed.length) {
-    html += `<div class="secttl"><h3 style="font-size:16px">Whenever We're Nearby</h3><div class="rule"></div></div>`;
-    html += untimed.map(planRow).join("");
-  }
+  const ordered = effectiveOrder(picks);
+  let html = `<div class="secttl"><h3 style="font-size:16px">The Running Order</h3><div class="rule"></div></div>`;
+  html += ordered.map((p, i) => planRow(p, i, ordered.length)).join("");
   host.innerHTML = html;
 }
 document.addEventListener("click", async (e) => {
-  const chip = e.target.closest("[data-time]");
-  if (chip) { editingTimeFor = editingTimeFor === chip.dataset.time ? null : chip.dataset.time; renderGameplan(); return; }
-  if (e.target.closest("[data-timedone]")) { editingTimeFor = null; renderGameplan(); return; }
-  const setBtn = e.target.closest("[data-timeset]");
-  if (setBtn) {
-    const id = setBtn.dataset.timeset;
-    const val = $("#timeInput").value;
-    if (!val) return;
-    times[id] = val; editingTimeFor = null; renderGameplan();
-    try { await api("POST", "/api/jollywood/plan", { itemId: id, time: val }); }
-    catch (err) { toast("That time didn't save — try again."); }
-    return;
-  }
-  const clrBtn = e.target.closest("[data-timeclear]");
-  if (clrBtn) {
-    const id = clrBtn.dataset.timeclear;
-    delete times[id]; editingTimeFor = null; renderGameplan();
-    try { await api("POST", "/api/jollywood/plan", { itemId: id, time: null }); }
-    catch (err) { toast("That change didn't save — try again."); }
+  const mv = e.target.closest("[data-move]");
+  if (!mv || mv.disabled) return;
+  const [id, dir] = mv.dataset.move.split(":");
+  const ordered = effectiveOrder(picksList());
+  const i = ordered.findIndex((p) => p.id === id);
+  const j = dir === "up" ? i - 1 : i + 1;
+  if (i < 0 || j < 0 || j >= ordered.length) return;
+  [ordered[i], ordered[j]] = [ordered[j], ordered[i]];
+  orderIds = ordered.map((p) => p.id);
+  renderGameplan();
+  try { await api("POST", "/api/jollywood/plan", { order: orderIds }); }
+  catch (err) {
+    toast("That move didn't save \u2014 try again.");
+    try { const p = await api("GET", "/api/jollywood/plan"); orderIds = Array.isArray(p.order) ? p.order : []; renderGameplan(); } catch {}
   }
 });
 
@@ -675,7 +661,7 @@ async function loadApp() {
     api("GET", "/api/jollywood/votes"),
     api("GET", "/api/jollywood/plan"),
   ]);
-  guide = g; me = v.me || null; times = p.times || {};
+  guide = g; me = v.me || null; orderIds = Array.isArray(p.order) ? p.order : [];
   votes.clear();
   for (const row of v.votes || []) {
     if (!votes.has(row.itemId)) votes.set(row.itemId, []);
@@ -685,7 +671,7 @@ async function loadApp() {
   for (const venue of guide.venues) for (const it of venue.items)
     INDEX.set(it.id, { kind: it.drink ? "drink" : "food", name: it.name, sub: venue.name, img: it.img, motif: "star" });
   for (const a of guide.activities)
-    INDEX.set(a.id, { kind: "act", name: a.name, sub: a.where, img: a.img, motif: a.motif });
+    INDEX.set(a.id, { kind: "act", name: a.name, sub: a.where, img: a.img, motif: a.motif, shows: a.shows || null });
   if (me) {
     const chip = $("#meChip"); chip.textContent = "★ " + me; chip.hidden = false;
     $("#meCard").hidden = false;

@@ -1024,14 +1024,25 @@ export const GUIDE = {
    "id": "act--holidays-in-hollywood",
    "name": "Disney Holidays in Hollywood",
    "where": "Theater of the Stars · Sunset Boulevard",
+   "shows": "7:00 · 8:15 · 9:15 · 11:00 PM · 12:00 AM",
    "desc": "A star-studded Christmas variety show hosted by Kermit the Frog and Miss Piggy — singing, dancing, and very special guests from classic Disney favorites.",
    "img": "photos/event-keyart.jpg",
+   "motif": "stage"
+  },
+  {
+   "id": "act--nightmare-singalong",
+   "name": "What's This? Tim Burton's The Nightmare Before Christmas Sing-Along",
+   "where": "Hyperion Theater · Echo Lake",
+   "shows": "6:30 · 7:30 · 8:30 · 9:30 · 11:30 PM",
+   "desc": "Jack Skellington hosts a musical retelling of The Nightmare Before Christmas, and the whole theater sings along — 'What's This?', 'This Is Halloween', and all the rest. The 6:30 show starts before the party officially opens, during early entry.",
+   "img": null,
    "motif": "stage"
   },
   {
    "id": "act--glisten",
    "name": "Glisten!",
    "where": "Hollywood Boulevard",
+   "shows": "TBA",
    "desc": "Champion ice skaters carve up Hollywood Boulevard in a glittering holiday skating spectacular, with guest appearances from classic Disney friends.",
    "img": null,
    "motif": "skate"
@@ -1056,6 +1067,7 @@ export const GUIDE = {
    "id": "act--jingle-bam",
    "name": "Jingle Bell, Jingle BAM!",
    "where": "Hollywood Boulevard",
+   "shows": "10:00 PM",
    "desc": "The grand finale: fireworks, lasers, lights and projections set to holiday moments from classic Disney movies. The whole boulevard looks up.",
    "img": null,
    "motif": "finale"
