@@ -110,6 +110,8 @@
     <h1 class="inv-headline" id="inv-headline"></h1>
     <p class="sub">Create your passkey to open it — you'll sign in with Face ID from then on. No password, ever.</p>
     <div id="inv-form">
+      <label for="inv-name">Your name</label>
+      <input id="inv-name" type="text" autocomplete="name" placeholder="e.g. John">
       <label for="inv-email2">Your email</label>
       <input id="inv-email2" type="email" autocomplete="email" placeholder="name@example.com">
       <button id="btn-invite-register">Create passkey with Face ID</button>
@@ -128,6 +130,8 @@
     <div id="register-zone" hidden>
       <div class="divider">NEW HERE?</div>
       <p id="reg-text">Create your passkey — you'll sign in with Face ID from now on.</p>
+      <label for="reg-name">Your name</label>
+      <input id="reg-name" type="text" autocomplete="name" placeholder="e.g. John">
       <label for="reg-email">Your email</label>
       <input id="reg-email" type="email" autocomplete="email" placeholder="name@example.com">
       <label for="reg-invite" id="reg-invite-label">Invite code</label>
@@ -164,7 +168,8 @@ async function register(){
   if (!email) { showError("Enter your email first."); return; }
   const btn = $("btn-register"); btn.disabled = true;
   try {
-    const options = await api("POST", "/api/auth/register/options", { email, inviteCode: inviteCode || undefined });
+    const nameEl = $("reg-name");
+    const options = await api("POST", "/api/auth/register/options", { email, name: nameEl && nameEl.value.trim() || undefined, inviteCode: inviteCode || undefined });
     options.user.id = b64urlToBuf(options.user.id);
     options.challenge = b64urlToBuf(options.challenge);
     const cred = await navigator.credentials.create({ publicKey: options });
@@ -244,7 +249,8 @@ async function registerInvite() {
   if (!email) { showError("Enter your email first."); return; }
   const btn = $("btn-invite-register"); btn.disabled = true;
   try {
-    const options = await api("POST", "/api/auth/register/options", { email, inviteCode: inviteFromLink });
+    const name = $("inv-name").value.trim();
+    const options = await api("POST", "/api/auth/register/options", { email, name: name || undefined, inviteCode: inviteFromLink });
     options.user.id = b64urlToBuf(options.user.id);
     options.challenge = b64urlToBuf(options.challenge);
     const cred = await navigator.credentials.create({ publicKey: options });

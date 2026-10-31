@@ -345,7 +345,8 @@ export async function registrationOptions(env, request, body) {
   }
   const existing = await env.DB.prepare("SELECT * FROM users WHERE email = ?1").bind(email).first();
   const handle = existing ? existing.handle : randomB64url(16);
-  const { challenge } = await storeChallenge(env, "register", email, { mode, inviteHash, handle, scope: inviteScope });
+  const displayName = String(body.name || "").replace(/[<>\u0000-\u001F]/g, "").trim().slice(0, 60) || null;
+  const { challenge } = await storeChallenge(env, "register", email, { mode, inviteHash, handle, scope: inviteScope, name: displayName });
   return { options: {
     challenge,
     rp: { id: RP_ID, name: RP_NAME },
@@ -376,7 +377,7 @@ export async function verifyRegistration(env, body) {
     const id = "u_" + randomB64url(9);
     const role = context.mode === "bootstrap" ? "admin" : "member";
     await env.DB.prepare("INSERT INTO users (id, email, name, handle, role, scope, created_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)")
-      .bind(id, email, email.split("@")[0], context.handle || randomB64url(16), role, context.scope || null, nowIso()).run();
+      .bind(id, email, context.name || email.split("@")[0], context.handle || randomB64url(16), role, context.scope || null, nowIso()).run();
     user = { id, email, role };
   }
   await env.DB.prepare("INSERT INTO credentials (cred_id, user_id, public_key_jwk, counter, created_at) VALUES (?1, ?2, ?3, ?4, ?5)")
