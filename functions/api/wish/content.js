@@ -1,4 +1,4 @@
-import { json, requireIdentity } from "../../_lib/auth.js";
+import { appAllowed, json, requireIdentity } from "../../_lib/auth.js";
 import { getDoc, putDoc } from "../../_lib/docStore.js";
 
 // The Wish Day Guide document, stored server-side so it is only ever
@@ -12,6 +12,7 @@ export async function onRequestGet(context) {
   const { env, request } = context;
   const id = await requireIdentity(env, request);
   if (!id) return json({ error: "not signed in" }, 401);
+  if (!appAllowed(id, SLUG)) return json({ error: "this account doesn't cover this app" }, 403);
   const row = await getDoc(env.DB, SLUG);
   if (!row) return json({ error: "no content yet" }, 404);
   return json({ html: row.html, updatedAt: row.updated_at });
@@ -21,6 +22,7 @@ export async function onRequestPut(context) {
   const { env, request } = context;
   const id = await requireIdentity(env, request);
   if (!id) return json({ error: "not signed in" }, 401);
+  if (!appAllowed(id, SLUG)) return json({ error: "this account doesn't cover this app" }, 403);
   let body;
   try { body = await context.request.json(); } catch { return json({ error: "bad json" }, 400); }
   const html = body && body.html;

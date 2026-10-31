@@ -1,4 +1,4 @@
-import { json, requireIdentity } from "../../_lib/auth.js";
+import { appAllowed, json, requireIdentity } from "../../_lib/auth.js";
 
 // The MAX Pocket Agenda app document itself, stored server-side so the app
 // is only served to signed-in accounts. The public shell page fetches it
@@ -12,6 +12,7 @@ export async function onRequestGet(context) {
   const { env, request } = context;
   const id = await requireIdentity(env, request);
   if (!id) return json({ error: "not signed in" }, 401);
+  if (!appAllowed(id, "max-pocket-agenda")) return json({ error: "this account doesn't cover this app" }, 403);
   const db = context.env.DB;
   await ensureContentSchema(db);
   const row = await db.prepare("SELECT html, updated_at FROM max_content WHERE id = 1").first();
@@ -23,6 +24,7 @@ export async function onRequestPut(context) {
   const { env, request } = context;
   const id = await requireIdentity(env, request);
   if (!id) return json({ error: "not signed in" }, 401);
+  if (!appAllowed(id, "max-pocket-agenda")) return json({ error: "this account doesn't cover this app" }, 403);
   let body;
   try { body = await context.request.json(); } catch { return json({ error: "bad json" }, 400); }
   const html = body && body.html;

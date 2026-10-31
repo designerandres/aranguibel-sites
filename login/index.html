@@ -45,6 +45,15 @@
   .inviteurl{ word-break:break-all; font-size:13.5px; background:rgba(0,0,0,.25); border:1px solid var(--line);
               border-radius:12px; padding:10px 12px; margin-top:10px; color:var(--ink); }
   .who{ font-size:15px; } .who b{ font-weight:600; }
+  .scopedrop{ margin-top:14px; border:1px solid var(--line); border-radius:12px; background:rgba(0,0,0,.18); }
+  .scopedrop summary{ cursor:pointer; padding:12px 14px; font-size:15px; font-weight:600; list-style:none; }
+  .scopedrop summary::-webkit-details-marker{ display:none; }
+  .scopedrop summary::after{ content:"\25BE"; float:right; color:var(--ink2); }
+  .scopelist{ padding:2px 14px 12px; }
+  .scoperow{ display:flex; align-items:center; gap:10px; margin-top:0; padding:7px 0; font-size:15px; color:var(--ink); cursor:pointer; }
+  .scoperow input{ width:auto; margin:0; accent-color:var(--accent); }
+  .scopehint{ font-size:13px; color:var(--ink2); line-height:1.45; margin-top:6px; }
+  .covers{ font-size:13.5px; color:var(--ink2); margin-top:8px; line-height:1.45; }
   [hidden]{ display:none !important; }
 </style>
 </head>
@@ -64,9 +73,22 @@
       <div class="divider">INVITE SOMEONE</div>
       <label for="inv-email">Their email</label>
       <input id="inv-email" type="email" autocomplete="off" placeholder="name@example.com">
+      <details class="scopedrop" id="inv-scope-drop">
+        <summary id="inv-scope-summary">All apps (full account)</summary>
+        <div class="scopelist">
+          <label class="scoperow"><input type="checkbox" class="inv-app" value="jollywood-fam-2026"> Jollywood Fam 2026</label>
+          <label class="scoperow"><input type="checkbox" class="inv-app" value="poppy-picks"> Poppy's Picks</label>
+          <label class="scoperow"><input type="checkbox" class="inv-app" value="cycles"> Cycles</label>
+          <label class="scoperow"><input type="checkbox" class="inv-app" value="max-pocket-agenda"> MAX Pocket Agenda</label>
+          <label class="scoperow"><input type="checkbox" class="inv-app" value="lodge-boys-2026"> Lodge Boys 2026</label>
+          <label class="scoperow"><input type="checkbox" class="inv-app" value="wish-day-guide"> Wish Day Guide</label>
+          <p class="scopehint">Tick one or more apps to limit this invite to just those. Leave everything unticked for a full account that opens everything.</p>
+        </div>
+      </details>
       <button class="secondary" id="btn-invite">Create invite link</button>
       <div class="inviteurl" id="inv-url" hidden></div>
       <button class="secondary" id="btn-copy" hidden>Copy invite link</button>
+      <div class="covers" id="inv-covers" hidden></div>
       <p style="margin-top:8px">Send them the link yourself (Messages, in person…). It works once, for that email, for 7 days.</p>
     </div>
   </div>
@@ -182,15 +204,33 @@ $("btn-addpasskey").addEventListener("click", async () => {
 $("btn-show-register").addEventListener("click", () => { $("register-zone").hidden = false; $("btn-show-register").hidden = true; });
 $("btn-apps").addEventListener("click", () => location.href = "/");
 $("btn-logout").addEventListener("click", async () => { await api("POST", "/api/auth/logout", {}).catch(() => {}); location.reload(); });
+function pickedApps() {
+  return Array.from(document.querySelectorAll(".inv-app")).filter((c) => c.checked);
+}
+function appName(cb) { return cb.parentElement.textContent.trim(); }
+function syncScopeSummary() {
+  const picked = pickedApps();
+  $("inv-scope-summary").textContent = !picked.length
+    ? "All apps (full account)"
+    : picked.length === 1 ? "Just: " + appName(picked[0]) : picked.length + " apps: " + picked.map(appName).join(", ");
+}
+document.querySelectorAll(".inv-app").forEach((c) => c.addEventListener("change", syncScopeSummary));
 $("btn-invite").addEventListener("click", async () => {
   showError("");
   const email = $("inv-email").value.trim();
   if (!email) { showError("Enter their email first."); return; }
+  const picked = pickedApps();
+  const scope = picked.length ? picked.map((c) => c.value) : null;
   try {
-    const inv = await api("POST", "/api/auth/invite", { email });
+    const inv = await api("POST", "/api/auth/invite", { email, scope });
     $("inv-url").hidden = false; $("inv-url").textContent = inv.url;
     $("btn-copy").hidden = false;
     $("btn-copy").onclick = () => navigator.clipboard && navigator.clipboard.writeText(inv.url);
+    const covers = $("inv-covers");
+    covers.hidden = false;
+    covers.textContent = inv.scope && inv.scope.length
+      ? "This invite opens only: " + picked.map(appName).join(", ") + "."
+      : "Heads up: this invite opens all apps (full account).";
   } catch (e) { showError(e.message); }
 });
 init();

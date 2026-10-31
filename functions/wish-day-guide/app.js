@@ -1,4 +1,4 @@
-import { requireIdentity } from "../_lib/auth.js";
+import { appAllowed, requireIdentity } from "../_lib/auth.js";
 import { getDoc } from "../_lib/docStore.js";
 
 // Serves the Wish Day Guide as a real page to signed-in accounts only;
@@ -9,7 +9,7 @@ export async function onRequestGet(context) {
   const { env, request } = context;
   const shellUrl = new URL("/wish-day-guide/", request.url).toString();
   const identity = await requireIdentity(env, request);
-  if (!identity) return Response.redirect(shellUrl, 302);
+  if (!identity || !appAllowed(identity, "wish-day-guide")) return Response.redirect(shellUrl, 302);
   let row = null;
   try { row = await getDoc(env.DB, "wish-day-guide"); } catch { row = null; }
   if (!row || !row.html) return Response.redirect(shellUrl, 302);

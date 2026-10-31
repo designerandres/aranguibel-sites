@@ -22,6 +22,24 @@ const SESSION_DAYS = 90;
 const CHALLENGE_MINUTES = 5;
 const INVITE_DAYS = 7;
 
+// Invitable apps, by slug. An account's scope is either null (a full
+// account — the household default) or a list of these slugs: guest accounts
+// created from a scoped invite only get into the apps they were invited to.
+export const APP_SLUGS = ["jollywood-fam-2026", "poppy-picks", "cycles", "max-pocket-agenda", "lodge-boys-2026", "wish-day-guide"];
+export function parseScope(raw) {
+  if (!raw) return null;
+  try {
+    const v = JSON.parse(raw);
+    if (!Array.isArray(v)) return [];
+    return v.filter((s) => APP_SLUGS.includes(s));
+  } catch { return []; }
+}
+export function appAllowed(identity, slug) {
+  if (!identity) return false;
+  if (!identity.scope) return true;
+  return identity.scope.includes(slug);
+}
+
 /* ---------- small utilities ---------- */
 
 export function b64urlEncode(bytes) {
@@ -76,11 +94,19 @@ export function originOk(request) {
 
 /* ---------- schema ---------- */
 
+async function ensureColumn(env, table, column, ddl) {
+  try {
+    const { results } = await env.DB.prepare(`PRAGMA table_info(${table})`).all();
+    if (results && results.some((r) => r.name === column)) return;
+    await env.DB.prepare(ddl).run();
+  } catch { /* a racing deploy may add it first; either way it lands */ }
+}
+
 export async function ensureAuthSchema(env) {
   await env.DB.batch([
     env.DB.prepare(`CREATE TABLE IF NOT EXISTS users (
       id TEXT PRIMARY KEY, email TEXT NOT NULL UNIQUE, name TEXT,
-      handle TEXT NOT NULL, role TEXT NOT NULL DEFAULT 'member', created_at TEXT NOT NULL)`),
+      handle TEXT NOT NULL, role TEXT NOT NULL DEFAULT 'member', scope TEXT, created_at TEXT NOT NULL)`),
     env.DB.prepare(`CREATE TABLE IF NOT EXISTS credentials (
       cred_id TEXT PRIMARY KEY, user_id TEXT NOT NULL REFERENCES users(id),
       public_key_jwk TEXT NOT NULL, counter INTEGER NOT NULL DEFAULT 0,
@@ -93,8 +119,10 @@ export async function ensureAuthSchema(env) {
       email TEXT, context TEXT, created_at TEXT NOT NULL, expires_at TEXT NOT NULL)`),
     env.DB.prepare(`CREATE TABLE IF NOT EXISTS invites (
       code_hash TEXT PRIMARY KEY, email TEXT NOT NULL, created_by TEXT,
-      created_at TEXT NOT NULL, expires_at TEXT NOT NULL, used_by TEXT, used_at TEXT)`),
+      created_at TEXT NOT NULL, expires_at TEXT NOT NULL, scope TEXT, used_by TEXT, used_at TEXT)`),
   ]);
+  await ensureColumn(env, "users", "scope", "ALTER TABLE users ADD COLUMN scope TEXT");
+  await ensureColumn(env, "invites", "scope", "ALTER TABLE invites ADD COLUMN scope TEXT");
 }
 
 /* ---------- Cloudflare Access JWT (transition) ---------- */
@@ -151,11 +179,11 @@ async function sessionIdentity(env, request) {
   const token = parseCookies(request)[SESSION_COOKIE];
   if (!token) return null;
   const row = await env.DB.prepare(
-    `SELECT u.id AS user_id, u.email, u.name, u.role FROM sessions s JOIN users u ON u.id = s.user_id
+    `SELECT u.id AS user_id, u.email, u.name, u.role, u.scope FROM sessions s JOIN users u ON u.id = s.user_id
      WHERE s.token_hash = ?1 AND s.expires_at > ?2`
   ).bind(await sha256Hex(token), nowIso()).first();
   if (!row) return null;
-  return { userId: row.user_id, email: row.email, name: row.name, role: row.role, via: "session" };
+  return { userId: row.user_id, email: row.email, name: row.name, role: row.role, scope: parseScope(row.scope), via: "session" };
 }
 export async function destroySession(env, request) {
   const token = parseCookies(request)[SESSION_COOKIE];
@@ -170,8 +198,8 @@ export async function requireIdentity(env, request) {
   if (viaSession) return viaSession;
   const jwt = await verifyAccessJWT(request);
   if (jwt) {
-    const user = await env.DB.prepare("SELECT id, name, role FROM users WHERE email = ?1").bind(jwt.email).first();
-    return { userId: user ? user.id : null, email: jwt.email, name: user ? user.name : null, role: user ? user.role : null, via: "access" };
+    const user = await env.DB.prepare("SELECT id, name, role, scope FROM users WHERE email = ?1").bind(jwt.email).first();
+    return { userId: user ? user.id : null, email: jwt.email, name: user ? user.name : null, role: user ? user.role : null, scope: user ? parseScope(user.scope) : null, via: "access" };
   }
   return null;
 }
@@ -293,7 +321,7 @@ async function consumeChallenge(env, clientDataBytes) {
 export async function registrationOptions(env, request, body) {
   const email = String(body.email || "").trim().toLowerCase();
   if (!email.includes("@")) return { error: json({ error: "valid email required" }, 400) };
-  let mode = null, inviteHash = null;
+  let mode = null, inviteHash = null, inviteScope = null;
   if (body.inviteCode) {
     inviteHash = await sha256Hex(String(body.inviteCode).trim());
     const invite = await env.DB.prepare("SELECT * FROM invites WHERE code_hash = ?1 AND used_at IS NULL AND expires_at > ?2")
@@ -301,6 +329,7 @@ export async function registrationOptions(env, request, body) {
     if (!invite) return { error: json({ error: "invite invalid, used, or expired" }, 403) };
     if (invite.email.toLowerCase() !== email) return { error: json({ error: "invite was issued for a different email" }, 403) };
     mode = "invite";
+    inviteScope = invite.scope || null;
   } else {
     // Signed-in user adding a passkey for another of their devices.
     const session = await sessionIdentity(env, request);
@@ -316,7 +345,7 @@ export async function registrationOptions(env, request, body) {
   }
   const existing = await env.DB.prepare("SELECT * FROM users WHERE email = ?1").bind(email).first();
   const handle = existing ? existing.handle : randomB64url(16);
-  const { challenge } = await storeChallenge(env, "register", email, { mode, inviteHash, handle });
+  const { challenge } = await storeChallenge(env, "register", email, { mode, inviteHash, handle, scope: inviteScope });
   return { options: {
     challenge,
     rp: { id: RP_ID, name: RP_NAME },
@@ -346,8 +375,8 @@ export async function verifyRegistration(env, body) {
   if (!user) {
     const id = "u_" + randomB64url(9);
     const role = context.mode === "bootstrap" ? "admin" : "member";
-    await env.DB.prepare("INSERT INTO users (id, email, name, handle, role, created_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6)")
-      .bind(id, email, email.split("@")[0], context.handle || randomB64url(16), role, nowIso()).run();
+    await env.DB.prepare("INSERT INTO users (id, email, name, handle, role, scope, created_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)")
+      .bind(id, email, email.split("@")[0], context.handle || randomB64url(16), role, context.scope || null, nowIso()).run();
     user = { id, email, role };
   }
   await env.DB.prepare("INSERT INTO credentials (cred_id, user_id, public_key_jwk, counter, created_at) VALUES (?1, ?2, ?3, ?4, ?5)")
@@ -396,9 +425,11 @@ export async function verifyLogin(env, body) {
 
 /* ---------- invites ---------- */
 
-export async function createInvite(env, identity, email) {
+export async function createInvite(env, identity, email, scope) {
   const code = randomB64url(18);
-  await env.DB.prepare("INSERT INTO invites (code_hash, email, created_by, created_at, expires_at) VALUES (?1, ?2, ?3, ?4, ?5)")
-    .bind(await sha256Hex(code), email.toLowerCase(), identity.email, nowIso(), plusIso(INVITE_DAYS * 86400_000)).run();
-  return { code, url: `${ORIGIN}/login/#invite=${code}`, expiresInDays: INVITE_DAYS };
+  const picked = Array.isArray(scope) ? [...new Set(scope.filter((s) => APP_SLUGS.includes(s)))] : [];
+  const stored = picked.length ? JSON.stringify(picked) : null;
+  await env.DB.prepare("INSERT INTO invites (code_hash, email, created_by, created_at, expires_at, scope) VALUES (?1, ?2, ?3, ?4, ?5, ?6)")
+    .bind(await sha256Hex(code), email.toLowerCase(), identity.email, nowIso(), plusIso(INVITE_DAYS * 86400_000), stored).run();
+  return { code, url: `${ORIGIN}/login/#invite=${code}`, expiresInDays: INVITE_DAYS, scope: picked.length ? picked : null };
 }

@@ -4,12 +4,12 @@
 // Either way the API also stays closed on aranguibel-sites.pages.dev.
 // No email addresses are stored in this (public) repo on purpose.
 
-import { requireIdentity } from "./auth.js";
+import { appAllowed, requireIdentity } from "./auth.js";
 
 // Historical name kept for the route files: returns the caller's email or null.
 export async function requireAccessUser(env, request) {
   const identity = await requireIdentity(env, request);
-  return identity ? identity.email : null;
+  return identity && appAllowed(identity, "cycles") ? identity.email : null;
 }
 
 export { json } from "./auth.js";

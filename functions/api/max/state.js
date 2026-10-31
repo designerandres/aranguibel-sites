@@ -4,7 +4,7 @@
 // here, per user account: one JSON document per user with per-section
 // timestamps the client uses to merge. Optimistic concurrency via
 // baseUpdatedAt — a stale writer gets a 409 with the current document.
-import { json, randomB64url, requireIdentity } from "../../_lib/auth.js";
+import { appAllowed, json, randomB64url, requireIdentity } from "../../_lib/auth.js";
 
 async function ensureMaxSchema(env) {
   await env.DB.prepare(
@@ -14,7 +14,7 @@ async function ensureMaxSchema(env) {
 }
 async function authedUser(env, request) {
   const identity = await requireIdentity(env, request);
-  if (!identity || !identity.userId) return null;
+  if (!identity || !identity.userId || !appAllowed(identity, "max-pocket-agenda")) return null;
   return identity;
 }
 

@@ -10,5 +10,6 @@ export async function onRequestGet({ request, env }) {
     role: identity.role,
     registered: !!identity.userId,
     via: identity.via,
+    scope: identity.scope || null,
   });
 }

@@ -1,4 +1,4 @@
-import { json, requireIdentity } from "../../_lib/auth.js";
+import { appAllowed, json, requireIdentity } from "../../_lib/auth.js";
 
 // Jollywood Fam 2026 gameplan times — ONE shared itinerary. Any signed-in
 // account can set or clear the time for a picked item; the Gameplan tab
@@ -21,6 +21,7 @@ export async function onRequestGet(context) {
   const { env, request } = context;
   const id = await requireIdentity(env, request);
   if (!id) return json({ error: "not signed in" }, 401);
+  if (!appAllowed(id, "jollywood-fam-2026")) return json({ error: "this account doesn't cover this app" }, 403);
   await ensureSchema(env.DB);
   const { results } = await env.DB
     .prepare("SELECT item_id, time FROM jollywood_plan WHERE time IS NOT NULL")
@@ -34,6 +35,7 @@ export async function onRequestPost(context) {
   const { env, request } = context;
   const id = await requireIdentity(env, request);
   if (!id) return json({ error: "not signed in" }, 401);
+  if (!appAllowed(id, "jollywood-fam-2026")) return json({ error: "this account doesn't cover this app" }, 403);
   let body;
   try { body = await request.json(); } catch { return json({ error: "bad json" }, 400); }
   const itemId = body && typeof body.itemId === "string" ? body.itemId.trim() : "";

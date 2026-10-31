@@ -1,4 +1,4 @@
-import { requireIdentity } from "../_lib/auth.js";
+import { appAllowed, requireIdentity } from "../_lib/auth.js";
 
 // Serves the MAX Pocket Agenda app document as a real page (no client-side
 // document.write boot — that proved unreliable in iOS WebKit). Only
@@ -8,7 +8,7 @@ export async function onRequestGet(context) {
   const { env, request } = context;
   const shellUrl = new URL("/max-pocket-agenda/", request.url).toString();
   const identity = await requireIdentity(env, request);
-  if (!identity) return Response.redirect(shellUrl, 302);
+  if (!identity || !appAllowed(identity, "max-pocket-agenda")) return Response.redirect(shellUrl, 302);
   let row = null;
   try {
     row = await env.DB.prepare("SELECT html FROM max_content WHERE id = 1").first();

@@ -25,6 +25,7 @@ export async function onRequestPut(context) {
   const { env, request } = context;
   const id = await requireIdentity(env, request);
   if (!id) return json({ error: "not signed in" }, 401);
+  if (id.scope) return json({ error: "guest accounts can't reorder the index" }, 403);
   let body;
   try { body = await request.json(); } catch { return json({ error: "bad json" }, 400); }
   const order = body && body.order;

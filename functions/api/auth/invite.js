@@ -9,5 +9,5 @@ export async function onRequestPost({ request, env }) {
   try { body = await request.json(); } catch { /* handled below */ }
   const email = String(body.email || "").trim();
   if (!email.includes("@")) return json({ error: "valid email required" }, 400);
-  return json(await createInvite(env, identity, email), 201);
+  return json(await createInvite(env, identity, email, Array.isArray(body.scope) ? body.scope : null), 201);
 }

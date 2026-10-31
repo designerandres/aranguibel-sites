@@ -1,4 +1,4 @@
-import { json, requireIdentity } from "../../_lib/auth.js";
+import { appAllowed, json, requireIdentity } from "../../_lib/auth.js";
 
 // Poppy's Picks event data. The listings themselves are public information
 // (harvested daily from public event sources into poppy-picks/events.json by
@@ -8,6 +8,7 @@ export async function onRequestGet(context) {
   const { env, request } = context;
   const id = await requireIdentity(env, request);
   if (!id) return json({ error: "not signed in" }, 401);
+  if (!appAllowed(id, "poppy-picks")) return json({ error: "this account doesn't cover this app" }, 403);
 
   const url = new URL(request.url);
   url.pathname = "/poppy-picks/events.json";

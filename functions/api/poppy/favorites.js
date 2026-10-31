@@ -1,4 +1,4 @@
-import { json, requireIdentity } from "../../_lib/auth.js";
+import { appAllowed, json, requireIdentity } from "../../_lib/auth.js";
 
 // Poppy's Picks favorites — ONE shared household list. Any signed-in
 // account sees (and can edit) the same set; each row remembers who
@@ -21,6 +21,7 @@ export async function onRequestGet(context) {
   const { env, request } = context;
   const id = await requireIdentity(env, request);
   if (!id) return json({ error: "not signed in" }, 401);
+  if (!appAllowed(id, "poppy-picks")) return json({ error: "this account doesn't cover this app" }, 403);
   await ensureSchema(env.DB);
   const { results } = await env.DB
     .prepare("SELECT event_id, by_email, by_name, created_at FROM poppy_favorites ORDER BY created_at ASC")
@@ -38,6 +39,7 @@ export async function onRequestPost(context) {
   const { env, request } = context;
   const id = await requireIdentity(env, request);
   if (!id) return json({ error: "not signed in" }, 401);
+  if (!appAllowed(id, "poppy-picks")) return json({ error: "this account doesn't cover this app" }, 403);
   let body;
   try { body = await request.json(); } catch { return json({ error: "bad json" }, 400); }
   const eventId = body && typeof body.eventId === "string" ? body.eventId.trim() : "";
