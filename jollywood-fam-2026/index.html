@@ -129,25 +129,34 @@
   .sumchip span{display:block; margin-top:1px; font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--cream-dim)}
 
   /* ============ GAMEPLAN ROWS ============ */
-  .prow{display:flex; gap:14px; align-items:center; padding:16px; margin-bottom:12px; border-radius:22px;
+  .prow{display:flex; align-items:stretch; padding:0; overflow:hidden; margin-bottom:12px; border-radius:22px;
     background:var(--glass); border:1px solid rgba(232,196,118,.22);
     backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); box-shadow:0 12px 24px -14px rgba(0,0,0,.6)}
-  .pnum{flex:0 0 auto; width:26px; text-align:center; font-family:"Cinzel",serif; font-weight:700; font-size:17px; color:var(--gold-hi)}
-  .pthumb{flex:0 0 auto; width:96px; height:96px; border-radius:18px; object-fit:cover; border:1px solid rgba(232,196,118,.3); background:var(--g700)}
-  .pmotif{flex:0 0 auto; width:96px; height:96px; border-radius:18px; display:flex; align-items:center; justify-content:center;
-    border:1px solid rgba(232,196,118,.3); background:radial-gradient(120% 120% at 30% 20%, var(--g600), var(--g800)); color:var(--gold)}
-  .pmotif svg{width:44px; height:44px}
-  .pmeta{min-width:0; flex:1 1 auto}
+  .pfig{position:relative; flex:0 0 118px; align-self:stretch; overflow:hidden; background:var(--g700)}
+  .pfig img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block}
+  .pfig.motif{display:flex; align-items:center; justify-content:center;
+    background:radial-gradient(120% 120% at 30% 20%, var(--g600), var(--g800)); color:var(--gold)}
+  .pfig.motif svg{width:46px; height:46px}
+  .pfig::after{content:""; position:absolute; left:0; right:0; bottom:0; height:58%; pointer-events:none;
+    background:linear-gradient(180deg, rgba(7,26,17,0), rgba(7,26,17,.55) 58%, rgba(5,20,12,.92))}
+  .pfig .pnum{position:absolute; left:12px; bottom:8px; z-index:2; font-family:"Cinzel",serif; font-weight:700;
+    font-size:23px; line-height:1; color:var(--gold-hi); text-shadow:0 2px 10px rgba(0,0,0,.75)}
+  .pmeta{min-width:0; flex:1 1 auto; align-self:center; padding:15px 16px 15px 15px}
   .pmeta .pname{font-weight:600; font-size:19px; line-height:1.25}
   .pmeta .psub{font-size:13.5px; color:var(--cream-dim); margin-top:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
   .pmeta .pshows{font-size:13px; font-weight:600; letter-spacing:.02em; color:var(--gold-hi); margin-top:4px; line-height:1.4}
   .pmeta .pshows.tba{color:var(--cream-dim); font-weight:500; font-style:italic}
-  .ordctl{flex:0 0 auto; display:flex; flex-direction:column; gap:8px}
+  .ordctl{flex:0 0 auto; display:flex; flex-direction:column; gap:8px; justify-content:center; padding:12px 12px 12px 0}
   .ordbtn{width:38px; height:38px; border-radius:12px; display:flex; align-items:center; justify-content:center; cursor:pointer;
     border:1.5px solid var(--gold-dim); background:rgba(8,26,18,.5); color:var(--gold-hi); -webkit-tap-highlight-color:transparent}
   .ordbtn svg{width:17px; height:17px}
   .ordbtn:disabled{opacity:.28; cursor:default}
   .ordbtn:active:not(:disabled){background:rgba(232,196,118,.22)}
+  .reorderbtn{flex:0 0 auto; display:inline-flex; align-items:center; gap:7px; padding:8px 14px; border-radius:999px; cursor:pointer;
+    font-family:"Jost",sans-serif; font-size:12.5px; font-weight:600; letter-spacing:.1em; text-transform:uppercase;
+    color:var(--gold-hi); background:rgba(8,26,18,.45); border:1px solid rgba(232,196,118,.45); -webkit-tap-highlight-color:transparent}
+  .reorderbtn svg{width:13px; height:13px}
+  .reorderbtn.on{color:#23180A; background:linear-gradient(180deg, var(--gold-hi), var(--gold-deep)); border-color:var(--gold-hi)}
   .ashows{display:inline-block; margin-top:9px; padding:6px 11px; border-radius:999px; font-size:12.5px; font-weight:600; letter-spacing:.02em;
     color:var(--gold-hi); border:1px solid rgba(232,196,118,.35); background:rgba(8,26,18,.4)}
   .ashows.tba{color:var(--cream-dim); font-weight:500}
@@ -289,7 +298,7 @@
     <div class="summary" id="summaryRow"></div>
 
     <div class="secttl"><h3>Tonight's Itinerary</h3><div class="rule"></div></div>
-    <p class="sectsub">Everything the fam starred, in the order you'll hit it. Use the arrows to arrange the running order — it's shared, so the night stays in sync for everyone.</p>
+    <p class="sectsub">Everything the fam starred, in the order you'll hit it. Tap Reorder to arrange the running order — it's shared, so the night stays in sync for everyone.</p>
     <div id="planList"></div>
   </section>
 
@@ -415,6 +424,7 @@ async function passkeySignIn() {
 let guide = null, me = null;
 const votes = new Map();   // itemId -> [{by, mine, at}]
 let orderIds = [];         // shared running order: [itemId, ...]
+let reorderMode = false;   // gameplan arrows only show in reorder mode
 const INDEX = new Map();   // itemId -> {kind, name, sub, img, motif, shows}
 let foodFilter = "all";
 let drinkFilter = "all";
@@ -567,17 +577,18 @@ function effectiveOrder(picks) {
 const CHEV_UP = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 14.5 12 7.5l7 7"/></svg>';
 const CHEV_DN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9.5 12 16.5l7-7"/></svg>';
 function planRow(p, idx, total) {
-  const thumb = p.img
-    ? `<img class="pthumb" src="${esc(p.img)}" alt="" loading="lazy" decoding="async">`
-    : `<span class="pmotif">${motifSvg(p.motif)}</span>`;
+  const fig = p.img
+    ? `<div class="pfig"><img src="${esc(p.img)}" alt="" loading="lazy" decoding="async"><span class="pnum">${idx + 1}</span></div>`
+    : `<div class="pfig motif">${motifSvg(p.motif)}<span class="pnum">${idx + 1}</span></div>`;
   const names = p.votes.list.map((v) => v.by).join(" \u00b7 ");
-  return `<div class="prow"><div class="pnum">${idx + 1}</div>${thumb}
-    <div class="pmeta"><div class="pname">${esc(p.name)}</div>
-    <div class="psub"><span class="pbadge ${p.kind === "drink" ? "drink" : p.kind === "act" ? "act" : "food"}">${p.kind === "drink" ? "Drink" : p.kind === "act" ? "Activity" : "Food"}</span>${esc(p.sub)} \u2014 \u2605 ${esc(names)}</div>${showsHtml(p, "pshows")}</div>
+  const ctl = reorderMode ? `
     <div class="ordctl">
       <button class="ordbtn" data-move="${esc(p.id)}:up" type="button" aria-label="Move up" ${idx === 0 ? "disabled" : ""}>${CHEV_UP}</button>
       <button class="ordbtn" data-move="${esc(p.id)}:down" type="button" aria-label="Move down" ${idx === total - 1 ? "disabled" : ""}>${CHEV_DN}</button>
-    </div></div>`;
+    </div>` : "";
+  return `<div class="prow">${fig}
+    <div class="pmeta"><div class="pname">${esc(p.name)}</div>
+    <div class="psub"><span class="pbadge ${p.kind === "drink" ? "drink" : p.kind === "act" ? "act" : "food"}">${p.kind === "drink" ? "Drink" : p.kind === "act" ? "Activity" : "Food"}</span>${esc(p.sub)} \u2014 \u2605 ${esc(names)}</div>${showsHtml(p, "pshows")}</div>${ctl}</div>`;
 }
 function renderGameplan() {
   const picks = picksList();
@@ -595,10 +606,13 @@ function renderGameplan() {
     return;
   }
   const ordered = effectiveOrder(picks);
-  let html = `<div class="secttl"><h3 style="font-size:16px">The Running Order</h3><div class="rule"></div></div>`;
+  let html = `<div class="secttl"><h3 style="font-size:16px">The Running Order</h3><div class="rule"></div><button class="reorderbtn${reorderMode ? " on" : ""}" data-reorder type="button" aria-pressed="${reorderMode}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v13M7 4L4.4 6.6M7 4l2.6 2.6M17 20V7M17 20l2.6-2.6M17 20l-2.6-2.6"/></svg><span>${reorderMode ? "Done" : "Reorder"}</span></button></div>`;
   html += ordered.map((p, i) => planRow(p, i, ordered.length)).join("");
   host.innerHTML = html;
 }
+document.addEventListener("click", (e) => {
+  if (e.target.closest("[data-reorder]")) { reorderMode = !reorderMode; renderGameplan(); }
+});
 document.addEventListener("click", async (e) => {
   const mv = e.target.closest("[data-move]");
   if (!mv || mv.disabled) return;
