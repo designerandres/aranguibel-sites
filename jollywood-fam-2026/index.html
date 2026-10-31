@@ -148,17 +148,57 @@
   .picon.act{border-color:rgba(231,163,178,.55); color:#E7A3B2; background:rgba(231,163,178,.1)}
   .pmeta{min-width:0; flex:1 1 auto; align-self:center; padding:18px 18px 17px 16px}
   .pmeta .pname{font-family:"Cinzel",serif; font-weight:700; font-size:21px; line-height:1.2; color:var(--cream); letter-spacing:.015em}
-  .pmeta .pblurb{margin-top:8px; font-size:14.5px; line-height:1.55; color:var(--cream-dim)}
+  .pmeta .pblurb{margin-top:8px; font-size:14.5px; line-height:1.55; color:var(--cream-dim);
+    display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden}
   .ploc{display:flex; align-items:center; margin-top:14px; padding-top:13px; border-top:1px solid rgba(232,196,118,.16)}
   .ploc .picon{flex:0 0 auto; margin-right:10px}
   .pwhere{min-width:0; flex:1 1 auto}
   .pvenue{display:block; font-size:14.5px; font-weight:600; color:var(--cream); line-height:1.3}
   .pstars{display:block; font-size:12.5px; color:var(--cream-faint); margin-top:2px}
-  .pinbtn{flex:0 0 auto; margin-left:10px; width:38px; height:38px; border-radius:50%; cursor:pointer;
-    display:flex; align-items:center; justify-content:center; color:var(--gold-hi);
-    border:1.5px solid rgba(232,196,118,.5); background:rgba(8,26,18,.45); -webkit-tap-highlight-color:transparent}
-  .pinbtn svg{width:18px; height:18px}
-  .pinbtn:active{transform:scale(.94); background:rgba(232,196,118,.2)}
+  .ptime{flex:0 0 auto; margin-left:10px; padding:7px 12px; border-radius:999px; font-size:13px; font-weight:700;
+    letter-spacing:.05em; color:#23180A; background:linear-gradient(180deg, var(--gold-hi), var(--gold-deep));
+    box-shadow:0 4px 10px rgba(0,0,0,.4); white-space:nowrap}
+  .prow{cursor:pointer}
+  /* ============ DETAIL SHEET ============ */
+  #detailSheet{position:fixed; inset:0; z-index:92}
+  #detailSheet .sheetback{position:absolute; inset:0; background:rgba(3,10,6,.62); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px)}
+  #detailSheet .sheet{position:absolute; left:0; right:0; bottom:0; max-height:92dvh; overflow-y:auto; -webkit-overflow-scrolling:touch;
+    border-radius:26px 26px 0 0; border:1px solid rgba(232,196,118,.35); border-bottom:none; padding:20px 18px calc(22px + env(safe-area-inset-bottom));
+    background:linear-gradient(168deg, #0E2F20, #081C12 70%); box-shadow:0 -24px 60px rgba(0,0,0,.6);
+    animation:sheetup .32s cubic-bezier(.2,.9,.3,1)}
+  .dclose{position:absolute; top:14px; right:14px; z-index:5; width:37px; height:37px; border-radius:50%; cursor:pointer; color:var(--cream);
+    display:flex; align-items:center; justify-content:center; border:1px solid rgba(232,196,118,.5); background:rgba(5,20,12,.6);
+    backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px)}
+  .dclose svg{width:15px; height:15px}
+  .dphoto{margin:-20px -18px 0; position:relative; aspect-ratio:16/9; overflow:hidden; background:radial-gradient(130% 130% at 28% 12%, var(--g600), var(--g850))}
+  .dphoto img{width:100%; height:100%; object-fit:cover; display:block}
+  .dphoto .motif{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:var(--gold)}
+  .dphoto .motif svg{width:92px; height:92px}
+  .dphoto::after{content:""; position:absolute; left:0; right:0; bottom:0; height:44%; pointer-events:none;
+    background:linear-gradient(180deg, rgba(8,28,18,0), rgba(8,28,18,.88))}
+  .dbody{padding-top:16px}
+  .dkind{display:flex; align-items:center; gap:2px; font-size:11.5px; font-weight:600; letter-spacing:.17em;
+    text-transform:uppercase; color:var(--gold)}
+  .dkind .picon{width:25px; height:25px; margin-right:8px; vertical-align:0}
+  .dtitle{font-family:"Cinzel",serif; font-weight:700; font-size:24px; line-height:1.18; color:var(--cream); margin-top:9px}
+  .dshows{margin-top:8px; font-size:14px; font-weight:600; color:var(--gold-hi); line-height:1.45}
+  .dshows.tba{color:var(--cream-dim); font-weight:500; font-style:italic}
+  .ddesc{margin-top:10px; font-size:15.5px; line-height:1.62; color:var(--cream-dim)}
+  .dsect{margin-top:22px}
+  .dsect h5{font-family:"Cinzel",serif; font-size:13px; font-weight:700; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--gold-hi); padding-bottom:9px; border-bottom:1px solid rgba(232,196,118,.18)}
+  .dnote{font-size:13.5px; color:var(--cream-dim); margin-top:9px; line-height:1.5}
+  .dnote b{color:var(--gold-hi); font-weight:600}
+  .tchips{display:flex; flex-wrap:wrap; gap:8px; margin-top:11px}
+  .tchip{padding:9px 14px; border-radius:999px; cursor:pointer; font-family:"Jost",sans-serif; font-size:13.5px; font-weight:600;
+    color:var(--cream); background:rgba(8,26,18,.5); border:1px solid rgba(232,196,118,.4); -webkit-tap-highlight-color:transparent}
+  .tchip.on{color:#23180A; background:linear-gradient(180deg, var(--gold-hi), var(--gold-deep)); border-color:var(--gold-hi)}
+  .trow{display:flex; gap:8px; margin-top:11px; align-items:stretch}
+  .trow input[type="time"]{flex:1 1 auto; min-width:0; font:inherit; font-size:15px; color:var(--cream); color-scheme:dark;
+    padding:10px 12px; border-radius:12px; border:1px solid rgba(232,196,118,.4); background:rgba(0,0,0,.25); outline:none}
+  .tbtn2{flex:0 0 auto; padding:10px 16px; border-radius:12px; cursor:pointer; font-family:"Jost",sans-serif; font-size:14px; font-weight:600;
+    color:var(--gold-hi); background:rgba(8,26,18,.5); border:1px solid rgba(232,196,118,.5); -webkit-tap-highlight-color:transparent}
+  .tbtn2.plain{color:var(--cream-dim); border-color:rgba(232,196,118,.25)}
   /* ============ PARK MAP FAB + SHEET ============ */
   #mapFab{position:fixed; right:16px; bottom:calc(96px + env(safe-area-inset-bottom)); z-index:65; width:58px; height:58px;
     border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#23180A;
@@ -356,7 +396,7 @@
     <div class="summary" id="summaryRow"></div>
 
     <div class="secttl"><h3>Tonight's Itinerary</h3><div class="rule"></div></div>
-    <p class="sectsub">Everything the fam starred, in the order you'll hit it. Tap Reorder to arrange the running order — it's shared, so the night stays in sync for everyone.</p>
+    <p class="sectsub">Everything the fam starred, in the order you'll hit it. Tap any card for the full story, its spot on the map, and a suggested time. Tap Reorder to arrange the running order — it's shared, so the night stays in sync for everyone.</p>
     <div id="planList"></div>
   </section>
 
@@ -471,6 +511,14 @@
   </div>
 </div>
 
+<div id="detailSheet" hidden>
+  <div class="sheetback" data-detailclose></div>
+  <div class="sheet" role="dialog" aria-label="Item details">
+    <button class="dclose" data-detailclose type="button" aria-label="Close details"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg></button>
+    <div id="detailBody"></div>
+  </div>
+</div>
+
 <div id="toast" role="status"></div>
 
 <script>
@@ -499,6 +547,10 @@ async function passkeySignIn() {
 let guide = null, me = null;
 const votes = new Map();   // itemId -> [{by, mine, at}]
 let orderIds = [];         // shared running order: [itemId, ...]
+let times = {};            // shared suggested times: itemId -> "HH:MM"
+let timeMeta = {};         // itemId -> {by, at}
+const FULL = new Map();    // itemId -> {raw, venue, area}
+let detailId = null;       // item open in the detail sheet
 let reorderMode = false;   // gameplan arrows only show in reorder mode
 const INDEX = new Map();   // itemId -> {kind, name, sub, img, motif, shows}
 let foodFilter = "all";
@@ -629,6 +681,13 @@ function renderActivities() {
 }
 
 /* ---------- gameplan ---------- */
+function fmtTime(t) {
+  if (!t) return "";
+  const [h, m] = t.split(":").map(Number);
+  const ap = h >= 12 ? "PM" : "AM";
+  const hh = h % 12 === 0 ? 12 : h % 12;
+  return m ? `${hh}:${String(m).padStart(2, "0")} ${ap}` : `${hh} ${ap}`;
+}
 function showsHtml(meta, cls) {
   if (!meta || !meta.shows) return "";
   if (meta.shows === "TBA") return `<div class="${cls} tba">Showtimes TBA \u2014 Disney hasn't posted them yet</div>`;
@@ -656,7 +715,6 @@ const KIND_ICON = {
   drink: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 5.5h15L12 13.2zM12 13.2V19M8.6 21h6.8M14.1 9.6l2.9-3.9"/><circle cx="15.4" cy="8.4" r="1.2" fill="currentColor" stroke="none"/></svg>',
   act: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M12 3.5l2.5 5.3 5.8.7-4.3 4 1.1 5.7L12 16.4l-5.1 2.8L8 13.5l-4.3-4 5.8-.7z"/></svg>',
 };
-const PIN_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21.5S5 15.6 5 9.9A7 7 0 0 1 19 9.9c0 5.7-7 11.6-7 11.6z"/><circle cx="12" cy="10" r="2.6"/></svg>';
 function planRow(p, idx, total) {
   const fig = p.img
     ? `<div class="pfig"><img src="${esc(p.img)}" alt="" loading="lazy" decoding="async"><span class="pnum">${idx + 1}</span></div>`
@@ -667,10 +725,10 @@ function planRow(p, idx, total) {
       <button class="ordbtn" data-move="${esc(p.id)}:up" type="button" aria-label="Move up" ${idx === 0 ? "disabled" : ""}>${CHEV_UP}</button>
       <button class="ordbtn" data-move="${esc(p.id)}:down" type="button" aria-label="Move down" ${idx === total - 1 ? "disabled" : ""}>${CHEV_DN}</button>
     </div>` : "";
-  return `<div class="prow">${fig}
+  return `<div class="prow" data-detail="${esc(p.id)}">${fig}
     <div class="pmeta"><div class="pname">${esc(p.name)}</div>${showsHtml(p, "pshows")}
     ${p.desc ? `<p class="pblurb">${esc(p.desc)}</p>` : ""}
-    <div class="ploc"><span class="picon ${p.kind === "drink" ? "drink" : p.kind === "act" ? "act" : "food"}" role="img" aria-label="${p.kind === "drink" ? "Drink" : p.kind === "act" ? "Activity" : "Food"}">${KIND_ICON[p.kind] || KIND_ICON.food}</span><span class="pwhere"><span class="pvenue">${esc(p.sub)}</span><span class="pstars">\u2605 ${esc(names)}</span></span><button class="pinbtn" data-mapzone="${esc(zoneOf(p.area))}" type="button" aria-label="Find ${esc(p.name)} on the park map">${PIN_SVG}</button></div></div>${ctl}</div>`;
+    <div class="ploc"><span class="picon ${p.kind === "drink" ? "drink" : p.kind === "act" ? "act" : "food"}" role="img" aria-label="${p.kind === "drink" ? "Drink" : p.kind === "act" ? "Activity" : "Food"}">${KIND_ICON[p.kind] || KIND_ICON.food}</span><span class="pwhere"><span class="pvenue">${esc(p.sub)}</span><span class="pstars">\u2605 ${esc(names)}</span></span>${times[p.id] ? `<span class="ptime">${esc(fmtTime(times[p.id]))}</span>` : ""}</div></div>${ctl}</div>`;
 }
 function renderGameplan() {
   const picks = picksList();
@@ -767,8 +825,7 @@ function zoneCounts() {
   for (const pr of picksList()) { const z = zoneOf(pr.area); counts[z] = (counts[z] || 0) + 1; }
   return counts;
 }
-function renderMap(focusZone) {
-  const counts = zoneCounts();
+function buildMapSvg(focusZone, counts) {
   const defs = `<defs>
     <linearGradient id="goldgrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F8E3A1"/><stop offset="1" stop-color="#C08A2D"/></linearGradient>
     <linearGradient id="lakegrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1B5A4C"/><stop offset="1" stop-color="#0C352C"/></linearGradient>
@@ -783,7 +840,10 @@ function renderMap(focusZone) {
     const pin = n && z.pin ? `<g class="zbub" transform="translate(${z.pin[0]},${z.pin[1]})"><ellipse cx="0" cy="13" rx="4.5" ry="1.7" fill="rgba(0,0,0,.4)"/><path d="M0,12 C-2,5 -11,2 -11,-7 A11,11 0 1 1 11,-7 C11,2 2,5 0,12 Z" fill="url(#goldgrad)" stroke="#FFF6D8" stroke-width="1.6"/><text x="0" y="-7" dy=".36em" text-anchor="middle" font-size="11.5" font-weight="700" fill="#12291A" font-family="Jost,sans-serif">${n}</text></g>` : "";
     return `<g class="zone${z.context ? " context" : ""}${n ? " haspicks" : ""}${focusZone === z.id ? " focus" : ""}">${z.shape}${z.mark || ""}${label}${pin}</g>`;
   }).join("");
-  $("#mapSvgWrap").innerHTML = `<svg viewBox="0 0 360 330" role="img" aria-label="Stylized map of Hollywood Studios">${defs}<path d="${MAP_BOUNDARY}" fill="#0A2317" stroke="rgba(232,196,118,.3)"/><path d="${MAP_BOUNDARY}" fill="url(#leaf)" opacity=".16"/>${routes}${zonesSvg}<text class="zlabel" x="180" y="322" font-size="8.5" fill="var(--gold)">\u2605 ENTRANCE</text></svg>`;
+  return `<svg viewBox="0 0 360 330" role="img" aria-label="Stylized map of Hollywood Studios">${defs}<path d="${MAP_BOUNDARY}" fill="#0A2317" stroke="rgba(232,196,118,.3)"/><path d="${MAP_BOUNDARY}" fill="url(#leaf)" opacity=".16"/>${routes}${zonesSvg}<text class="zlabel" x="180" y="322" font-size="8.5" fill="var(--gold)">\u2605 ENTRANCE</text></svg>`;
+}
+function renderMap(focusZone) {
+  $("#mapSvgWrap").innerHTML = buildMapSvg(focusZone, zoneCounts());
   const groups = new Map();
   const addPick = (zone, venueName, pickName) => {
     if (!groups.has(zone)) groups.set(zone, new Map());
@@ -810,6 +870,82 @@ document.addEventListener("click", (e) => {
   const pin = e.target.closest("[data-mapzone]");
   if (pin) { openMap(pin.dataset.mapzone); return; }
   if (e.target.closest("[data-mapclose]")) closeMap();
+});
+
+/* ---------- item detail sheet ---------- */
+const TIME_SLOTS = ["19:30", "20:00", "20:30", "21:00", "21:30", "22:00", "22:30", "23:00", "23:30", "00:00", "00:30"];
+function openDetail(id) {
+  detailId = id;
+  renderDetail();
+  $("#detailSheet").hidden = false;
+  document.body.style.overflow = "hidden";
+  $("#detailSheet .sheet").scrollTop = 0;
+}
+function closeDetail() {
+  detailId = null;
+  $("#detailSheet").hidden = true;
+  document.body.style.overflow = "";
+}
+function renderDetail() {
+  if (!detailId) return;
+  const meta = INDEX.get(detailId), full = FULL.get(detailId);
+  if (!meta || !full) return;
+  const raw = full.raw;
+  const sheet = $("#detailSheet .sheet");
+  const sc = sheet ? sheet.scrollTop : 0;
+  const photo = meta.img
+    ? `<div class="dphoto"><img src="${esc(meta.img)}" alt="${esc(meta.name)}">${raw.isNew ? '<span class="ribbon" style="position:absolute; top:14px; left:14px; z-index:2">\u2605 New</span>' : ""}</div>`
+    : `<div class="dphoto"><div class="motif">${motifSvg(meta.motif)}</div></div>`;
+  const whereLine = meta.kind === "act" ? esc(full.venue) : esc(full.venue) + (full.area ? " \u00b7 " + esc(full.area) : "");
+  const t = times[detailId];
+  const note = t
+    ? `The fam's aiming for <b>${esc(fmtTime(t))}</b>${timeMeta[detailId] && timeMeta[detailId].by ? ` \u2014 suggested by <b>${esc(timeMeta[detailId].by)}</b>` : ""}. It shows on the card for everyone.`
+    : "No suggested time yet \u2014 pick one and it'll appear on the card for the whole fam.";
+  $("#detailBody").innerHTML = `${photo}
+  <div class="dbody">
+    <div class="dkind"><span class="picon ${meta.kind === "drink" ? "drink" : meta.kind === "act" ? "act" : "food"}">${KIND_ICON[meta.kind] || KIND_ICON.food}</span>${meta.kind === "drink" ? "Drink" : meta.kind === "act" ? "Activity" : "Food"} \u00b7 ${whereLine}</div>
+    <h3 class="dtitle">${esc(meta.name)}</h3>
+    ${showsHtml(meta, "dshows")}
+    ${meta.desc ? `<p class="ddesc">${esc(meta.desc)}</p>` : ""}
+    ${tagChips(raw)}
+    <div class="voterow">${voteRowHtml(detailId, meta.kind === "act" ? "Must-do" : "Must-try")}</div>
+    <div class="dsect"><h5>Where it is</h5>
+      <div class="mapwrap" style="margin-top:12px">${buildMapSvg(zoneOf(meta.area), zoneCounts())}</div>
+    </div>
+    <div class="dsect"><h5>Suggested time</h5>
+      <p class="dnote">${note}</p>
+      <div class="tchips">${TIME_SLOTS.map((slot) => `<button class="tchip${t === slot ? " on" : ""}" data-timepick="${slot}" type="button">${esc(fmtTime(slot))}</button>`).join("")}</div>
+      <div class="trow"><input type="time" id="dTimeInput" step="300" value="${esc(t || "19:30")}"><button class="tbtn2" data-timeset type="button">Set time</button>${t ? '<button class="tbtn2 plain" data-timeclear type="button">Clear</button>' : ""}</div>
+    </div>
+  </div>`;
+  if (sheet) sheet.scrollTop = sc;
+}
+async function setSuggestedTime(id, val) {
+  const prev = times[id];
+  if (val) { times[id] = val; timeMeta[id] = { by: me || "You", at: new Date().toISOString() }; }
+  else { delete times[id]; delete timeMeta[id]; }
+  renderGameplan(); renderDetail();
+  try { await api("POST", "/api/jollywood/plan", { itemId: id, time: val }); }
+  catch (e) {
+    if (prev) times[id] = prev; else delete times[id];
+    renderGameplan(); renderDetail();
+    toast("That time didn't save \u2014 try again.");
+  }
+}
+document.addEventListener("click", (e) => {
+  const card = e.target.closest("[data-detail]");
+  if (card && !reorderMode && !e.target.closest("[data-move]")) openDetail(card.dataset.detail);
+});
+document.addEventListener("click", async (e) => {
+  if (e.target.closest("[data-detailclose]")) { closeDetail(); return; }
+  if (!detailId) return;
+  const pick = e.target.closest("[data-timepick]");
+  if (pick) { await setSuggestedTime(detailId, pick.dataset.timepick); return; }
+  if (e.target.closest("[data-timeclear]")) { await setSuggestedTime(detailId, null); return; }
+  if (e.target.closest("[data-timeset]")) {
+    const inp = $("#dTimeInput");
+    if (inp && inp.value) await setSuggestedTime(detailId, inp.value);
+  }
 });
 
 /* ---------- countdown ---------- */
@@ -857,16 +993,21 @@ async function loadApp() {
     api("GET", "/api/jollywood/plan"),
   ]);
   guide = g; me = v.me || null; orderIds = Array.isArray(p.order) ? p.order : [];
+  times = p.times || {}; timeMeta = p.timeMeta || {};
   votes.clear();
   for (const row of v.votes || []) {
     if (!votes.has(row.itemId)) votes.set(row.itemId, []);
     votes.get(row.itemId).push({ by: row.by, mine: row.mine, at: row.at });
   }
   INDEX.clear();
-  for (const venue of guide.venues) for (const it of venue.items)
+  for (const venue of guide.venues) for (const it of venue.items) {
     INDEX.set(it.id, { kind: it.drink ? "drink" : "food", name: it.name, sub: venue.name, img: it.img, motif: "star", desc: it.desc || "", area: venue.area || "" });
-  for (const a of guide.activities)
+    FULL.set(it.id, { raw: it, venue: venue.name, area: venue.area || "" });
+  }
+  for (const a of guide.activities) {
     INDEX.set(a.id, { kind: "act", name: a.name, sub: a.where, img: a.img, motif: a.motif, shows: a.shows || null, desc: a.desc || "", area: a.where && a.where.includes("\u00b7") ? a.where.split("\u00b7").pop().trim() : (a.where || "") });
+    FULL.set(a.id, { raw: a, venue: a.where, area: a.where && a.where.includes("\u00b7") ? a.where.split("\u00b7").pop().trim() : (a.where || "") });
+  }
   if (me) {
     const chip = $("#meChip"); chip.textContent = "★ " + me; chip.hidden = false;
     $("#meCard").hidden = false;

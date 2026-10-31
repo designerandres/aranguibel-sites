@@ -9,6 +9,9 @@ async function ensureSchema(db) {
   await db.prepare(
     "CREATE TABLE IF NOT EXISTS jollywood_order (item_id TEXT PRIMARY KEY, position INTEGER NOT NULL, by_email TEXT, by_name TEXT, updated_at TEXT NOT NULL)"
   ).run();
+  await db.prepare(
+    "CREATE TABLE IF NOT EXISTS jollywood_times (item_id TEXT PRIMARY KEY, time TEXT NOT NULL, by_email TEXT, by_name TEXT, updated_at TEXT NOT NULL)"
+  ).run();
 }
 
 function displayName(identity) {
@@ -29,8 +32,16 @@ export async function onRequestGet(context) {
     .prepare("SELECT item_id FROM jollywood_order ORDER BY position ASC")
     .all();
   const order = (results || []).map((r) => r.item_id);
-  // "times" kept as an empty object so a stale cached client doesn't break.
-  return json({ order, times: {} });
+  const { results: trows } = await env.DB
+    .prepare("SELECT item_id, time, by_name, updated_at FROM jollywood_times")
+    .all();
+  const times = {};
+  const timeMeta = {};
+  for (const r of trows || []) {
+    times[r.item_id] = r.time;
+    timeMeta[r.item_id] = { by: r.by_name, at: r.updated_at };
+  }
+  return json({ order, times, timeMeta });
 }
 
 export async function onRequestPost(context) {
@@ -40,7 +51,25 @@ export async function onRequestPost(context) {
   if (!appAllowed(id, "jollywood-fam-2026")) return json({ error: "this account doesn't cover this app" }, 403);
   let body;
   try { body = await request.json(); } catch { return json({ error: "bad json" }, 400); }
-  // Legacy set-time calls from a stale cached client: accept and ignore.
+  // Suggested-time calls: { itemId, time: "HH:MM" | null }.
+  if (body && typeof body.itemId === "string" && "time" in body) {
+    const itemId = body.itemId.trim();
+    if (!itemId || itemId.length > 160) return json({ error: "bad itemId" }, 400);
+    await ensureSchema(env.DB);
+    const now = new Date().toISOString();
+    if (body.time === null) {
+      await env.DB.prepare("DELETE FROM jollywood_times WHERE item_id = ?1").bind(itemId).run();
+      return json({ ok: true, itemId, time: null });
+    }
+    if (typeof body.time !== "string" || !/^([01]\d|2[0-3]):[0-5]\d$/.test(body.time)) {
+      return json({ error: "bad time" }, 400);
+    }
+    await env.DB
+      .prepare("INSERT INTO jollywood_times (item_id, time, by_email, by_name, updated_at) VALUES (?1, ?2, ?3, ?4, ?5) ON CONFLICT(item_id) DO UPDATE SET time = excluded.time, by_email = excluded.by_email, by_name = excluded.by_name, updated_at = excluded.updated_at")
+      .bind(itemId, body.time, id.email, displayName(id), now)
+      .run();
+    return json({ ok: true, itemId, time: body.time });
+  }
   if (!body || !Array.isArray(body.order)) return json({ ok: true, ignored: true });
   const seen = new Set();
   const order = [];
