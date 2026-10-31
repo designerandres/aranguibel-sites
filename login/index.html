@@ -3,46 +3,56 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#0b1026">
+<meta name="theme-color" content="#0C2113">
 <title>Sign in — Aranguibel Apps</title>
 <link rel="icon" href="/assets/icons/cycles.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600&family=Cinzel:wght@700&family=Lora:wght@600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600&family=Cinzel:wght@700&family=Lora:wght@600&family=IM+Fell+English+SC&family=IM+Fell+English:ital@0;1&family=Special+Elite&display=swap" rel="stylesheet">
 <style>
-  :root{ color-scheme:dark; --ink:#eef1ff; --ink2:#aab3d6; --line:rgba(255,255,255,.14); --card:rgba(255,255,255,.07);
-         --accent:#7cc4ff; --accent2:#b79cff; --danger:#ff9d9d; --radius:22px;
+  :root{ color-scheme:dark; --ink:#F1E5C6; --ink2:rgba(241,229,198,.72); --line:rgba(217,161,59,.38); --card:#173322;
+         --accent:#F0C569; --accent2:#D9A13B; --danger:#F0A58E; --radius:22px; --fieldbg:#0C2113;
          --safe-b:env(safe-area-inset-bottom,0px); }
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
   html,body{min-height:100%}
   body{ font-family:"Outfit",system-ui,sans-serif; color:var(--ink); padding:28px 18px calc(28px + var(--safe-b));
         background:
-          radial-gradient(1200px 600px at 85% -10%, rgba(124,196,255,.22), transparent 60%),
-          radial-gradient(900px 500px at -10% 110%, rgba(183,156,255,.18), transparent 55%),
-          linear-gradient(180deg,#0b1026,#101736 55%,#0b1026);
+          radial-gradient(1200px 600px at 85% -10%, rgba(239,194,94,.13), transparent 60%),
+          radial-gradient(900px 500px at -10% 110%, rgba(64,145,108,.16), transparent 55%),
+          linear-gradient(180deg,#10281A,#0A1A10 55%,#08130B);
         display:flex; align-items:flex-start; justify-content:center; }
+  body:not(.themed)::before{ content:""; position:fixed; inset:0; z-index:0; pointer-events:none; opacity:.5;
+        background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='340' height='340' viewBox='0 0 340 340'%3E%3Cg fill='none' stroke='rgba(239,194,94,0.055)' stroke-width='1.4'%3E%3Cpath d='M-20 60 C 70 30, 150 95, 240 62 S 340 40, 370 70'/%3E%3Cpath d='M-20 130 C 60 100, 160 165, 250 128 S 340 108, 370 140'/%3E%3Cpath d='M-20 205 C 80 175, 150 240, 245 205 S 335 185, 370 215'/%3E%3Cpath d='M-20 280 C 70 250, 165 315, 255 278 S 340 260, 370 290'/%3E%3C/g%3E%3C/svg%3E");
+        background-size:340px; }
   .wrap{ width:100%; max-width:430px; margin-top:6vh; position:relative; z-index:1; }
   #bgpattern{ position:fixed; inset:0; z-index:0; pointer-events:none; background-repeat:repeat; background-size:144px; background-position:top left; }
   h1{ font-family:"Fraunces",serif; font-weight:600; font-size:30px; letter-spacing:.2px; }
+  body:not(.themed) #page-title{ font-family:"IM Fell English SC",serif; font-weight:400; font-size:36px; letter-spacing:.015em; color:var(--ink); }
+  body:not(.themed) #page-title::before{ content:"✦ THE SKIPPER'S LOG ✦"; display:block; font-family:"Special Elite",monospace;
+        font-size:11px; letter-spacing:.34em; color:var(--accent2); margin-bottom:10px; }
+  body:not(.themed) .card{ background:linear-gradient(168deg,rgba(28,58,42,.94),rgba(18,38,25,.96) 78%);
+        border-color:rgba(217,161,59,.45); box-shadow:0 24px 60px rgba(0,0,0,.5); }
+  body:not(.themed) .card h2{ font-family:"IM Fell English SC",serif; font-weight:400; font-size:22px; letter-spacing:.015em; }
   .sub{ color:var(--ink2); font-size:15px; margin-top:6px; line-height:1.45; }
   .card{ margin-top:20px; background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
          padding:20px; backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
          box-shadow:0 18px 50px rgba(0,0,0,.35); }
   .card h2{ font-size:17px; font-weight:600; margin-bottom:6px; }
   .card p{ color:var(--ink2); font-size:14px; line-height:1.5; }
-  button{ font:inherit; font-weight:600; font-size:16px; color:#0b1026; border:0; border-radius:14px;
+  button{ font:inherit; font-weight:600; font-size:16px; color:#2E2416; border:0; border-radius:14px;
           padding:13px 18px; width:100%; margin-top:14px; cursor:pointer;
           background:linear-gradient(135deg,var(--accent),var(--accent2)); }
   button.secondary{ background:rgba(255,255,255,.1); color:var(--ink); border:1px solid var(--line); }
   button:active{ transform:scale(.99); }
   button[disabled]{ opacity:.55; }
-  label{ display:block; font-size:13px; color:var(--ink2); margin-top:14px; }
+  label{ display:block; font-size:13px; color:var(--ink2); margin-top:14px; letter-spacing:.03em; }
   input{ font:inherit; font-size:16px; color:var(--ink); width:100%; margin-top:6px; padding:12px 14px;
          background:var(--fieldbg, rgba(0,0,0,.25)); border:1px solid var(--line); border-radius:12px; outline:none; caret-color:var(--ink); }
   input:-webkit-autofill{ -webkit-box-shadow:0 0 0 60px var(--fieldbg, #171F42) inset; -webkit-text-fill-color:var(--ink); caret-color:var(--ink); }
   input:focus{ border-color:var(--accent); }
   .error{ color:var(--danger); font-size:14px; margin-top:12px; min-height:18px; line-height:1.4; }
-  .divider{ display:flex; align-items:center; gap:12px; margin:20px 0 4px; color:var(--ink2); font-size:12.5px; }
+  .divider{ display:flex; align-items:center; gap:12px; margin:20px 0 4px; color:var(--accent2); font-size:12px;
+        font-family:"Special Elite",monospace; letter-spacing:.22em; }
   .divider::before,.divider::after{ content:""; flex:1; height:1px; background:var(--line); }
   .inviteurl{ word-break:break-all; font-size:13.5px; background:rgba(0,0,0,.25); border:1px solid var(--line);
               border-radius:12px; padding:10px 12px; margin-top:10px; color:var(--ink); }
