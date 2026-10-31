@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <radialGradient id="g" cx="50%" cy="34%" r="85%">
+      <stop offset="0%" stop-color="#1E5C3D"/>
+      <stop offset="55%" stop-color="#123B27"/>
+      <stop offset="100%" stop-color="#0A2318"/>
+    </radialGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#F6DE9C"/>
+      <stop offset="52%" stop-color="#E8C476"/>
+      <stop offset="100%" stop-color="#B98A2F"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#g)"/>
+  <rect x="14" y="14" width="484" height="484" rx="100" fill="none" stroke="#E8C476" stroke-opacity="0.35" stroke-width="3"/>
+  <g fill="#F6DE9C">
+    <circle cx="256" cy="52" r="9"/><circle cx="356" cy="75" r="9"/><circle cx="430" cy="140" r="9"/>
+    <circle cx="460" cy="240" r="9"/><circle cx="430" cy="340" r="9"/><circle cx="356" cy="405" r="9"/>
+    <circle cx="256" cy="428" r="9"/><circle cx="156" cy="405" r="9"/><circle cx="82" cy="340" r="9"/>
+    <circle cx="52" cy="240" r="9"/><circle cx="82" cy="140" r="9"/><circle cx="156" cy="75" r="9"/>
+  </g>
+  <g stroke="#E8C476" stroke-width="7" stroke-linecap="round" opacity="0.85">
+    <line x1="256" y1="118" x2="256" y2="146"/><line x1="352" y1="156" x2="336" y2="178"/>
+    <line x1="160" y1="156" x2="176" y2="178"/><line x1="388" y1="240" x2="360" y2="240"/>
+    <line x1="124" y1="240" x2="152" y2="240"/><line x1="352" y1="324" x2="336" y2="302"/>
+    <line x1="160" y1="324" x2="176" y2="302"/>
+  </g>
+  <path fill="url(#gold)" stroke="#8A6420" stroke-width="4" stroke-linejoin="round"
+    d="M256 150 L293 224 L374 230 L312 284 L331 363 L256 318 L181 363 L200 284 L138 230 L219 224 Z"/>
+  <g fill="#FFFFFF">
+    <path d="M104 396 l4.5 11.5 L120 412 l-11.5 4.5 L104 428 l-4.5 -11.5 L88 412 l11.5 -4.5 Z"/>
+    <path d="M404 92 l3.6 9.4 L417 105 l-9.4 3.6 L404 118 l-3.6 -9.4 L391 105 l9.4 -3.6 Z"/>
+    <circle cx="416" cy="392" r="5"/>
+    <circle cx="92" cy="108" r="5"/>
+  </g>
+</svg>

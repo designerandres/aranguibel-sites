@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Jollywood Fam 2026 — Our Gameplan</title>
+<meta name="description" content="The fam's ballot and gameplan for Disney Jollywood Nights — Saturday, November 14, 2026.">
+<meta name="theme-color" content="#0A2318">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Jollywood Fam">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Jost:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --g900:#081A12; --g850:#0A2318; --g800:#0E2C1E; --g700:#123B27; --g600:#1E5C3D;
+    --gold:#E8C476; --gold-hi:#F6DE9C; --gold-deep:#B98A2F; --gold-dim:rgba(232,196,118,.55);
+    --cream:#F7EFDA; --cream-dim:rgba(247,239,218,.74); --cream-faint:rgba(247,239,218,.52);
+    --glass:linear-gradient(160deg, rgba(255,255,255,.11), rgba(255,255,255,.045));
+    --glass-brd:rgba(232,196,118,.30);
+    --radius:22px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  [hidden]{display:none !important}
+  html{-webkit-text-size-adjust:100%; background:var(--g900)}
+  body{
+    font-family:"Jost",system-ui,sans-serif; color:var(--cream); min-height:100vh; min-height:100dvh;
+    background:
+      radial-gradient(900px 480px at 12% -6%, rgba(232,196,118,.14), transparent 60%),
+      radial-gradient(760px 520px at 108% 16%, rgba(30,92,61,.35), transparent 55%),
+      linear-gradient(168deg,#0C2B1C 0%, var(--g850) 38%, #07160F 100%);
+    background-attachment:fixed;
+    -webkit-font-smoothing:antialiased;
+  }
+  #snow{position:fixed; inset:0; pointer-events:none; z-index:90}
+  .wrap{position:relative; z-index:1; max-width:580px; margin:0 auto; padding:0 16px 118px}
+
+  .shimmer{
+    background:linear-gradient(100deg, var(--gold-deep) 0%, var(--gold) 32%, #FFF3C4 50%, var(--gold) 68%, var(--gold-deep) 100%);
+    background-size:220% 100%; -webkit-background-clip:text; background-clip:text; color:transparent;
+    animation:shimmer 7s linear infinite;
+  }
+  @keyframes shimmer{to{background-position:220% 0}}
+  @media (prefers-reduced-motion: reduce){ .shimmer{animation:none} }
+
+  /* ============ GATE ============ */
+  #gate{position:fixed; inset:0; z-index:40; display:flex; align-items:center; justify-content:center; overflow-y:auto;
+    background:radial-gradient(800px 420px at 50% -6%, rgba(232,196,118,.16), transparent 60%), linear-gradient(168deg,#0C2B1C 0%, var(--g850) 45%, #07160F 100%)}
+  .gateart{display:block; width:100%; border-radius:18px; border:1px solid var(--glass-brd); box-shadow:0 16px 30px -14px rgba(0,0,0,.65); margin-bottom:18px}
+  .gatecard{width:min(560px, 100%); margin:0 14px calc(20px + env(safe-area-inset-bottom)); text-align:center;
+    background:var(--glass); border:1px solid var(--glass-brd); border-radius:28px; padding:30px 26px 26px;
+    backdrop-filter:blur(18px) saturate(1.35); -webkit-backdrop-filter:blur(18px) saturate(1.35);
+    box-shadow:0 30px 60px -20px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,255,255,.18)}
+  .gatecard .star{font-size:26px; color:var(--gold)}
+  .gatecard h1{font-family:"Cinzel",serif; font-weight:900; font-size:clamp(30px, 8.4vw, 44px); letter-spacing:.04em; line-height:1.08; margin-top:6px}
+  .gatecard .sub{margin-top:10px; font-size:16.5px; line-height:1.5; color:var(--cream-dim)}
+  .gatecard .datechip{display:inline-block; margin-top:14px; padding:7px 14px; border-radius:999px; border:1px solid var(--glass-brd);
+    font-size:13px; letter-spacing:.22em; text-transform:uppercase; color:var(--gold-hi); background:rgba(8,26,18,.45)}
+  .btn-gold{display:block; width:100%; margin-top:20px; padding:16px; border:none; border-radius:16px; cursor:pointer;
+    font-family:"Jost",sans-serif; font-weight:600; font-size:17px; letter-spacing:.06em; color:#23180A;
+    background:linear-gradient(180deg, var(--gold-hi), var(--gold) 55%, var(--gold-deep));
+    box-shadow:0 14px 28px -10px rgba(185,138,47,.65), inset 0 1px 0 #FFF9E3; -webkit-tap-highlight-color:transparent}
+  .btn-gold:active{transform:translateY(1px)}
+  .gatemsg{min-height:20px; margin-top:12px; font-size:14px; color:#F0B9A8}
+
+  /* ============ APP CHROME ============ */
+  header.topbar{position:sticky; top:10px; z-index:50; margin-top:12px;
+    display:flex; align-items:center; gap:10px; padding:11px 16px; border-radius:999px;
+    background:linear-gradient(160deg, rgba(18,59,39,.82), rgba(10,35,24,.82));
+    border:1px solid var(--glass-brd); backdrop-filter:blur(16px) saturate(1.4); -webkit-backdrop-filter:blur(16px) saturate(1.4);
+    box-shadow:0 14px 30px -14px rgba(0,0,0,.65)}
+  header.topbar .tstar{color:var(--gold); font-size:17px}
+  header.topbar .ttitle{font-family:"Cinzel",serif; font-weight:700; font-size:16.5px; letter-spacing:.09em; white-space:nowrap}
+  header.topbar .me{margin-left:auto; font-size:12.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--gold-hi);
+    border:1px solid rgba(232,196,118,.4); padding:5px 11px; border-radius:999px; white-space:nowrap; background:rgba(8,26,18,.4)}
+  .loading{padding:90px 0; text-align:center; font-family:"Cinzel",serif; letter-spacing:.18em; color:var(--gold); font-size:15px}
+
+  /* ============ HERO / COUNTDOWN ============ */
+  .hero{position:relative; margin-top:16px; border-radius:26px; overflow:hidden; border:1px solid var(--glass-brd);
+    box-shadow:0 26px 48px -18px rgba(0,0,0,.7); min-height:372px; display:flex; align-items:flex-end;
+    background:url("img/hero.jpg") center/cover no-repeat, var(--g800)}
+  .hero::after{content:""; position:absolute; inset:0;
+    background:linear-gradient(180deg, rgba(8,26,18,.05) 30%, rgba(8,26,18,.55) 62%, rgba(8,26,18,.93) 100%)}
+  .hero-in{position:relative; z-index:2; width:100%; padding:20px 20px 18px}
+  .eyebrow{font-size:12px; letter-spacing:.3em; text-transform:uppercase; color:var(--gold-hi)}
+  .hero h2{font-family:"Cinzel",serif; font-weight:900; font-size:clamp(27px, 7.6vw, 38px); line-height:1.1; margin-top:6px}
+  .countrow{display:flex; gap:8px; margin-top:16px}
+  .ctile{flex:1 1 0; text-align:center; padding:10px 2px 8px; border-radius:16px;
+    background:linear-gradient(160deg, rgba(255,255,255,.13), rgba(255,255,255,.05));
+    border:1px solid rgba(232,196,118,.4); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px)}
+  .ctile b{display:block; font-family:"Cinzel",serif; font-weight:700; font-size:clamp(22px, 6.4vw, 30px); color:var(--gold-hi); font-variant-numeric:tabular-nums}
+  .ctile span{display:block; margin-top:2px; font-size:10px; letter-spacing:.24em; text-transform:uppercase; color:var(--cream-dim)}
+  .hero .note{margin-top:12px; font-size:14.5px; color:var(--cream-dim)}
+  .hero .note b{color:var(--cream); font-weight:600}
+
+  /* ============ SECTIONS ============ */
+  .secttl{display:flex; align-items:baseline; gap:12px; margin:30px 2px 6px}
+  .secttl h3{font-family:"Cinzel",serif; font-weight:700; font-size:19px; letter-spacing:.12em; text-transform:uppercase; color:var(--gold-hi); white-space:nowrap}
+  .secttl .rule{flex:1; height:1px; background:linear-gradient(90deg, var(--gold-dim), transparent)}
+  .sectsub{margin:0 2px 14px; font-size:14.5px; color:var(--cream-faint); font-style:italic}
+  .summary{display:flex; gap:8px; margin-top:14px}
+  .sumchip{flex:1 1 0; text-align:center; padding:11px 4px 9px; border-radius:16px; background:var(--glass); border:1px solid rgba(232,196,118,.22);
+    backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px)}
+  .sumchip b{display:block; font-family:"Cinzel",serif; font-size:20px; color:var(--gold-hi)}
+  .sumchip span{display:block; margin-top:1px; font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--cream-dim)}
+
+  /* ============ GAMEPLAN ROWS ============ */
+  .prow{display:flex; gap:12px; align-items:center; padding:12px; margin-bottom:10px; border-radius:18px;
+    background:var(--glass); border:1px solid rgba(232,196,118,.22);
+    backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); box-shadow:0 12px 24px -14px rgba(0,0,0,.6)}
+  .timechip{flex:0 0 auto; width:78px; text-align:center; padding:9px 2px 7px; border-radius:13px; cursor:pointer;
+    border:1.5px solid var(--gold-dim); background:rgba(8,26,18,.5); color:var(--gold-hi);
+    font-family:"Cinzel",serif; font-weight:700; font-size:14.5px; line-height:1.15; -webkit-tap-highlight-color:transparent}
+  .timechip small{display:block; font-family:"Jost",sans-serif; font-weight:500; font-size:9.5px; letter-spacing:.18em; text-transform:uppercase; color:var(--cream-dim); margin-top:2px}
+  .timechip.unset{border-style:dashed; color:var(--cream-dim); font-family:"Jost",sans-serif; font-weight:500; font-size:12.5px; letter-spacing:.04em}
+  .pthumb{flex:0 0 auto; width:58px; height:58px; border-radius:14px; object-fit:cover; border:1px solid rgba(232,196,118,.3); background:var(--g700)}
+  .pmotif{flex:0 0 auto; width:58px; height:58px; border-radius:14px; display:flex; align-items:center; justify-content:center;
+    border:1px solid rgba(232,196,118,.3); background:radial-gradient(120% 120% at 30% 20%, var(--g600), var(--g800)); color:var(--gold)}
+  .pmotif svg{width:30px; height:30px}
+  .pmeta{min-width:0; flex:1 1 auto}
+  .pmeta .pname{font-weight:600; font-size:16.5px; line-height:1.25}
+  .pmeta .psub{font-size:13px; color:var(--cream-dim); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .timeedit{display:flex; flex-wrap:wrap; gap:8px; align-items:center; padding:0 12px 12px; margin:-4px 0 10px;
+    border-radius:0 0 18px 18px}
+  .timeedit input[type="time"]{font-family:"Jost",sans-serif; font-size:16px; padding:9px 12px; border-radius:11px;
+    border:1px solid var(--gold-dim); background:rgba(8,26,18,.7); color:var(--cream); color-scheme:dark}
+  .tbtn{padding:9px 15px; border-radius:11px; border:1px solid var(--gold-dim); cursor:pointer; font-family:"Jost",sans-serif;
+    font-size:14px; font-weight:600; letter-spacing:.03em; background:rgba(232,196,118,.14); color:var(--gold-hi); -webkit-tap-highlight-color:transparent}
+  .tbtn.plain{background:transparent; color:var(--cream-dim)}
+  .empty{padding:26px 22px; text-align:center; border-radius:var(--radius); border:1.5px dashed rgba(232,196,118,.4);
+    background:rgba(8,26,18,.35); color:var(--cream-dim); font-size:15.5px; line-height:1.55}
+  .empty .big{font-size:26px; display:block; margin-bottom:8px; color:var(--gold)}
+
+  /* ============ VOTERS ============ */
+  .voters{display:flex; align-items:center; gap:6px}
+  .vchip{width:27px; height:27px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-size:11.5px; font-weight:600; color:#23180A; background:linear-gradient(180deg, var(--gold-hi), var(--gold-deep));
+    border:1.5px solid rgba(255,249,227,.75); box-shadow:0 3px 7px rgba(0,0,0,.4)}
+  .vchip.other{background:linear-gradient(180deg, #DDE8DC, #9DB8A4); border-color:rgba(255,255,255,.6)}
+  .vcount{font-size:13px; color:var(--cream-dim); letter-spacing:.03em}
+
+  /* ============ CARDS (FOOD + ACTIVITIES) ============ */
+  .filters{display:flex; gap:8px; overflow-x:auto; padding:16px 2px 6px; scrollbar-width:none; -webkit-overflow-scrolling:touch}
+  .filters::-webkit-scrollbar{display:none}
+  .fchip{flex:0 0 auto; padding:9px 16px; border-radius:999px; cursor:pointer; font-family:"Jost",sans-serif; font-size:14px; font-weight:500;
+    color:var(--cream-dim); background:rgba(255,255,255,.05); border:1px solid rgba(232,196,118,.25); -webkit-tap-highlight-color:transparent}
+  .fchip.on{color:#23180A; font-weight:600; background:linear-gradient(180deg, var(--gold-hi), var(--gold)); border-color:var(--gold-hi)}
+  .venuehead{position:sticky; top:74px; z-index:20; margin:22px -6px 12px; padding:10px 14px; border-radius:14px;
+    background:linear-gradient(160deg, rgba(18,59,39,.92), rgba(10,35,24,.92)); border:1px solid rgba(232,196,118,.35);
+    backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); box-shadow:0 12px 22px -12px rgba(0,0,0,.65)}
+  .venuehead .vn{font-family:"Cinzel",serif; font-weight:700; font-size:16.5px; letter-spacing:.05em; color:var(--gold-hi); line-height:1.25}
+  .venuehead .va{font-size:13px; font-style:italic; color:var(--cream-dim); margin-top:1px}
+  .card{margin-bottom:16px; border-radius:var(--radius); overflow:hidden; background:var(--glass); border:1px solid rgba(232,196,118,.24);
+    backdrop-filter:blur(16px) saturate(1.3); -webkit-backdrop-filter:blur(16px) saturate(1.3);
+    box-shadow:0 20px 36px -18px rgba(0,0,0,.65), inset 0 1px 0 rgba(255,255,255,.1)}
+  .card .ph{position:relative; aspect-ratio:16/10; background:radial-gradient(130% 130% at 28% 12%, var(--g600), var(--g850))}
+  .card .ph img{width:100%; height:100%; object-fit:cover; display:block}
+  .card .ph .motif{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:var(--gold)}
+  .card .ph .motif svg{width:86px; height:86px; filter:drop-shadow(0 8px 18px rgba(0,0,0,.5))}
+  .ribbon{position:absolute; top:12px; left:12px; padding:6px 12px; border-radius:999px; font-size:11.5px; font-weight:600;
+    letter-spacing:.2em; color:#23180A; background:linear-gradient(180deg, var(--gold-hi), var(--gold-deep));
+    box-shadow:0 8px 16px -6px rgba(0,0,0,.6)}
+  .card .bd{padding:16px 18px 15px}
+  .card h4{font-family:"Cinzel",serif; font-weight:700; font-size:20.5px; line-height:1.22; color:var(--cream)}
+  .card .where{margin-top:3px; font-size:13.5px; letter-spacing:.05em; color:var(--gold); text-transform:uppercase}
+  .card .desc{margin-top:8px; font-size:15.5px; line-height:1.55; color:var(--cream-dim)}
+  .tags{display:flex; flex-wrap:wrap; gap:6px; margin-top:11px}
+  .tag{font-size:11.5px; letter-spacing:.1em; text-transform:uppercase; padding:4.5px 10px; border-radius:999px;
+    border:1px solid rgba(232,196,118,.35); color:var(--gold-hi); background:rgba(8,26,18,.35)}
+  .tag.kid{border-color:rgba(160,220,170,.45); color:#BDE6C3}
+  .voterow{display:flex; align-items:center; gap:12px; margin-top:15px; padding-top:13px; border-top:1px solid rgba(232,196,118,.18)}
+  .starbtn{display:flex; align-items:center; gap:9px; cursor:pointer; padding:10px 16px 10px 12px; border-radius:999px;
+    border:1.5px solid var(--gold-dim); background:rgba(8,26,18,.45); color:var(--cream);
+    font-family:"Jost",sans-serif; font-size:15px; font-weight:600; letter-spacing:.03em; -webkit-tap-highlight-color:transparent}
+  .starbtn svg{width:21px; height:21px; flex:0 0 auto}
+  .starbtn .st{fill:none; stroke:var(--gold); stroke-width:1.6}
+  .starbtn.mine{background:linear-gradient(180deg, rgba(246,222,156,.24), rgba(185,138,47,.24)); border-color:var(--gold)}
+  .starbtn.mine .st{fill:var(--gold); stroke:var(--gold-hi)}
+  .starbtn:active{transform:scale(.97)}
+  .voterow .voters{margin-left:auto}
+
+  /* ============ MORE ============ */
+  .infocard{padding:20px; margin-bottom:14px; border-radius:var(--radius); background:var(--glass); border:1px solid rgba(232,196,118,.24);
+    backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px)}
+  .infocard h4{font-family:"Cinzel",serif; font-size:17px; letter-spacing:.1em; text-transform:uppercase; color:var(--gold-hi); margin-bottom:10px}
+  .infocard p, .infocard li{font-size:15.5px; line-height:1.6; color:var(--cream-dim)}
+  .infocard ul{padding-left:19px}
+  .infocard b{color:var(--cream); font-weight:600}
+  .infocard a{color:var(--gold-hi)}
+  .kv{display:flex; justify-content:space-between; gap:14px; padding:7px 0; border-bottom:1px solid rgba(232,196,118,.13)}
+  .kv:last-child{border-bottom:none}
+  .kv .k{color:var(--cream-faint); font-size:14px; letter-spacing:.06em; text-transform:uppercase}
+  .kv .v{font-weight:600; text-align:right}
+  .credit{margin-top:22px; text-align:center; font-size:13px; line-height:1.7; color:var(--cream-faint)}
+  .credit a{color:var(--gold)}
+
+  /* ============ TAB BAR ============ */
+  nav.tabbar{position:fixed; left:50%; transform:translateX(-50%); bottom:calc(10px + env(safe-area-inset-bottom)); z-index:60;
+    width:min(560px, calc(100% - 20px)); display:flex; padding:8px; border-radius:24px;
+    background:linear-gradient(160deg, rgba(18,59,39,.88), rgba(8,26,18,.9)); border:1px solid var(--glass-brd);
+    backdrop-filter:blur(18px) saturate(1.4); -webkit-backdrop-filter:blur(18px) saturate(1.4);
+    box-shadow:0 22px 40px -14px rgba(0,0,0,.75)}
+  .tabbtn{flex:1 1 0; display:flex; flex-direction:column; align-items:center; gap:3px; padding:9px 2px 7px; border:none; cursor:pointer;
+    background:transparent; color:var(--cream-faint); font-family:"Jost",sans-serif; font-size:11px; font-weight:600;
+    letter-spacing:.08em; text-transform:uppercase; border-radius:17px; -webkit-tap-highlight-color:transparent}
+  .tabbtn svg{width:23px; height:23px}
+  .tabbtn.on{color:var(--gold-hi); background:linear-gradient(180deg, rgba(246,222,156,.16), rgba(185,138,47,.1))}
+  #toast{position:fixed; left:50%; transform:translateX(-50%) translateY(20px); bottom:calc(104px + env(safe-area-inset-bottom)); z-index:80;
+    padding:11px 18px; border-radius:999px; background:rgba(10,30,20,.94); border:1px solid var(--gold-dim); color:var(--cream);
+    font-size:14px; opacity:0; pointer-events:none; transition:opacity .25s ease, transform .25s ease; max-width:calc(100% - 32px); text-align:center}
+  #toast.on{opacity:1; transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<canvas id="snow" aria-hidden="true"></canvas>
+
+<div id="gate" hidden>
+  <div class="gatecard">
+    <img class="gateart" src="img/event-keyart.jpg" alt="Disney Jollywood Nights 2026 — Kermit and Miss Piggy">
+    <div class="star">★</div>
+    <h1 class="shimmer">Jollywood<br>Fam 2026</h1>
+    <p class="sub">Our premiere at Disney Jollywood Nights — the foodie ballot, the gameplan, and the countdown, all in one place.</p>
+    <span class="datechip">Sat · Nov 14 · Hollywood Studios</span>
+    <button class="btn-gold" id="btnSignIn" type="button">Enter with Face ID</button>
+    <p class="gatemsg" id="gateMsg" role="status"></p>
+  </div>
+</div>
+
+<div class="wrap" id="app" hidden>
+  <header class="topbar">
+    <span class="tstar">★</span>
+    <span class="ttitle">JOLLYWOOD FAM 2026</span>
+    <span class="me" id="meChip" hidden></span>
+  </header>
+
+  <section id="tab-gameplan">
+    <div class="hero">
+      <div class="hero-in">
+        <div class="eyebrow">Our Premiere · Sat, November 14</div>
+        <h2 id="heroTitle">The countdown is on</h2>
+        <div class="countrow" id="countRow">
+          <div class="ctile"><b id="cdD">–</b><span>Days</span></div>
+          <div class="ctile"><b id="cdH">–</b><span>Hours</span></div>
+          <div class="ctile"><b id="cdM">–</b><span>Minutes</span></div>
+          <div class="ctile"><b id="cdS">–</b><span>Seconds</span></div>
+        </div>
+        <p class="note" id="heroNote">until the party starts · <b>7:30 PM</b> at Disney's Hollywood Studios</p>
+      </div>
+    </div>
+
+    <div class="summary" id="summaryRow"></div>
+
+    <div class="secttl"><h3>Tonight's Itinerary</h3><div class="rule"></div></div>
+    <p class="sectsub">Everything the fam starred, in running order. Tap a time to slot a pick into the night — times are shared, so the plan stays in sync for everyone.</p>
+    <div id="planList"></div>
+  </section>
+
+  <section id="tab-food" hidden>
+    <div class="secttl"><h3>The Foodie Ballot</h3><div class="rule"></div></div>
+    <p class="sectsub">Every bite and sip from the official Jollywood Nights foodie guide. Star what you want to try — the fam's stars build the gameplan.</p>
+    <div class="filters" id="foodFilters">
+      <button class="fchip on" data-f="all" type="button">All</button>
+      <button class="fchip" data-f="new" type="button">★ New</button>
+      <button class="fchip" data-f="kid" type="button">Kids picks</button>
+      <button class="fchip" data-f="na" type="button">Non-alcoholic</button>
+      <button class="fchip" data-f="pb" type="button">Plant-based</button>
+      <button class="fchip" data-f="mine" type="button">My stars</button>
+    </div>
+    <div id="foodList"></div>
+  </section>
+
+  <section id="tab-activities" hidden>
+    <div class="secttl"><h3>The Marquee</h3><div class="rule"></div></div>
+    <p class="sectsub">The night's headline acts. Star the must-dos and they'll join the gameplan alongside the food.</p>
+    <div id="actList"></div>
+  </section>
+
+  <section id="tab-more" hidden>
+    <div class="secttl"><h3>More</h3><div class="rule"></div></div>
+    <div class="infocard">
+      <h4>The Night</h4>
+      <div class="kv"><span class="k">Our night</span><span class="v">Saturday, November 14, 2026</span></div>
+      <div class="kv"><span class="k">Party hours</span><span class="v">7:30 PM – 12:30 AM</span></div>
+      <div class="kv"><span class="k">Where</span><span class="v">Disney's Hollywood Studios</span></div>
+      <div class="kv"><span class="k">Season</span><span class="v">Select nights · Nov 7 – Jan 5</span></div>
+      <div class="kv"><span class="k">Tickets</span><span class="v">Separately ticketed event</span></div>
+    </div>
+    <div class="infocard">
+      <h4>How the ballot works</h4>
+      <ul>
+        <li>Everyone signs in with their own <b>Face ID</b>, so every star is personal.</li>
+        <li>Star bites and sips in <b>Food</b>, and must-do shows in <b>Activities</b>.</li>
+        <li>Anything with a star lands in <b>Our Gameplan</b> — give picks a time and the night sorts itself into an itinerary.</li>
+        <li>Times are <b>shared</b>: either of you can set or change them, and both phones stay in sync.</li>
+      </ul>
+    </div>
+    <div class="infocard">
+      <h4>Good to know</h4>
+      <ul>
+        <li><b>Jazzy Holidays</b> at The Hollywood Brown Derby takes reservations, and they're recommended.</li>
+        <li>The Hollywood Scoops sundaes come in a <b>souvenir cup</b> while supplies last — same for the Tip Top Club's flute drinks.</li>
+        <li>Several favorites are <b>served warm</b> — look for the caramel-apple ciders at Market on a chilly night.</li>
+      </ul>
+    </div>
+    <div class="infocard" id="meCard" hidden>
+      <h4>Starring</h4>
+      <p id="meText"></p>
+    </div>
+    <p class="credit">Menu, descriptions &amp; food photos from the official Disney Parks Blog<br>
+    <a href="https://disneyparksblog.com/wdw/foodie-guide-to-disney-jollywood-nights/">Foodie Guide to Disney Jollywood Nights 2026</a> · © Disney<br>
+    An unofficial family planner, made with love and a little snow.</p>
+  </section>
+</div>
+
+<nav class="tabbar" id="tabbar" hidden>
+  <button class="tabbtn on" data-tab="gameplan" type="button">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M12 3.5l2.5 5.3 5.8.7-4.3 4 1.1 5.7L12 16.4l-5.1 2.8L8 13.5l-4.3-4 5.8-.7z"/></svg>
+    Gameplan
+  </button>
+  <button class="tabbtn" data-tab="food" type="button">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 17h16M12 8a8 8 0 0 1 8 8H4a8 8 0 0 1 8-8zM12 8V6.5M10 4.2h4"/></svg>
+    Food
+  </button>
+  <button class="tabbtn" data-tab="activities" type="button">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h11A2.5 2.5 0 0 1 20 8.5c-1.4 0-2.5 1.1-2.5 2.5s1.1 2.5 2.5 2.5A2.5 2.5 0 0 1 17.5 16h-11A2.5 2.5 0 0 1 4 13.5c1.4 0 2.5-1.1 2.5-2.5S5.4 8.5 4 8.5z"/><path d="M13 6v2M13 11v2M13 16v2" stroke-dasharray="0.5 3"/></svg>
+    Activities
+  </button>
+  <button class="tabbtn" data-tab="more" type="button">
+    <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5.5" cy="12" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="18.5" cy="12" r="1.9"/></svg>
+    More
+  </button>
+</nav>
+
+<div id="toast" role="status"></div>
+
+<script>
+"use strict";
+const $ = (s, r) => (r || document).querySelector(s);
+const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+/* ---------- auth (same passkey flow as the other apps) ---------- */
+function b64uToBuf(s) { s = s.replace(/-/g, "+").replace(/_/g, "/"); while (s.length % 4) s += "="; return Uint8Array.from(atob(s), (c) => c.charCodeAt(0)).buffer; }
+function bufToB64u(buf) { const b = new Uint8Array(buf); let s = ""; for (let i = 0; i < b.length; i += 0x8000) s += String.fromCharCode.apply(null, b.subarray(i, i + 0x8000)); return btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, ""); }
+async function api(method, path, body) {
+  const r = await fetch(path, { method, headers: body ? { "Content-Type": "application/json" } : undefined, body: body ? JSON.stringify(body) : undefined });
+  if (!r.ok) { const e = new Error("api " + r.status); e.status = r.status; throw e; }
+  return r.json();
+}
+async function passkeySignIn() {
+  const options = await api("POST", "/api/auth/login/options", {});
+  options.challenge = b64uToBuf(options.challenge);
+  if (options.allowCredentials) options.allowCredentials = options.allowCredentials.map((c) => ({ ...c, id: b64uToBuf(c.id) }));
+  const cred = await navigator.credentials.get({ publicKey: options });
+  await api("POST", "/api/auth/login/verify", { credential: { id: bufToB64u(cred.rawId), rawId: bufToB64u(cred.rawId), type: cred.type, response: { authenticatorData: bufToB64u(cred.response.authenticatorData), clientDataJSON: bufToB64u(cred.response.clientDataJSON), signature: bufToB64u(cred.response.signature), userHandle: cred.response.userHandle ? bufToB64u(cred.response.userHandle) : null } } });
+}
+
+/* ---------- state ---------- */
+let guide = null, me = null;
+const votes = new Map();   // itemId -> [{by, mine, at}]
+let times = {};            // itemId -> "HH:MM"
+const INDEX = new Map();   // itemId -> {kind, name, sub, img, motif}
+let foodFilter = "all";
+let editingTimeFor = null;
+
+function toast(msg) {
+  const t = $("#toast"); t.textContent = msg; t.classList.add("on");
+  clearTimeout(toast._h); toast._h = setTimeout(() => t.classList.remove("on"), 2600);
+}
+
+/* ---------- motifs (for cards without a photo) ---------- */
+const MOTIFS = {
+  star: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"><path d="M12 3l2.7 5.8 6.3.8-4.6 4.3 1.2 6.2L12 17.2l-5.6 2.9 1.2-6.2L3 9.6l6.3-.8z"/></svg>',
+  stage: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"><path d="M4 21V9a8 6.5 0 0 1 16 0v12"/><path d="M12 8.2l1.4 3 3.2.4-2.3 2.2.6 3.2L12 15.4l-2.9 1.6.6-3.2-2.3-2.2 3.2-.4z" stroke-linejoin="round"/></svg>',
+  skate: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"><path d="M12 2v20M4 6l16 12M20 6L4 18M12 2l-2.5 2.5M12 2l2.5 2.5M12 22l-2.5-2.5M12 22l2.5-2.5M4 6l3.6.4M4 6l.4 3.6M20 18l-3.6-.4M20 18l-.4-3.6M20 6l-3.6.4M20 6l-.4 3.6M4 18l3.6-.4M4 18l.4-3.6"/></svg>',
+  soiree: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"><path d="M7 3h10v5a5 5 0 0 1-10 0zM12 13v6M8.5 21h7M9.5 6.2h5"/></svg>',
+  jazz: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18.5V6l10-2v11.5"/><circle cx="6.8" cy="18.5" r="2.4"/><circle cx="16.8" cy="15.5" r="2.4"/></svg>',
+  finale: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.8 5.8l2.8 2.8M15.4 15.4l2.8 2.8M18.2 5.8l-2.8 2.8M8.6 15.4l-2.8 2.8"/><circle cx="12" cy="12" r="1.6"/></svg>',
+};
+const motifSvg = (m) => MOTIFS[m] || MOTIFS.star;
+
+/* ---------- voting ---------- */
+function voteInfo(id) {
+  const list = votes.get(id) || [];
+  return { list, count: list.length, mine: list.some((v) => v.mine) };
+}
+function votersHtml(id) {
+  const { list, count } = voteInfo(id);
+  if (!count) return '<span class="vcount">No stars yet</span>';
+  const chips = list.map((v) => `<span class="vchip${v.mine ? "" : " other"}" title="${esc(v.by)}">${esc((v.by || "?").charAt(0).toUpperCase())}</span>`).join("");
+  return `<span class="voters">${chips}</span><span class="vcount">${count} star${count === 1 ? "" : "s"}</span>`;
+}
+function voteRowHtml(id, label) {
+  const { mine } = voteInfo(id);
+  return `<button class="starbtn${mine ? " mine" : ""}" data-vote="${esc(id)}" type="button" aria-pressed="${mine}">
+      <svg viewBox="0 0 24 24"><path class="st" d="M12 3.5l2.5 5.3 5.8.7-4.3 4 1.1 5.7L12 16.4l-5.1 2.8L8 13.5l-4.3-4 5.8-.7z"/></svg>${label}</button>
+    <div class="voters" data-voters="${esc(id)}">${votersHtml(id)}</div>`;
+}
+function refreshVoteUI(id) {
+  $$(`[data-vote="${CSS.escape(id)}"]`).forEach((btn) => {
+    const { mine } = voteInfo(id);
+    btn.classList.toggle("mine", mine);
+    btn.setAttribute("aria-pressed", mine);
+  });
+  $$(`[data-voters="${CSS.escape(id)}"]`).forEach((el) => { el.innerHTML = votersHtml(id); });
+}
+async function toggleVote(id) {
+  const { mine } = voteInfo(id);
+  const prev = votes.get(id) || [];
+  if (mine) votes.set(id, prev.filter((v) => !v.mine));
+  else votes.set(id, [...prev, { by: me || "You", mine: true, at: new Date().toISOString() }]);
+  refreshVoteUI(id); renderGameplan();
+  try {
+    await api("POST", "/api/jollywood/votes", { itemId: id, vote: !mine });
+  } catch (e) {
+    votes.set(id, prev); refreshVoteUI(id); renderGameplan();
+    toast("That star didn't stick — check your connection and try again.");
+  }
+}
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest("[data-vote]");
+  if (btn) toggleVote(btn.dataset.vote);
+});
+
+/* ---------- food + activities ---------- */
+function tagChips(it) {
+  const chips = [];
+  for (const t of it.tags || []) { if (t === "New") continue; chips.push(`<span class="tag${t === "Kids pick" ? " kid" : ""}">${esc(t)}</span>`); }
+  return chips.length ? `<div class="tags">${chips.join("")}</div>` : "";
+}
+function foodCard(it) {
+  const ph = it.img
+    ? `<div class="ph"><img src="${esc(it.img)}" alt="${esc(it.name)}" loading="lazy" decoding="async">${it.isNew ? '<span class="ribbon">★ New</span>' : ""}</div>`
+    : `<div class="ph"><div class="motif">${motifSvg("star")}</div>${it.isNew ? '<span class="ribbon">★ New</span>' : ""}</div>`;
+  return `<article class="card">${ph}<div class="bd">
+    <h4>${esc(it.name)}</h4>
+    ${it.desc ? `<p class="desc">${esc(it.desc)}</p>` : ""}
+    ${tagChips(it)}
+    <div class="voterow">${voteRowHtml(it.id, "Must-try")}</div>
+  </div></article>`;
+}
+function renderFood() {
+  const host = $("#foodList");
+  let html = "";
+  for (const v of guide.venues) {
+    const items = v.items.filter((it) => {
+      if (foodFilter === "all") return true;
+      if (foodFilter === "new") return it.isNew;
+      if (foodFilter === "kid") return it.kidPick;
+      if (foodFilter === "na") return (it.tags || []).includes("Non-alcoholic");
+      if (foodFilter === "pb") return (it.tags || []).includes("Plant-based");
+      if (foodFilter === "mine") return voteInfo(it.id).mine;
+      return true;
+    });
+    if (!items.length) continue;
+    html += `<div class="venuehead"><div class="vn">${esc(v.name)}</div><div class="va">${esc(v.area)}</div></div>`;
+    html += items.map(foodCard).join("");
+  }
+  host.innerHTML = html || `<div class="empty"><span class="big">★</span>Nothing matches that filter yet — star a few things and they'll show up here.</div>`;
+}
+$("#foodFilters").addEventListener("click", (e) => {
+  const chip = e.target.closest("[data-f]"); if (!chip) return;
+  foodFilter = chip.dataset.f;
+  $$("#foodFilters .fchip").forEach((c) => c.classList.toggle("on", c === chip));
+  renderFood();
+});
+function renderActivities() {
+  $("#actList").innerHTML = guide.activities.map((a) => {
+    const ph = a.img
+      ? `<div class="ph"><img src="${esc(a.img)}" alt="${esc(a.name)}" loading="lazy" decoding="async"></div>`
+      : `<div class="ph"><div class="motif">${motifSvg(a.motif)}</div></div>`;
+    return `<article class="card">${ph}<div class="bd">
+      <h4>${esc(a.name)}</h4>
+      <div class="where">${esc(a.where)}</div>
+      <p class="desc">${esc(a.desc)}</p>
+      <div class="voterow">${voteRowHtml(a.id, "Must-do")}</div>
+    </div></article>`;
+  }).join("");
+}
+
+/* ---------- gameplan ---------- */
+function fmtTime(t) {
+  if (!t) return "";
+  let [h, m] = t.split(":").map(Number);
+  const ap = h >= 12 ? "PM" : "AM"; h = h % 12 || 12;
+  return `${h}:${String(m).padStart(2, "0")} ${ap}`;
+}
+function picksList() {
+  const picks = [];
+  for (const [id, meta] of INDEX) {
+    const vi = voteInfo(id);
+    if (vi.count) picks.push({ id, ...meta, votes: vi });
+  }
+  return picks;
+}
+function planRow(p) {
+  const t = times[p.id];
+  const chip = t
+    ? `<button class="timechip" data-time="${esc(p.id)}" type="button">${esc(fmtTime(t))}<small>tap to edit</small></button>`
+    : `<button class="timechip unset" data-time="${esc(p.id)}" type="button">Set<br>time</button>`;
+  const thumb = p.img
+    ? `<img class="pthumb" src="${esc(p.img)}" alt="" loading="lazy" decoding="async">`
+    : `<span class="pmotif">${motifSvg(p.motif)}</span>`;
+  const names = p.votes.list.map((v) => v.by).join(" · ");
+  let html = `<div class="prow">${chip}${thumb}
+    <div class="pmeta"><div class="pname">${esc(p.name)}</div>
+    <div class="psub">${esc(p.sub)} — ★ ${esc(names)}</div></div></div>`;
+  if (editingTimeFor === p.id) {
+    html += `<div class="timeedit">
+      <input type="time" id="timeInput" value="${esc(t || "19:30")}" step="300">
+      <button class="tbtn" data-timeset="${esc(p.id)}" type="button">Set time</button>
+      ${t ? `<button class="tbtn plain" data-timeclear="${esc(p.id)}" type="button">Clear</button>` : ""}
+      <button class="tbtn plain" data-timedone type="button">Done</button>
+    </div>`;
+  }
+  return html;
+}
+function renderGameplan() {
+  const picks = picksList();
+  const totalVotes = picks.reduce((n, p) => n + p.votes.count, 0);
+  const both = picks.filter((p) => p.votes.count >= 2).length;
+  const stops = new Set(picks.map((p) => p.sub)).size;
+  $("#summaryRow").innerHTML = `
+    <div class="sumchip"><b>${picks.length}</b><span>Picks</span></div>
+    <div class="sumchip"><b>${totalVotes}</b><span>Stars cast</span></div>
+    <div class="sumchip"><b>${both}</b><span>Fam favorites</span></div>
+    <div class="sumchip"><b>${stops}</b><span>Stops</span></div>`;
+  const host = $("#planList");
+  if (!picks.length) {
+    host.innerHTML = `<div class="empty"><span class="big">★</span>No picks yet. Star the bites you want in <b>Food</b> and the shows you can't miss in <b>Activities</b> — they'll line up here as tonight's itinerary.</div>`;
+    return;
+  }
+  const timed = picks.filter((p) => times[p.id]).sort((a, b) => times[a.id].localeCompare(times[b.id]));
+  const untimed = picks.filter((p) => !times[p.id]).sort((a, b) => b.votes.count - a.votes.count || a.name.localeCompare(b.name));
+  let html = "";
+  if (timed.length) {
+    html += `<div class="secttl"><h3 style="font-size:16px">The Running Order</h3><div class="rule"></div></div>`;
+    html += timed.map(planRow).join("");
+  }
+  if (untimed.length) {
+    html += `<div class="secttl"><h3 style="font-size:16px">Whenever We're Nearby</h3><div class="rule"></div></div>`;
+    html += untimed.map(planRow).join("");
+  }
+  host.innerHTML = html;
+}
+document.addEventListener("click", async (e) => {
+  const chip = e.target.closest("[data-time]");
+  if (chip) { editingTimeFor = editingTimeFor === chip.dataset.time ? null : chip.dataset.time; renderGameplan(); return; }
+  if (e.target.closest("[data-timedone]")) { editingTimeFor = null; renderGameplan(); return; }
+  const setBtn = e.target.closest("[data-timeset]");
+  if (setBtn) {
+    const id = setBtn.dataset.timeset;
+    const val = $("#timeInput").value;
+    if (!val) return;
+    times[id] = val; editingTimeFor = null; renderGameplan();
+    try { await api("POST", "/api/jollywood/plan", { itemId: id, time: val }); }
+    catch (err) { toast("That time didn't save — try again."); }
+    return;
+  }
+  const clrBtn = e.target.closest("[data-timeclear]");
+  if (clrBtn) {
+    const id = clrBtn.dataset.timeclear;
+    delete times[id]; editingTimeFor = null; renderGameplan();
+    try { await api("POST", "/api/jollywood/plan", { itemId: id, time: null }); }
+    catch (err) { toast("That change didn't save — try again."); }
+  }
+});
+
+/* ---------- countdown ---------- */
+const PARTY_START = new Date("2026-11-14T19:30:00-05:00").getTime();
+const PARTY_END = new Date("2026-11-15T00:30:00-05:00").getTime();
+function tickCountdown() {
+  const now = Date.now();
+  const dEl = $("#cdD"), hEl = $("#cdH"), mEl = $("#cdM"), sEl = $("#cdS");
+  if (now >= PARTY_END) {
+    $("#heroTitle").textContent = "That's a wrap!";
+    $("#heroNote").innerHTML = "Premiere night complete — <b>see you at the next one</b>.";
+    $("#countRow").hidden = true; return;
+  }
+  if (now >= PARTY_START) {
+    $("#heroTitle").textContent = "We're at the premiere!";
+    $("#heroNote").innerHTML = "It's Jollywood night — <b>the gameplan below is live</b>. Break a leg out there.";
+    $("#countRow").hidden = true; return;
+  }
+  const dayStart = new Date("2026-11-14T00:00:00-05:00").getTime();
+  $("#heroTitle").textContent = now >= dayStart ? "Tonight's the night!" : "The countdown is on";
+  let diff = Math.floor((PARTY_START - now) / 1000);
+  const d = Math.floor(diff / 86400); diff -= d * 86400;
+  const h = Math.floor(diff / 3600); diff -= h * 3600;
+  const m = Math.floor(diff / 60); const s = diff - m * 60;
+  dEl.textContent = d; hEl.textContent = String(h).padStart(2, "0");
+  mEl.textContent = String(m).padStart(2, "0"); sEl.textContent = String(s).padStart(2, "0");
+}
+
+/* ---------- tabs ---------- */
+$$(".tabbtn").forEach((b) => b.addEventListener("click", () => {
+  const tab = b.dataset.tab;
+  $$(".tabbtn").forEach((x) => x.classList.toggle("on", x === b));
+  ["gameplan", "food", "activities", "more"].forEach((t) => { $("#tab-" + t).hidden = t !== tab; });
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}));
+
+/* ---------- boot ---------- */
+async function loadApp() {
+  $("#gate").hidden = true;
+  $("#app").hidden = false; $("#tabbar").hidden = false;
+  $("#planList").innerHTML = `<div class="loading">Raising the curtain…</div>`;
+  const [g, v, p] = await Promise.all([
+    api("GET", "/api/jollywood/items"),
+    api("GET", "/api/jollywood/votes"),
+    api("GET", "/api/jollywood/plan"),
+  ]);
+  guide = g; me = v.me || null; times = p.times || {};
+  votes.clear();
+  for (const row of v.votes || []) {
+    if (!votes.has(row.itemId)) votes.set(row.itemId, []);
+    votes.get(row.itemId).push({ by: row.by, mine: row.mine, at: row.at });
+  }
+  INDEX.clear();
+  for (const venue of guide.venues) for (const it of venue.items)
+    INDEX.set(it.id, { kind: "food", name: it.name, sub: venue.name, img: it.img, motif: "star" });
+  for (const a of guide.activities)
+    INDEX.set(a.id, { kind: "act", name: a.name, sub: a.where, img: a.img, motif: a.motif });
+  if (me) {
+    const chip = $("#meChip"); chip.textContent = "★ " + me; chip.hidden = false;
+    $("#meCard").hidden = false;
+    $("#meText").innerHTML = `You're signed in as <b>${esc(me)}</b> — your stars show in gold, and the fam's gameplan is built from everyone's picks together.`;
+  }
+  renderFood(); renderActivities(); renderGameplan();
+  tickCountdown(); setInterval(tickCountdown, 1000);
+}
+async function boot() {
+  try {
+    const meRes = await api("GET", "/api/auth/me");
+    if (meRes && meRes.signedIn) { await loadApp(); return; }
+  } catch (e) { /* fall through to the gate */ }
+  $("#gate").hidden = false;
+}
+$("#btnSignIn").addEventListener("click", async () => {
+  const msg = $("#gateMsg"); msg.textContent = "";
+  const btn = $("#btnSignIn"); btn.disabled = true;
+  try {
+    await passkeySignIn();
+    await loadApp();
+  } catch (e) {
+    msg.textContent = "Sign-in didn't complete — please try again.";
+  }
+  btn.disabled = false;
+});
+boot();
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+
+/* ---------- snow ---------- */
+(function snow() {
+  const cv = $("#snow"), ctx = cv.getContext("2d");
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let W, H, flakes = [];
+  function resize() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    W = window.innerWidth; H = window.innerHeight;
+    cv.width = W * dpr; cv.height = H * dpr;
+    cv.style.width = W + "px"; cv.style.height = H + "px";
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  function make() {
+    flakes = Array.from({ length: Math.min(110, Math.floor(W / 9)) }, () => ({
+      x: Math.random() * W, y: Math.random() * H,
+      r: 0.8 + Math.random() * 1.9, s: 0.35 + Math.random() * 0.75,
+      ph: Math.random() * Math.PI * 2, sw: 0.3 + Math.random() * 0.7,
+      o: 0.35 + Math.random() * 0.55,
+    }));
+  }
+  function draw(t) {
+    ctx.clearRect(0, 0, W, H);
+    for (const f of flakes) {
+      const x = f.x + Math.sin(t / 1600 + f.ph) * 14 * f.sw;
+      ctx.beginPath(); ctx.arc(x, f.y, f.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255,252,240,${f.o})`; ctx.fill();
+    }
+  }
+  function step(t) {
+    for (const f of flakes) {
+      f.y += f.s;
+      if (f.y > H + 4) { f.y = -4; f.x = Math.random() * W; }
+    }
+    draw(t);
+    requestAnimationFrame(step);
+  }
+  resize(); make();
+  window.addEventListener("resize", () => { resize(); make(); if (reduced) draw(0); });
+  if (reduced) draw(0); else requestAnimationFrame(step);
+})();
+</script>
+</body>
+</html>
