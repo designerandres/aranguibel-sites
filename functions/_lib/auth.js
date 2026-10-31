@@ -127,6 +127,8 @@ export async function ensureAuthSchema(env) {
   await ensureColumn(env, "users", "zip_lng", "ALTER TABLE users ADD COLUMN zip_lng REAL");
   await ensureColumn(env, "users", "zip_label", "ALTER TABLE users ADD COLUMN zip_label TEXT");
   await ensureColumn(env, "invites", "scope", "ALTER TABLE invites ADD COLUMN scope TEXT");
+  await ensureColumn(env, "invites", "poppy_household", "ALTER TABLE invites ADD COLUMN poppy_household TEXT");
+  await ensureColumn(env, "users", "poppy_join", "ALTER TABLE users ADD COLUMN poppy_join TEXT");
 }
 
 /* ---------- Cloudflare Access JWT (transition) ---------- */
@@ -325,7 +327,7 @@ async function consumeChallenge(env, clientDataBytes) {
 export async function registrationOptions(env, request, body) {
   const email = String(body.email || "").trim().toLowerCase();
   if (!email.includes("@")) return { error: json({ error: "valid email required" }, 400) };
-  let mode = null, inviteHash = null, inviteScope = null;
+  let mode = null, inviteHash = null, inviteScope = null, invitePoppyJoin = null;
   if (body.inviteCode) {
     inviteHash = await sha256Hex(String(body.inviteCode).trim());
     const invite = await env.DB.prepare("SELECT * FROM invites WHERE code_hash = ?1 AND used_at IS NULL AND expires_at > ?2")
@@ -334,6 +336,7 @@ export async function registrationOptions(env, request, body) {
     if (invite.email.toLowerCase() !== email) return { error: json({ error: "invite was issued for a different email" }, 403) };
     mode = "invite";
     inviteScope = invite.scope || null;
+    invitePoppyJoin = invite.poppy_household || null;
   } else {
     // Signed-in user adding a passkey for another of their devices.
     const session = await sessionIdentity(env, request);
@@ -352,7 +355,7 @@ export async function registrationOptions(env, request, body) {
   const displayName = String(body.name || "").replace(/[<>\u0000-\u001F]/g, "").trim().slice(0, 60) || null;
   const zipIn = String(body.zip || "").trim();
   const displayZip = /^\d{5}$/.test(zipIn) ? zipIn : null;
-  const { challenge } = await storeChallenge(env, "register", email, { mode, inviteHash, handle, scope: inviteScope, name: displayName, zip: displayZip });
+  const { challenge } = await storeChallenge(env, "register", email, { mode, inviteHash, handle, scope: inviteScope, name: displayName, zip: displayZip, poppyJoin: invitePoppyJoin });
   return { options: {
     challenge,
     rp: { id: RP_ID, name: RP_NAME },
@@ -382,8 +385,8 @@ export async function verifyRegistration(env, body) {
   if (!user) {
     const id = "u_" + randomB64url(9);
     const role = context.mode === "bootstrap" ? "admin" : "member";
-    await env.DB.prepare("INSERT INTO users (id, email, name, zip, handle, role, scope, created_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)")
-      .bind(id, email, context.name || email.split("@")[0], context.zip || null, context.handle || randomB64url(16), role, context.scope || null, nowIso()).run();
+    await env.DB.prepare("INSERT INTO users (id, email, name, zip, handle, role, scope, created_at, poppy_join) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9)")
+      .bind(id, email, context.name || email.split("@")[0], context.zip || null, context.handle || randomB64url(16), role, context.scope || null, nowIso(), context.poppyJoin || null).run();
     user = { id, email, role };
   }
   await env.DB.prepare("INSERT INTO credentials (cred_id, user_id, public_key_jwk, counter, created_at) VALUES (?1, ?2, ?3, ?4, ?5)")
@@ -432,11 +435,11 @@ export async function verifyLogin(env, body) {
 
 /* ---------- invites ---------- */
 
-export async function createInvite(env, identity, email, scope) {
+export async function createInvite(env, identity, email, scope, poppyHousehold) {
   const code = randomB64url(18);
   const picked = Array.isArray(scope) ? [...new Set(scope.filter((s) => APP_SLUGS.includes(s)))] : [];
   const stored = picked.length ? JSON.stringify(picked) : null;
-  await env.DB.prepare("INSERT INTO invites (code_hash, email, created_by, created_at, expires_at, scope) VALUES (?1, ?2, ?3, ?4, ?5, ?6)")
-    .bind(await sha256Hex(code), email.toLowerCase(), identity.email, nowIso(), plusIso(INVITE_DAYS * 86400_000), stored).run();
+  await env.DB.prepare("INSERT INTO invites (code_hash, email, created_by, created_at, expires_at, scope, poppy_household) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)")
+    .bind(await sha256Hex(code), email.toLowerCase(), identity.email, nowIso(), plusIso(INVITE_DAYS * 86400_000), stored, poppyHousehold || null).run();
   return { code, url: `${ORIGIN}/login/#invite=${code}`, expiresInDays: INVITE_DAYS, scope: picked.length ? picked : null };
 }

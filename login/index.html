@@ -78,7 +78,7 @@
   .brandname{ font-family:"Fraunces",serif; font-weight:900; font-size:43px; line-height:1.02; color:#fff; letter-spacing:.01em; }
   .brandname em{ font-style:italic; font-weight:700; color:#FFE9A8; }
   .brandsub{ margin-top:9px; font-weight:700; font-size:12px; letter-spacing:.32em; color:rgba(255,255,255,.94); }
-  .brandinvite{ margin-top:13px; font-size:14.5px; color:rgba(255,255,255,.92); }
+  #inv-brand .brandinvite{ margin-top:13px; font-size:15px; font-weight:700; color:#FFFFFF; text-shadow:0 1px 10px rgba(150,35,15,.35); }
   /* --- themed single-app invite panel --- */
   #panel-invite{ text-align:center; padding:28px 22px; }
   #panel-invite img.appicon{ width:78px; height:78px; border-radius:19px; box-shadow:0 12px 30px rgba(0,0,0,.35); }
@@ -238,7 +238,7 @@ const APP_THEMES = {
   "jollywood-fam-2026": { name: "Jollywood Fam 2026", icon: "/jollywood-fam-2026/icons/icon.svg",
     bg: "radial-gradient(900px 480px at 85% -10%, rgba(232,196,118,.20), transparent 60%), linear-gradient(168deg,#0E2F20,#071A11 72%)",
     vars: { "--ink":"#FFF9E3", "--ink2":"#CFC7A8", "--card":"rgba(14,40,26,.78)", "--line":"rgba(232,196,118,.35)", "--accent":"#F6DE9C", "--accent2":"#C08A2D", "--fieldbg":"#0B2517", "--btnink":"#23180A" }, scheme: "dark", pattern: "/jollywood-fam-2026/deco-fan.svg", font: '"Cinzel",serif' },
-  "poppy-picks": { name: "Poppy's Picks", brandmark: true, zip: true, icon: "/poppy-picks/icons/icon.svg",
+  "poppy-picks": { name: "Poppy's Picks", brandmark: true, zip: true, pattern: "/poppy-picks/pattern.svg", icon: "/poppy-picks/icons/icon.svg",
     bg: "radial-gradient(900px 480px at 85% -10%, rgba(255,233,168,.40), transparent 60%), linear-gradient(165deg,#FF9A5C,#FF6B4A 55%,#F6535F)",
     vars: { "--ink":"#17334E", "--ink2":"#47617A", "--card":"#FFFDF8", "--line":"#EADFCB", "--accent":"#FF6B4A", "--accent2":"#FFB627", "--fieldbg":"#FFFFFF", "--btnink":"#FFFFFF" }, scheme: "light", font: '"Fraunces",serif' },
   "cycles": { name: "Cycles", icon: "/cycles/favicon.svg",

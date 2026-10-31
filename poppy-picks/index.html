@@ -139,6 +139,31 @@
     font-size:12.5px;font-weight:800;letter-spacing:.03em;color:inherit;opacity:.82;text-align:left;
     text-decoration:underline;text-underline-offset:3px}
   .zipwrap{padding:24px 20px 34px}
+  .hhstrip{margin:14px 2px 4px;background:#fff;border:1.5px solid #F3E3CF;border-radius:18px;padding:12px 14px;
+    display:flex;align-items:center;gap:11px;box-shadow:0 6px 18px rgba(120,70,20,.08);cursor:pointer}
+  .havs{display:flex;flex:none}
+  .hav{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    font-weight:900;font-size:14px;color:#fff;border:2.5px solid #fff;margin-left:-9px}
+  .hav:first-child{margin-left:0}
+  .hav.big{width:52px;height:52px;font-size:21px;margin-left:-12px}
+  .hav.big:first-child{margin-left:0}
+  .hhmeta{flex:1;min-width:0}
+  .hhname{font-weight:900;font-size:15.5px;color:#17334E;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .hhsub{font-size:12.5px;color:#7A8FA3;font-weight:700}
+  .hhbtn{flex:none;background:linear-gradient(135deg,#FF6B4A,#FFB627);color:#fff;font-weight:900;font-size:13px;
+    border:0;border-radius:99px;padding:9px 14px;cursor:pointer}
+  .hhmember{display:flex;align-items:center;gap:11px;padding:10px 0;border-bottom:1.5px dashed #F0E4D2}
+  .hhmember .who{flex:1;min-width:0}
+  .hhmember .nm{font-weight:900;font-size:15.5px;color:#17334E}
+  .hhmember .rl{font-size:12.5px;color:#7A8FA3;font-weight:700}
+  .youchip{font-size:11px;font-weight:900;letter-spacing:.08em;color:#2F7D3B;background:#E4F2E4;border-radius:99px;padding:4px 9px}
+  .hhrow{display:flex;gap:10px;margin-top:14px}
+  .hhrow .zipgo{margin-top:0;width:auto;flex:1.35}
+  .hhrow .zipclear{margin-top:0;width:auto;flex:1}
+  .hhrow .zipinput{width:auto;flex:1;min-width:0}
+  .hhdiv{display:flex;align-items:center;gap:12px;margin:20px 2px 2px}
+  .hhdiv::before,.hhdiv::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(255,150,80,.6),transparent)}
+  .hhdiv span{color:#FF8A5C;font-size:13px}
   .ziplabel{display:block;font-size:13px;font-weight:800;color:#47617A;margin-top:16px}
   .zipinput{font:inherit;font-size:17px;font-weight:700;color:#17334E;width:100%;margin-top:6px;padding:13px 14px;
     background:#fff;border:1.5px solid #EADFCB;border-radius:13px;outline:none}
@@ -381,7 +406,7 @@ const TABS = [
   { id:"picks", label:"Our Picks", icon:"heartF", sub:"Everything you both love · shared" },
 ];
 const CARD_COLORS = ["coral","blue","green","plum"];
-const state = { me:null, events:[], updatedAt:null, favs:new Map(), tab:"local", wx:null, sheetId:null, profile:null };
+const state = { me:null, events:[], updatedAt:null, favs:new Map(), tab:"local", wx:null, sheetId:null, profile:null, household:null, hhJoinUrl:"" };
 
 async function api(method, path, body){
   const res = await fetch(path, { method, headers: body ? {"Content-Type":"application/json"} : {}, body: body ? JSON.stringify(body) : undefined });
@@ -593,9 +618,9 @@ function render(){
     const favEvents = state.events.filter(e => state.favs.has(e.id));
     const dated = favEvents.filter(e => e.date && dayDiff(e.date, t) >= 0).sort((a,b) => a.date.localeCompare(b.date));
     const anytime = favEvents.filter(e => !e.date);
-    let html = "";
+    let html = householdStripHTML();
     if (!favEvents.length){
-      html = `<div class="empty" style="margin-top:22px">Nothing here yet.<br>Tap the ♡ on any pick and it will show up here for both of you.</div>`;
+      html += `<div class="empty" style="margin-top:22px">Nothing here yet.<br>Tap the ♡ on any pick and it will show up here for everyone in your household.</div>`;
     }
     let lastDay = null;
     for (const ev of dated){
@@ -1068,13 +1093,121 @@ async function faceIdSignIn(){
 $("#signin-btn").addEventListener("click", faceIdSignIn);
 
 /* ---- boot ---- */
+/* ---- households: one shared picks list per household ---- */
+const HH_COLORS = ["#FF6B4A", "#7C5CBF", "#2E9E77", "#E0A100", "#4FB0DC", "#E2609F", "#5B8DEF"];
+function hhColor(seed){ let h = 0; for (const c of String(seed || "?")) h = (h * 31 + c.charCodeAt(0)) >>> 0; return HH_COLORS[h % HH_COLORS.length]; }
+function havatar(m, big){
+  return `<span class="hav${big ? " big" : ""}" style="background:${hhColor(m.name)}">${esc((m.name || "?").charAt(0).toUpperCase())}</span>`;
+}
+function householdStripHTML(){
+  const hh = state.household; if (!hh) return "";
+  const avs = hh.members.slice(0, 4).map(m => havatar(m)).join("");
+  return `<div class="hhstrip" data-hh="manage" role="button">
+    <div class="havs">${avs}</div>
+    <div class="hhmeta"><div class="hhname">${esc(hh.name)}</div><div class="hhsub">Shared by ${hh.members.length} · tap to manage</div></div>
+    <button class="hhbtn" data-hh="manage" type="button">Share picks</button>
+  </div>`;
+}
+document.addEventListener("click", (e) => {
+  const t = e.target.closest("[data-hh]");
+  if (!t) return;
+  if (t.dataset.hh === "manage") openHouseholdSheet();
+});
+async function getJoinUrl(){
+  if (state.hhJoinUrl) return state.hhJoinUrl;
+  const r = await api("POST", "/api/poppy/household", { action: "joinCode" });
+  state.hhJoinUrl = r.joinUrl;
+  return state.hhJoinUrl;
+}
+function openHouseholdSheet(){
+  const hh = state.household; if (!hh) return;
+  const sheet = $("#sheet");
+  const rows = hh.members.map(m => `<div class="hhmember">${havatar(m)}<div class="who"><div class="nm">${esc(m.name)}</div><div class="rl">${m.you ? "That's you" : "Shares this list"}</div></div>${m.you ? `<span class="youchip">YOU</span>` : ""}</div>`).join("");
+  sheet.innerHTML = `<div class="grab"></div><div class="zipwrap">
+    <h2>${esc(hh.name)}</h2>
+    <p class="blurb">Everyone in this household sees — and can add to — the same Our Picks list. Nobody outside it can.</p>
+    <div style="margin-top:8px">${rows}</div>
+    <div class="hhrow"><button class="zipgo" id="hhShare" type="button">Share invite link…</button><button class="zipclear" id="hhCopy" type="button" style="flex:none;padding-left:18px;padding-right:18px">Copy link</button></div>
+    <p class="note" style="font-size:12.5px;color:#7A8FA3;font-weight:600;line-height:1.5;margin-top:10px">Send the link to whoever should share this list — a partner, a grandparent. They tap it, sign in, and they're in. The link changes each time you share, so old ones stop working.</p>
+    <label class="ziplabel" for="hhName">Household name</label>
+    <div class="hhrow" style="margin-top:6px"><input class="zipinput" id="hhName" style="margin-top:0" maxlength="40" value="${esc(hh.name)}"><button class="zipclear" id="hhRename" type="button" style="flex:none;padding-left:18px;padding-right:18px">Save</button></div>
+    <div class="hhdiv"><span>✦</span></div>
+    <p class="blurb" style="margin-top:10px"><b>Joining a different household?</b></p>
+    <div class="hhrow" style="margin-top:8px"><input class="zipinput" id="hhJoinInput" style="margin-top:0" placeholder="Paste a household invite link"><button class="zipclear" id="hhJoinBtn" type="button" style="flex:none;padding-left:18px;padding-right:18px">Join</button></div>
+    <p class="ziperr" id="hhErr"></p>
+    <p class="note" style="font-size:12.5px;color:#7A8FA3;font-weight:600;line-height:1.5">Joining moves you to that list. The picks you made here stay with this household.</p>
+  </div>`;
+  showSheetAnim();
+  $("#hhShare").addEventListener("click", async () => {
+    try {
+      const url = await getJoinUrl();
+      if (navigator.share) { try { await navigator.share({ title: "Poppy's Picks", text: "Join my household on Poppy's Picks so we share one picks list:", url }); } catch {} }
+      else { await navigator.clipboard.writeText(url); toast("Household link copied"); }
+    } catch { toast("Couldn't make a link — try again"); }
+  });
+  $("#hhCopy").addEventListener("click", async () => {
+    try { await navigator.clipboard.writeText(await getJoinUrl()); $("#hhCopy").textContent = "Copied!"; setTimeout(() => { const b = $("#hhCopy"); if (b) b.textContent = "Copy link"; }, 1600); } catch {}
+  });
+  $("#hhRename").addEventListener("click", async () => {
+    const name = $("#hhName").value.trim(); if (!name) return;
+    try { const r = await api("POST", "/api/poppy/household", { action: "rename", name }); state.household = r.household; openHouseholdSheet(); render(); toast("Household renamed"); }
+    catch (e) { $("#hhErr").textContent = e.message || "That didn't work."; }
+  });
+  $("#hhJoinBtn").addEventListener("click", async () => {
+    const raw = $("#hhJoinInput").value.trim();
+    const code = raw.includes("#join=") ? raw.split("#join=")[1].split("&")[0] : raw;
+    if (!code) { $("#hhErr").textContent = "Paste a household invite link first."; return; }
+    try { await joinHousehold(code); }
+    catch (e) { $("#hhErr").textContent = e.message || "That link didn't work."; }
+  });
+}
+async function joinHousehold(code){
+  const r = await api("POST", "/api/poppy/household", { action: "join", code });
+  state.household = r.household; state.hhJoinUrl = "";
+  const favRes = await api("GET", "/api/poppy/favorites");
+  state.favs = new Map((favRes.favorites || []).map(f => [f.eventId, f]));
+  closeSheet(); render();
+  toast(r.already ? "You're already in this household" : "You're in — now sharing " + r.household.name);
+}
+function openJoinSheet(preview, code){
+  const sheet = $("#sheet");
+  sheet.innerHTML = `<div class="grab"></div><div class="zipwrap" style="text-align:center">
+    <div class="havs" style="justify-content:center;margin-top:6px"><span class="hav big" style="background:${hhColor(preview.inviter)}">${esc((preview.inviter || "?").charAt(0).toUpperCase())}</span><span class="hav big" style="background:#E0A100">+</span></div>
+    <h2 style="margin-top:12px">Join ${esc(preview.name)}?</h2>
+    <p class="blurb">${esc(preview.inviter)} is inviting you to share one Our Picks list — you'll both see and add to the same picks. Your own zip and sign-in don't change.</p>
+    <button class="zipgo" id="joinYes" type="button">Join household</button>
+    <button class="zipclear" id="joinNo" type="button">Not now</button>
+    <p class="ziperr" id="joinErr"></p>
+  </div>`;
+  showSheetAnim();
+  $("#joinNo").addEventListener("click", closeSheet);
+  $("#joinYes").addEventListener("click", async () => {
+    try { await joinHousehold(code); }
+    catch (e) { $("#joinErr").textContent = e.message || "That link didn't work."; }
+  });
+}
+async function checkJoinHash(){
+  const h = new URLSearchParams(location.hash.slice(1));
+  const code = h.get("join");
+  if (!code) return;
+  history.replaceState(null, "", location.pathname + "#tab=" + state.tab);
+  try {
+    const pv = await api("GET", "/api/poppy/household?joinPreview=" + encodeURIComponent(code));
+    if (pv && pv.ok && !pv.alreadyYours) openJoinSheet(pv, code);
+    else if (pv && pv.ok && pv.alreadyYours) toast("You're already in that household");
+    else toast("That household link isn't valid anymore");
+  } catch {}
+}
+
 async function loadAll(){
-  const [eventsRes, favRes, profRes] = await Promise.all([
+  const [eventsRes, favRes, profRes, hhRes] = await Promise.all([
     api("GET", "/api/poppy/events"),
     api("GET", "/api/poppy/favorites"),
     api("GET", "/api/poppy/profile").catch(() => null),
+    api("GET", "/api/poppy/household").catch(() => null),
   ]);
   state.profile = profRes;
+  state.household = hhRes && hhRes.household ? hhRes.household : null;
   state.events = (eventsRes.events || []).filter(ev => !ev.date || dayDiff(ev.date, todayStr()) >= -1);
   state.updatedAt = eventsRes.updatedAt || null;
   state.favs = new Map((favRes.favorites || []).map(f => [f.eventId, f]));
@@ -1082,6 +1215,7 @@ async function loadAll(){
   renderTabs(); render();
   const h = new URLSearchParams(location.hash.slice(1));
   if (h.get("event")) openSheet(h.get("event"));
+  checkJoinHash();
   loadWeather().then(() => render());
 }
 async function boot(){
