@@ -169,11 +169,23 @@
   .fchip{flex:0 0 auto; padding:9px 16px; border-radius:999px; cursor:pointer; font-family:"Jost",sans-serif; font-size:14px; font-weight:500;
     color:var(--cream-dim); background:rgba(255,255,255,.05); border:1px solid rgba(232,196,118,.25); -webkit-tap-highlight-color:transparent}
   .fchip.on{color:#23180A; font-weight:600; background:linear-gradient(180deg, var(--gold-hi), var(--gold)); border-color:var(--gold-hi)}
-  .venuehead{position:sticky; top:calc(72px + env(safe-area-inset-top)); z-index:20; margin:22px -6px 12px; padding:10px 14px; border-radius:14px;
-    background:linear-gradient(160deg, rgba(18,59,39,.92), rgba(10,35,24,.92)); border:1px solid rgba(232,196,118,.35);
-    backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); box-shadow:0 12px 22px -12px rgba(0,0,0,.65)}
-  .venuehead .vn{font-family:"Cinzel",serif; font-weight:700; font-size:16.5px; letter-spacing:.05em; color:var(--gold-hi); line-height:1.25}
-  .venuehead .va{font-size:13px; font-style:italic; color:var(--cream-dim); margin-top:1px}
+  .venue{margin-bottom:4px}
+  .venuehead{position:sticky; top:calc(70px + env(safe-area-inset-top)); z-index:20; margin:24px -4px 14px; padding:13px 16px; border-radius:16px;
+    display:flex; align-items:center; gap:13px;
+    background:linear-gradient(165deg, rgba(23,72,47,.99), rgba(7,26,17,.99)); border:1px solid var(--gold);
+    box-shadow:0 16px 28px -12px rgba(0,0,0,.78), inset 0 1px 0 rgba(246,222,156,.4)}
+  .venuehead .vmedal{flex:0 0 auto; width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-size:19px; color:#23180A; background:radial-gradient(circle at 32% 28%, var(--gold-hi), var(--gold) 58%, var(--gold-deep));
+    border:1.5px solid rgba(255,249,227,.8); box-shadow:0 5px 12px rgba(0,0,0,.5), 0 0 0 4px rgba(232,196,118,.16)}
+  .venuehead .vn{font-family:"Cinzel",serif; font-weight:700; font-size:19px; letter-spacing:.06em; color:var(--gold-hi); line-height:1.2}
+  .venuehead .va{font-size:11.5px; font-weight:600; letter-spacing:.18em; text-transform:uppercase; color:var(--gold); margin-top:3px}
+  .venuehead .vcount{margin-left:auto; flex:0 0 auto; font-size:11.5px; font-weight:700; letter-spacing:.13em; text-transform:uppercase;
+    color:#23180A; background:linear-gradient(180deg, var(--gold-hi), var(--gold-deep)); padding:6px 11px; border-radius:999px;
+    box-shadow:0 4px 10px rgba(0,0,0,.45)}
+  .pbadge{display:inline-block; padding:3px 9px; border-radius:999px; font-size:10.5px; font-weight:700; letter-spacing:.14em;
+    text-transform:uppercase; margin-right:8px; vertical-align:1.5px; color:#23180A; background:linear-gradient(180deg, var(--gold-hi), var(--gold-deep))}
+  .pbadge.drink{background:linear-gradient(180deg, #CDEEDD, #8FC7A8); color:#0C2B1C}
+  .pbadge.act{background:linear-gradient(180deg, #B44A5E, #7E2438); color:#FFE9D9}
   .card{margin-bottom:16px; border-radius:var(--radius); overflow:hidden; background:var(--glass); border:1px solid rgba(232,196,118,.24);
     backdrop-filter:blur(16px) saturate(1.3); -webkit-backdrop-filter:blur(16px) saturate(1.3);
     box-shadow:0 20px 36px -18px rgba(0,0,0,.65), inset 0 1px 0 rgba(255,255,255,.1)}
@@ -283,7 +295,7 @@
 
   <section id="tab-food" hidden>
     <div class="secttl"><h3>The Foodie Ballot</h3><div class="rule"></div></div>
-    <p class="sectsub">Every bite and sip from the official Jollywood Nights foodie guide. Star what you want to try — the fam's stars build the gameplan.</p>
+    <p class="sectsub">Every bite from the official Jollywood Nights foodie guide. Star what you want to try — the fam's stars build the gameplan.</p>
     <div class="filters" id="foodFilters">
       <button class="fchip on" data-f="all" type="button">All</button>
       <button class="fchip" data-f="new" type="button">★ New</button>
@@ -293,6 +305,20 @@
       <button class="fchip" data-f="mine" type="button">My stars</button>
     </div>
     <div id="foodList"></div>
+  </section>
+
+  <section id="tab-drinks" hidden>
+    <div class="secttl"><h3>The Drinks Card</h3><div class="rule"></div></div>
+    <p class="sectsub">Every sip from the official guide — cocktails, cocoa, ciders, and crafted sodas. Star your pours and they'll join the gameplan.</p>
+    <div class="filters" id="drinkFilters">
+      <button class="fchip on" data-f="all" type="button">All</button>
+      <button class="fchip" data-f="new" type="button">★ New</button>
+      <button class="fchip" data-f="kid" type="button">Kids picks</button>
+      <button class="fchip" data-f="na" type="button">Non-alcoholic</button>
+      <button class="fchip" data-f="pb" type="button">Plant-based</button>
+      <button class="fchip" data-f="mine" type="button">My stars</button>
+    </div>
+    <div id="drinkList"></div>
   </section>
 
   <section id="tab-activities" hidden>
@@ -315,7 +341,7 @@
       <h4>How the ballot works</h4>
       <ul>
         <li>Everyone signs in with their own <b>Face ID</b>, so every star is personal.</li>
-        <li>Star bites and sips in <b>Food</b>, and must-do shows in <b>Activities</b>.</li>
+        <li>Star bites in <b>Food</b>, sips in <b>Drinks</b>, and must-do shows in <b>Activities</b>.</li>
         <li>Anything with a star lands in <b>Our Gameplan</b> — give picks a time and the night sorts itself into an itinerary.</li>
         <li>Times are <b>shared</b>: either of you can set or change them, and both phones stay in sync.</li>
       </ul>
@@ -346,6 +372,10 @@
   <button class="tabbtn" data-tab="food" type="button">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 17h16M12 8a8 8 0 0 1 8 8H4a8 8 0 0 1 8-8zM12 8V6.5M10 4.2h4"/></svg>
     Food
+  </button>
+  <button class="tabbtn" data-tab="drinks" type="button">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M7 3h10v5a5 5 0 0 1-10 0zM12 13v6M8.5 21h7M9.5 6.2h5"/></svg>
+    Drinks
   </button>
   <button class="tabbtn" data-tab="activities" type="button">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h11A2.5 2.5 0 0 1 20 8.5c-1.4 0-2.5 1.1-2.5 2.5s1.1 2.5 2.5 2.5A2.5 2.5 0 0 1 17.5 16h-11A2.5 2.5 0 0 1 4 13.5c1.4 0 2.5-1.1 2.5-2.5S5.4 8.5 4 8.5z"/><path d="M13 6v2M13 11v2M13 16v2" stroke-dasharray="0.5 3"/></svg>
@@ -387,6 +417,7 @@ const votes = new Map();   // itemId -> [{by, mine, at}]
 let times = {};            // itemId -> "HH:MM"
 const INDEX = new Map();   // itemId -> {kind, name, sub, img, motif}
 let foodFilter = "all";
+let drinkFilter = "all";
 let editingTimeFor = null;
 
 function toast(msg) {
@@ -465,31 +496,39 @@ function foodCard(it) {
     <div class="voterow">${voteRowHtml(it.id, "Must-try")}</div>
   </div></article>`;
 }
-function renderFood() {
-  const host = $("#foodList");
+function matchFilter(it, f) {
+  if (f === "new") return it.isNew;
+  if (f === "kid") return it.kidPick;
+  if (f === "na") return (it.tags || []).includes("Non-alcoholic");
+  if (f === "pb") return (it.tags || []).includes("Plant-based");
+  if (f === "mine") return voteInfo(it.id).mine;
+  return true;
+}
+function renderMenu(kind) {
+  const isDrink = kind === "drink";
+  const host = $(isDrink ? "#drinkList" : "#foodList");
+  const f = isDrink ? drinkFilter : foodFilter;
   let html = "";
   for (const v of guide.venues) {
-    const items = v.items.filter((it) => {
-      if (foodFilter === "all") return true;
-      if (foodFilter === "new") return it.isNew;
-      if (foodFilter === "kid") return it.kidPick;
-      if (foodFilter === "na") return (it.tags || []).includes("Non-alcoholic");
-      if (foodFilter === "pb") return (it.tags || []).includes("Plant-based");
-      if (foodFilter === "mine") return voteInfo(it.id).mine;
-      return true;
-    });
+    const items = v.items.filter((it) => !!it.drink === isDrink && matchFilter(it, f));
     if (!items.length) continue;
-    html += `<div class="venuehead"><div class="vn">${esc(v.name)}</div><div class="va">${esc(v.area)}</div></div>`;
+    html += `<section class="venue"><div class="venuehead"><span class="vmedal">★</span><div><div class="vn">${esc(v.name)}</div><div class="va">${esc(v.area)}</div></div><span class="vcount">${items.length} ${isDrink ? "sips" : "bites"}</span></div>`;
     html += items.map(foodCard).join("");
+    html += `</section>`;
   }
   host.innerHTML = html || `<div class="empty"><span class="big">★</span>Nothing matches that filter yet — star a few things and they'll show up here.</div>`;
 }
-$("#foodFilters").addEventListener("click", (e) => {
-  const chip = e.target.closest("[data-f]"); if (!chip) return;
-  foodFilter = chip.dataset.f;
-  $$("#foodFilters .fchip").forEach((c) => c.classList.toggle("on", c === chip));
-  renderFood();
-});
+function renderFood() { renderMenu("food"); }
+function renderDrinks() { renderMenu("drink"); }
+function wireFilters(barSel, set) {
+  $(barSel).addEventListener("click", (e) => {
+    const chip = e.target.closest("[data-f]"); if (!chip) return;
+    set(chip.dataset.f);
+    $$(barSel + " .fchip").forEach((c) => c.classList.toggle("on", c === chip));
+  });
+}
+wireFilters("#foodFilters", (f) => { foodFilter = f; renderFood(); });
+wireFilters("#drinkFilters", (f) => { drinkFilter = f; renderDrinks(); });
 function renderActivities() {
   $("#actList").innerHTML = guide.activities.map((a) => {
     const ph = a.img
@@ -530,7 +569,7 @@ function planRow(p) {
   const names = p.votes.list.map((v) => v.by).join(" · ");
   let html = `<div class="prow">${chip}${thumb}
     <div class="pmeta"><div class="pname">${esc(p.name)}</div>
-    <div class="psub">${esc(p.sub)} — ★ ${esc(names)}</div></div></div>`;
+    <div class="psub"><span class="pbadge ${p.kind === "drink" ? "drink" : p.kind === "act" ? "act" : "food"}">${p.kind === "drink" ? "Drink" : p.kind === "act" ? "Activity" : "Food"}</span>${esc(p.sub)} — ★ ${esc(names)}</div></div></div>`;
   if (editingTimeFor === p.id) {
     html += `<div class="timeedit">
       <input type="time" id="timeInput" value="${esc(t || "19:30")}" step="300">
@@ -553,7 +592,7 @@ function renderGameplan() {
     <div class="sumchip"><b>${stops}</b><span>Stops</span></div>`;
   const host = $("#planList");
   if (!picks.length) {
-    host.innerHTML = `<div class="empty"><span class="big">★</span>No picks yet. Star the bites you want in <b>Food</b> and the shows you can't miss in <b>Activities</b> — they'll line up here as tonight's itinerary.</div>`;
+    host.innerHTML = `<div class="empty"><span class="big">★</span>No picks yet. Star the bites you want in <b>Food</b>, the sips in <b>Drinks</b>, and the shows you can't miss in <b>Activities</b> — they'll line up here as tonight's itinerary.</div>`;
     return;
   }
   const timed = picks.filter((p) => times[p.id]).sort((a, b) => times[a.id].localeCompare(times[b.id]));
@@ -622,7 +661,7 @@ function tickCountdown() {
 $$(".tabbtn").forEach((b) => b.addEventListener("click", () => {
   const tab = b.dataset.tab;
   $$(".tabbtn").forEach((x) => x.classList.toggle("on", x === b));
-  ["gameplan", "food", "activities", "more"].forEach((t) => { $("#tab-" + t).hidden = t !== tab; });
+  ["gameplan", "food", "drinks", "activities", "more"].forEach((t) => { $("#tab-" + t).hidden = t !== tab; });
   window.scrollTo({ top: 0, behavior: "smooth" });
 }));
 
@@ -644,7 +683,7 @@ async function loadApp() {
   }
   INDEX.clear();
   for (const venue of guide.venues) for (const it of venue.items)
-    INDEX.set(it.id, { kind: "food", name: it.name, sub: venue.name, img: it.img, motif: "star" });
+    INDEX.set(it.id, { kind: it.drink ? "drink" : "food", name: it.name, sub: venue.name, img: it.img, motif: "star" });
   for (const a of guide.activities)
     INDEX.set(a.id, { kind: "act", name: a.name, sub: a.where, img: a.img, motif: a.motif });
   if (me) {
@@ -652,7 +691,7 @@ async function loadApp() {
     $("#meCard").hidden = false;
     $("#meText").innerHTML = `You're signed in as <b>${esc(me)}</b> — your stars show in gold, and the fam's gameplan is built from everyone's picks together.`;
   }
-  renderFood(); renderActivities(); renderGameplan();
+  renderFood(); renderDrinks(); renderActivities(); renderGameplan();
   tickCountdown(); setInterval(tickCountdown, 1000);
 }
 async function boot() {

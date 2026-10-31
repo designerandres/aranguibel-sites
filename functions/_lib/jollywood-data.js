@@ -104,6 +104,7 @@ export const GUIDE = {
     },
     {
      "id": "jazzy-holidays-at-the-hollywood-brown-derby--the-sleigh-bell",
+     "drink": true,
      "name": "The Sleigh Bell",
      "desc": "Ginger beer, rosemary syrup, pomegranate, cranberry, and lime juice",
      "tags": [
@@ -115,6 +116,7 @@ export const GUIDE = {
     },
     {
      "id": "jazzy-holidays-at-the-hollywood-brown-derby--holiday-mickey-hot-cocoa",
+     "drink": true,
      "name": "Holiday Mickey Hot Cocoa",
      "desc": "Hot cocoa by Joffrey’s topped with whipped cream, caramel-chocolate brownie Mickey ears, and holiday sprinkles",
      "tags": [
@@ -126,6 +128,7 @@ export const GUIDE = {
     },
     {
      "id": "jazzy-holidays-at-the-hollywood-brown-derby--cranberry-jalapeno-margarita",
+     "drink": true,
      "name": "Cranberry-Jalapeño Margarita",
      "desc": "Flecha Azul Reposado Tequila, Cointreau Liqueur, lime juice, and a house-made cranberry-jalapeño simple syrup",
      "tags": [
@@ -137,6 +140,7 @@ export const GUIDE = {
     },
     {
      "id": "jazzy-holidays-at-the-hollywood-brown-derby--spiced-pear-martini",
+     "drink": true,
      "name": "Spiced Pear Martini",
      "desc": "Grey Goose Vodka, spiced pear syrup, and lemon juice",
      "tags": [],
@@ -146,6 +150,7 @@ export const GUIDE = {
     },
     {
      "id": "jazzy-holidays-at-the-hollywood-brown-derby--salted-caramel-hot-chocolate",
+     "drink": true,
      "name": "Salted Caramel Hot Chocolate",
      "desc": "Stoli Vanilla Vodka, Baileys Original Irish Cream Liqueur, salted caramel syrup, and hot cocoa by Joffrey’s garnished with whipped cream and caramel crispy pearls",
      "tags": [],
@@ -155,6 +160,7 @@ export const GUIDE = {
     },
     {
      "id": "jazzy-holidays-at-the-hollywood-brown-derby--vodka-martini",
+     "drink": true,
      "name": "Vodka Martini",
      "desc": "Grey Goose Vodka and Dolin Dry Vermouth de Chambéry",
      "tags": [],
@@ -164,6 +170,7 @@ export const GUIDE = {
     },
     {
      "id": "jazzy-holidays-at-the-hollywood-brown-derby--hollywood-lights",
+     "drink": true,
      "name": "Hollywood Lights",
      "desc": "Captain Morgan Original Spiced Run, Parrot Bay Coconut Rum, DOLE Pineapple Juice, and cranberry juice",
      "tags": [],
@@ -173,6 +180,7 @@ export const GUIDE = {
     },
     {
      "id": "jazzy-holidays-at-the-hollywood-brown-derby--mocha-espresso-mint-tini",
+     "drink": true,
      "name": "Mocha Espresso Mint-tini",
      "desc": "Tia Maria Cold Brew Coffee Liqueur, Bols Peppermint Schnapps Liqueur, Mozart Chocolate Liqueur, and vanilla cream garnished with chocolate and crushed peppermint mix",
      "tags": [],
@@ -182,6 +190,7 @@ export const GUIDE = {
     },
     {
      "id": "jazzy-holidays-at-the-hollywood-brown-derby--old-fashioned",
+     "drink": true,
      "name": "Old Fashioned",
      "desc": "Knob Creek Kentucky Straight Bourbon, house-made orange syrup, and Luxardo Cherries",
      "tags": [],
@@ -191,6 +200,7 @@ export const GUIDE = {
     },
     {
      "id": "jazzy-holidays-at-the-hollywood-brown-derby--peanut-butter-whiskey-cream",
+     "drink": true,
      "name": "Peanut Butter Whiskey Cream",
      "desc": "RumChata Cream Liqueur and Skrewball Peanut Butter Whiskey",
      "tags": [],
@@ -200,6 +210,7 @@ export const GUIDE = {
     },
     {
      "id": "jazzy-holidays-at-the-hollywood-brown-derby--poinsettia-fizz",
+     "drink": true,
      "name": "Poinsettia Fizz",
      "desc": "Grand Marnier Liqueur, cranberry juice, simple syrup, and prosecco garnished with cranberries",
      "tags": [],
@@ -248,6 +259,7 @@ export const GUIDE = {
     },
     {
      "id": "fairfax-fare--eggnog",
+     "drink": true,
      "name": "Eggnog",
      "desc": "Traditional eggnog with caramel swirl",
      "tags": [
@@ -259,6 +271,7 @@ export const GUIDE = {
     },
     {
      "id": "fairfax-fare--mistletoe-martini",
+     "drink": true,
      "name": "Mistletoe Martini",
      "desc": "Tito’s Handmade Vodka, St-Germain Elderflower Liqueur, and cranberry juice topped with fresh cranberries and mint leaves",
      "tags": [],
@@ -268,6 +281,7 @@ export const GUIDE = {
     },
     {
      "id": "fairfax-fare--eggnog-with-whisky",
+     "drink": true,
      "name": "Eggnog with Whisky",
      "desc": "Traditional eggnog with Fireball Cinnamon Whisky and caramel swirl",
      "tags": [],
@@ -313,6 +327,7 @@ export const GUIDE = {
    "items": [
     {
      "id": "twilight-soiree-at-the-tip-top-club--sparkling-pomegranate-apple-cider",
+     "drink": true,
      "name": "Sparkling Pomegranate-Apple Cider",
      "desc": "Pomegranate green tea topped with sparkling apple cider",
      "tags": [
@@ -324,6 +339,7 @@ export const GUIDE = {
     },
     {
      "id": "twilight-soiree-at-the-tip-top-club--1939-royale",
+     "drink": true,
      "name": "1939 Royale",
      "desc": "Teremana Blanco Tequila, Cointreau Liqueur, desert pear, agave nectar, and lime juice topped with Domaine Ste. Michelle Brut. Served in a souvenir champagne flute, while supplies last.",
      "tags": [],
@@ -333,6 +349,7 @@ export const GUIDE = {
     },
     {
      "id": "twilight-soiree-at-the-tip-top-club--sparkling-cider",
+     "drink": true,
      "name": "Sparkling Cider",
      "desc": "",
      "tags": [
@@ -344,6 +361,7 @@ export const GUIDE = {
     },
     {
      "id": "twilight-soiree-at-the-tip-top-club--top-floor-daiquiri",
+     "drink": true,
      "name": "Top Floor Daiquiri",
      "desc": "Parrot Bay Coconut Rum, ube, lime juice, and a splash of glitter simple syrup. Served in a souvenir champagne flute, while supplies last.",
      "tags": [],
@@ -353,6 +371,7 @@ export const GUIDE = {
     },
     {
      "id": "twilight-soiree-at-the-tip-top-club--domaine-ste-michelle-brut",
+     "drink": true,
      "name": "Domaine Ste. Michelle Brut",
      "desc": "",
      "tags": [],
@@ -369,6 +388,7 @@ export const GUIDE = {
    "items": [
     {
      "id": "checkin-it-twice-lounge--candy-cane-cooler",
+     "drink": true,
      "name": "Candy Cane Cooler",
      "desc": "Minute Maid Premium Lemonade with mint syrup, pomegranate, and sweet cream topped with crushed peppermint",
      "tags": [
@@ -381,6 +401,7 @@ export const GUIDE = {
     },
     {
      "id": "checkin-it-twice-lounge--fizz-the-season",
+     "drink": true,
      "name": "Fizz the Season",
      "desc": "Domanie Ste. Michelle Brut with vanilla, G.E. Massenez Crème de Cassis de Dijon Liqueur, and edible glitter",
      "tags": [
@@ -392,6 +413,7 @@ export const GUIDE = {
     },
     {
      "id": "checkin-it-twice-lounge--lump-of-coal",
+     "drink": true,
      "name": "Lump of Coal",
      "desc": "Ghost Spicy Blanco Tequila, lime, and spicy agave with a salt and pepper rim",
      "tags": [],
@@ -401,6 +423,7 @@ export const GUIDE = {
     },
     {
      "id": "checkin-it-twice-lounge--snow-hopper",
+     "drink": true,
      "name": "Snow-hopper",
      "desc": "Bols Crème de Cacao White Liqueur, Bols Crème de Menthe Liqueur, and half & half with chocolate curls",
      "tags": [
@@ -442,6 +465,7 @@ export const GUIDE = {
     },
     {
      "id": "market--bing-bong-candy-lemonade",
+     "drink": true,
      "name": "Bing Bong Candy Lemonade",
      "desc": "Frozen strawberry lemonade slushy and butterfly pea flower tea topped with pink cotton candy and freeze-dried candy",
      "tags": [
@@ -453,6 +477,7 @@ export const GUIDE = {
     },
     {
      "id": "market--caramel-apple-cider-with-moonshine",
+     "drink": true,
      "name": "Caramel-Apple Cider with Moonshine",
      "desc": "Werther’s Original Caramel, apple cider, cinnamon, and Ole Smoky Apple Pie Moonshine topped with Werther’s Original Caramel Popcorn. Served warm.",
      "tags": [
@@ -464,6 +489,7 @@ export const GUIDE = {
     },
     {
      "id": "market--caramel-apple-cider",
+     "drink": true,
      "name": "Caramel-Apple Cider",
      "desc": "Werther’s Original Caramel, apple cider, and cinnamon topped with Werther’s Original Caramel Popcorn. Served warm",
      "tags": [
@@ -537,6 +563,7 @@ export const GUIDE = {
     },
     {
      "id": "abc-commissary--berry-lime-cheer",
+     "drink": true,
      "name": "Berry Lime Cheer",
      "desc": "Blackberry, pomegranate, and lime blended with Topo Chico Blueberry Hibiscus Sparkling Water",
      "tags": [
@@ -549,6 +576,7 @@ export const GUIDE = {
     },
     {
      "id": "abc-commissary--prickly-pear-margarita",
+     "drink": true,
      "name": "Prickly Pear Margarita",
      "desc": "Patrón Sliver Tequila, Cointreau Liqueur, lime juice, agave, and desert pear with a lime wheel",
      "tags": [
@@ -560,6 +588,7 @@ export const GUIDE = {
     },
     {
      "id": "abc-commissary--coquito",
+     "drink": true,
      "name": "Coquito",
      "desc": "Coconut cream, coconut milk, sweetened condensed milk, Bacardí Superior Rum, and Captain Morgan Original Spiced Rum topped with cinnamon",
      "tags": [],
@@ -585,6 +614,7 @@ export const GUIDE = {
     },
     {
      "id": "baseline-tap-house--merry-mango-shandy",
+     "drink": true,
      "name": "Merry Mango Shandy",
      "desc": "Golden Road Brewing Mango Cart Wheat Ale with cranberry juice and Minute Maid Premium Lemonade",
      "tags": [
@@ -625,6 +655,7 @@ export const GUIDE = {
     },
     {
      "id": "ice-cold-hydraulics--churro-crafted-soda",
+     "drink": true,
      "name": "Churro Crafted Soda",
      "desc": "Churro-flavored oat milk over Coca-Cola with gingerbread syrup topped with a mini churro",
      "tags": [
@@ -637,6 +668,7 @@ export const GUIDE = {
     },
     {
      "id": "ice-cold-hydraulics--popcorn-crafted-soda",
+     "drink": true,
      "name": "Popcorn Crafted Soda",
      "desc": "Popcorn-flavored oat milk over Coca-Cola Zero Sugar topped with freshly popped popcorn",
      "tags": [
@@ -707,6 +739,7 @@ export const GUIDE = {
     },
     {
      "id": "backlot-express--frozen-hot-cocoa",
+     "drink": true,
      "name": "Frozen Hot Cocoa",
      "desc": "Frozen hot cocoa by Joffrey’s topped with house-made marshmallow whipped cream",
      "tags": [
@@ -719,6 +752,7 @@ export const GUIDE = {
     },
     {
      "id": "backlot-express--frozen-hot-cocoa-with-creme-liqueur",
+     "drink": true,
      "name": "Frozen Hot Cocoa with Creme Liqueur",
      "desc": "Frozen hot cocoa by Joffrey’s and Baileys Original Irish Cream Liqueur topped with house-made marshmallow whipped cream",
      "tags": [
@@ -730,6 +764,7 @@ export const GUIDE = {
     },
     {
      "id": "backlot-express--seas-and-greetings-colada",
+     "drink": true,
      "name": "Seas and Greetings Colada",
      "desc": "Stoli Vanilla Vodka, Bols Blue Curaçao Liqueur, coconut cream, DOLE Pineapple Juice, and lime juice",
      "tags": [
@@ -759,6 +794,7 @@ export const GUIDE = {
     },
     {
      "id": "epic-eats--warm-spiced-chai-cocktail",
+     "drink": true,
      "name": "Warm Spiced Chai Cocktail",
      "desc": "Chai tea, RumChata Cream Liqueur, vanilla, and cinnamon",
      "tags": [],
@@ -793,6 +829,7 @@ export const GUIDE = {
    "items": [
     {
      "id": "tune-in-lounge--holiday-dill-light",
+     "drink": true,
      "name": "Holiday Dill-light",
      "desc": "Hendrick’s Gin, J.D. Taylor’s Velvet Falernum Liqueur, St-Germain Elderflower Liqueur, lime juice, and pickle juice with a chili-lime rim and pickle garnish",
      "tags": [],
@@ -802,6 +839,7 @@ export const GUIDE = {
     },
     {
      "id": "tune-in-lounge--the-tinsel-twist",
+     "drink": true,
      "name": "The Tinsel Twist",
      "desc": "Tito’s Handmade Vodka, Hendrick’s Gin, Bacardí Superior Rum, Corazón Blanco Tequila, Cointreau Liqueur, lemon juice, cinnamon syrup, pomegranate juice, and Sprite topped with a dehydrated star fruit",
      "tags": [
@@ -813,6 +851,7 @@ export const GUIDE = {
     },
     {
      "id": "tune-in-lounge--the-bauble-bright",
+     "drink": true,
      "name": "The Bauble & Bright",
      "desc": "Flecha Azul Reposado Tequila, Grand Marnier Liqueur, white cranberry juice, glitter simple syrup, and lime juice garnished with cranberries. Served in a souvenir cup, while supplies last",
      "tags": [
@@ -824,6 +863,7 @@ export const GUIDE = {
     },
     {
      "id": "tune-in-lounge--in-holiday-fashion",
+     "drink": true,
      "name": "In Holiday Fashion",
      "desc": "Buffalo Trace Kentucky Straight Bourbon, rosemary syrup, cranberry and lime juices, and cinnamon",
      "tags": [],
@@ -833,6 +873,7 @@ export const GUIDE = {
     },
     {
      "id": "tune-in-lounge--sugar-cookie-martini",
+     "drink": true,
      "name": "Sugar Cookie Martini",
      "desc": "Stoli Vanilla Vodka, Baileys Original Irish Cream Liqueur, and Disaronno Originale Liqueur mixed with milk and sugar topped with a sugar cookie and holiday sprinkles",
      "tags": [],
@@ -876,6 +917,7 @@ export const GUIDE = {
     },
     {
      "id": "dockside-diner--holiday-mickey-hot-cocoa",
+     "drink": true,
      "name": "Holiday Mickey Hot Cocoa",
      "desc": "Hot cocoa by Joffrey’s topped with whipped cream, caramel-chocolate brownie Mickey ears, and holiday sprinkles",
      "tags": [
@@ -887,6 +929,7 @@ export const GUIDE = {
     },
     {
      "id": "dockside-diner--stroopwafel-bourbon-coffee",
+     "drink": true,
      "name": "Stroopwafel Bourbon Coffee",
      "desc": "Buffalo Trace Kentucky Straight Bourbon, salted caramel syrup, oat milk, Joffrey’s Cold Brew Coffee, and caramel sauce garnished with crushed waffle",
      "tags": [],
@@ -903,6 +946,7 @@ export const GUIDE = {
    "items": [
     {
      "id": "snack-cart--golden-gimlet",
+     "drink": true,
      "name": "Golden Gimlet",
      "desc": "Hendrick’s Gin, cranberry juice, limeade, and edible glitter topped with Sprite",
      "tags": [
@@ -914,6 +958,7 @@ export const GUIDE = {
     },
     {
      "id": "snack-cart--golden-cheer",
+     "drink": true,
      "name": "Golden Cheer",
      "desc": "Cranberry juice, Minute Maid Limeade, and edible glitter topped with Sprite (non-alcoholic",
      "tags": [
@@ -925,6 +970,7 @@ export const GUIDE = {
     },
     {
      "id": "snack-cart--in-holiday-fashion",
+     "drink": true,
      "name": "In Holiday Fashion",
      "desc": "Buffalo Trace Kentucky Straight Bourbon, rosemary syrup, cranberry and lime juices, and cinnamon",
      "tags": [],
@@ -934,6 +980,7 @@ export const GUIDE = {
     },
     {
      "id": "snack-cart--sugar-cookie-martini",
+     "drink": true,
      "name": "Sugar Cookie Martini",
      "desc": "Stoli Vanilla Vodka, Baileys Original Irish Cream Liqueur, and Disaronno Originale Liqueur mixed with milk and sugar topped with a sugar cookie and holiday sprinkles",
      "tags": [],
@@ -961,6 +1008,7 @@ export const GUIDE = {
    "items": [
     {
      "id": "joffreys-coffee-tea-company--peppermint-tini",
+     "drink": true,
      "name": "Peppermint-Tini",
      "desc": "Joffrey’s Cold Brew, frosted mint syrup, Kahula, Grey Goose Vodka, and light cream topped with whipped cream candy cane treat",
      "tags": [],
