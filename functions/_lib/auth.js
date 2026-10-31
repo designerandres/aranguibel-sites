@@ -122,6 +122,10 @@ export async function ensureAuthSchema(env) {
       created_at TEXT NOT NULL, expires_at TEXT NOT NULL, scope TEXT, used_by TEXT, used_at TEXT)`),
   ]);
   await ensureColumn(env, "users", "scope", "ALTER TABLE users ADD COLUMN scope TEXT");
+  await ensureColumn(env, "users", "zip", "ALTER TABLE users ADD COLUMN zip TEXT");
+  await ensureColumn(env, "users", "zip_lat", "ALTER TABLE users ADD COLUMN zip_lat REAL");
+  await ensureColumn(env, "users", "zip_lng", "ALTER TABLE users ADD COLUMN zip_lng REAL");
+  await ensureColumn(env, "users", "zip_label", "ALTER TABLE users ADD COLUMN zip_label TEXT");
   await ensureColumn(env, "invites", "scope", "ALTER TABLE invites ADD COLUMN scope TEXT");
 }
 
@@ -179,11 +183,11 @@ async function sessionIdentity(env, request) {
   const token = parseCookies(request)[SESSION_COOKIE];
   if (!token) return null;
   const row = await env.DB.prepare(
-    `SELECT u.id AS user_id, u.email, u.name, u.role, u.scope FROM sessions s JOIN users u ON u.id = s.user_id
+    `SELECT u.id AS user_id, u.email, u.name, u.role, u.scope, u.zip, u.zip_lat, u.zip_lng, u.zip_label FROM sessions s JOIN users u ON u.id = s.user_id
      WHERE s.token_hash = ?1 AND s.expires_at > ?2`
   ).bind(await sha256Hex(token), nowIso()).first();
   if (!row) return null;
-  return { userId: row.user_id, email: row.email, name: row.name, role: row.role, scope: parseScope(row.scope), via: "session" };
+  return { userId: row.user_id, email: row.email, name: row.name, role: row.role, scope: parseScope(row.scope), zip: row.zip || null, zipLat: row.zip_lat, zipLng: row.zip_lng, zipLabel: row.zip_label || null, via: "session" };
 }
 export async function destroySession(env, request) {
   const token = parseCookies(request)[SESSION_COOKIE];
@@ -346,7 +350,9 @@ export async function registrationOptions(env, request, body) {
   const existing = await env.DB.prepare("SELECT * FROM users WHERE email = ?1").bind(email).first();
   const handle = existing ? existing.handle : randomB64url(16);
   const displayName = String(body.name || "").replace(/[<>\u0000-\u001F]/g, "").trim().slice(0, 60) || null;
-  const { challenge } = await storeChallenge(env, "register", email, { mode, inviteHash, handle, scope: inviteScope, name: displayName });
+  const zipIn = String(body.zip || "").trim();
+  const displayZip = /^\d{5}$/.test(zipIn) ? zipIn : null;
+  const { challenge } = await storeChallenge(env, "register", email, { mode, inviteHash, handle, scope: inviteScope, name: displayName, zip: displayZip });
   return { options: {
     challenge,
     rp: { id: RP_ID, name: RP_NAME },
@@ -376,8 +382,8 @@ export async function verifyRegistration(env, body) {
   if (!user) {
     const id = "u_" + randomB64url(9);
     const role = context.mode === "bootstrap" ? "admin" : "member";
-    await env.DB.prepare("INSERT INTO users (id, email, name, handle, role, scope, created_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)")
-      .bind(id, email, context.name || email.split("@")[0], context.handle || randomB64url(16), role, context.scope || null, nowIso()).run();
+    await env.DB.prepare("INSERT INTO users (id, email, name, zip, handle, role, scope, created_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)")
+      .bind(id, email, context.name || email.split("@")[0], context.zip || null, context.handle || randomB64url(16), role, context.scope || null, nowIso()).run();
     user = { id, email, role };
   }
   await env.DB.prepare("INSERT INTO credentials (cred_id, user_id, public_key_jwk, counter, created_at) VALUES (?1, ?2, ?3, ?4, ?5)")

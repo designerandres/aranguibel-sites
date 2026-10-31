@@ -67,6 +67,18 @@
   .scopehint{ font-size:13px; color:var(--ink2); line-height:1.45; margin-top:6px; }
   .covers{ font-size:13.5px; color:var(--ink2); margin-top:8px; line-height:1.45; }
   [hidden]{ display:none !important; }
+  /* --- Poppy's Picks bespoke invite: coral wordmark band like the app header --- */
+  #inv-brand{ display:none; }
+  body.theme-poppy-picks #panel-invite{ padding:0 0 26px; overflow:hidden; text-align:center; }
+  body.theme-poppy-picks #inv-brand{ display:block; background:linear-gradient(160deg,#FF9A5C,#FF6B4A 60%,#F6535F);
+        padding:30px 22px 24px; margin-bottom:18px; }
+  body.theme-poppy-picks #panel-invite .sub,
+  body.theme-poppy-picks #panel-invite #inv-form,
+  body.theme-poppy-picks #panel-invite #inv-done{ margin-left:22px; margin-right:22px; }
+  .brandname{ font-family:"Fraunces",serif; font-weight:900; font-size:43px; line-height:1.02; color:#fff; letter-spacing:.01em; }
+  .brandname em{ font-style:italic; font-weight:700; color:#FFE9A8; }
+  .brandsub{ margin-top:9px; font-weight:700; font-size:12px; letter-spacing:.32em; color:rgba(255,255,255,.94); }
+  .brandinvite{ margin-top:13px; font-size:14.5px; color:rgba(255,255,255,.92); }
   /* --- themed single-app invite panel --- */
   #panel-invite{ text-align:center; padding:28px 22px; }
   #panel-invite img.appicon{ width:78px; height:78px; border-radius:19px; box-shadow:0 12px 30px rgba(0,0,0,.35); }
@@ -116,6 +128,11 @@
   </div>
 
   <div class="card" id="panel-invite" hidden>
+    <div id="inv-brand" hidden>
+      <div class="brandname">Poppy's <em>Picks</em></div>
+      <div class="brandsub">— FAMILY FUN NEAR HOME</div>
+      <p class="brandinvite">Andrés is inviting you to join!</p>
+    </div>
     <img class="appicon" id="inv-app-icon" alt="">
     <h1 class="inv-headline" id="inv-headline"></h1>
     <p class="sub">Create your passkey to open it — you'll sign in with Face ID from then on. No password, ever.</p>
@@ -124,6 +141,11 @@
       <input id="inv-name" type="text" autocomplete="name" placeholder="e.g. John">
       <label for="inv-email2">Your email</label>
       <input id="inv-email2" type="email" autocomplete="email" placeholder="name@example.com">
+      <div id="inv-zip-row" hidden>
+        <label for="inv-zip">Your zip code</label>
+        <input id="inv-zip" type="text" inputmode="numeric" autocomplete="postal-code" placeholder="e.g. 34786">
+        <p class="covers">So Poppy's Picks can find family fun near your home.</p>
+      </div>
       <button id="btn-invite-register">Create passkey with Face ID</button>
     </div>
     <div id="inv-done" hidden>
@@ -216,9 +238,9 @@ const APP_THEMES = {
   "jollywood-fam-2026": { name: "Jollywood Fam 2026", icon: "/jollywood-fam-2026/icons/icon.svg",
     bg: "radial-gradient(900px 480px at 85% -10%, rgba(232,196,118,.20), transparent 60%), linear-gradient(168deg,#0E2F20,#071A11 72%)",
     vars: { "--ink":"#FFF9E3", "--ink2":"#CFC7A8", "--card":"rgba(14,40,26,.78)", "--line":"rgba(232,196,118,.35)", "--accent":"#F6DE9C", "--accent2":"#C08A2D", "--fieldbg":"#0B2517", "--btnink":"#23180A" }, scheme: "dark", pattern: "/jollywood-fam-2026/deco-fan.svg", font: '"Cinzel",serif' },
-  "poppy-picks": { name: "Poppy's Picks", icon: "/poppy-picks/icons/icon.svg",
-    bg: "radial-gradient(900px 480px at 85% -10%, rgba(255,182,39,.35), transparent 60%), linear-gradient(180deg,#FBF5EA,#FDEEE0)",
-    vars: { "--ink":"#17334E", "--ink2":"#47617A", "--card":"rgba(255,255,255,.85)", "--line":"#EADFCB", "--accent":"#FF6B4A", "--accent2":"#FFB627", "--fieldbg":"#FFFFFF", "--btnink":"#FFFFFF" }, scheme: "light", font: '"Fraunces",serif' },
+  "poppy-picks": { name: "Poppy's Picks", brandmark: true, zip: true, icon: "/poppy-picks/icons/icon.svg",
+    bg: "radial-gradient(900px 480px at 85% -10%, rgba(255,233,168,.40), transparent 60%), linear-gradient(165deg,#FF9A5C,#FF6B4A 55%,#F6535F)",
+    vars: { "--ink":"#17334E", "--ink2":"#47617A", "--card":"#FFFDF8", "--line":"#EADFCB", "--accent":"#FF6B4A", "--accent2":"#FFB627", "--fieldbg":"#FFFFFF", "--btnink":"#FFFFFF" }, scheme: "light", font: '"Fraunces",serif' },
   "cycles": { name: "Cycles", icon: "/cycles/favicon.svg",
     bg: "radial-gradient(900px 480px at 85% -10%, rgba(92,198,223,.30), transparent 60%), linear-gradient(180deg,#F5F9FC,#E2EFF5)",
     vars: { "--ink":"#0E2A52", "--ink2":"#51708F", "--card":"rgba(255,255,255,.82)", "--line":"rgba(14,54,92,.16)", "--accent":"#1F7FA8", "--accent2":"#5CC6DF", "--fieldbg":"#FFFFFF", "--btnink":"#FFFFFF" }, scheme: "light", font: '"Fraunces",serif' },
@@ -237,6 +259,9 @@ function applyInviteTheme(slug, info) {
   const t = APP_THEMES[slug];
   if (!t) return false;
   inviteTheme = { slug, ...t };
+  document.body.classList.add("theme-" + slug);
+  if (t.brandmark) { $("inv-brand").hidden = false; $("inv-app-icon").hidden = true; $("inv-headline").hidden = true; }
+  if (t.zip) $("inv-zip-row").hidden = false;
   const root = document.documentElement;
   for (const [k, v] of Object.entries(t.vars)) root.style.setProperty(k, v);
   document.body.style.background = t.bg;
@@ -260,7 +285,9 @@ async function registerInvite() {
   const btn = $("btn-invite-register"); btn.disabled = true;
   try {
     const name = $("inv-name").value.trim();
-    const options = await api("POST", "/api/auth/register/options", { email, name: name || undefined, inviteCode: inviteFromLink });
+    const zipEl = $("inv-zip");
+    const zip = zipEl && !$("inv-zip-row").hidden ? zipEl.value.trim() : "";
+    const options = await api("POST", "/api/auth/register/options", { email, name: name || undefined, zip: zip || undefined, inviteCode: inviteFromLink });
     options.user.id = b64urlToBuf(options.user.id);
     options.challenge = b64urlToBuf(options.challenge);
     const cred = await navigator.credentials.create({ publicKey: options });

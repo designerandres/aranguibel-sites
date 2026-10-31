@@ -135,6 +135,20 @@
   #searchFab svg{width:21px;height:21px}
 
   #scrim{position:fixed;inset:0;background:rgba(20,34,47,.48);z-index:72}
+  #zipline{display:block;margin-top:5px;padding:0;background:none;border:0;cursor:pointer;font:inherit;
+    font-size:12.5px;font-weight:800;letter-spacing:.03em;color:inherit;opacity:.82;text-align:left;
+    text-decoration:underline;text-underline-offset:3px}
+  .zipwrap{padding:24px 20px 34px}
+  .ziplabel{display:block;font-size:13px;font-weight:800;color:#47617A;margin-top:16px}
+  .zipinput{font:inherit;font-size:17px;font-weight:700;color:#17334E;width:100%;margin-top:6px;padding:13px 14px;
+    background:#fff;border:1.5px solid #EADFCB;border-radius:13px;outline:none}
+  .zipinput:focus{border-color:#FF6B4A}
+  .ziperr{color:#C2402E;font-size:13.5px;font-weight:700;min-height:18px;margin-top:8px}
+  .zipgo{font:inherit;font-weight:900;font-size:16px;color:#fff;width:100%;margin-top:10px;padding:14px 18px;cursor:pointer;
+    border:0;border-radius:14px;background:linear-gradient(135deg,#FF6B4A,#FFB627);box-shadow:0 8px 20px rgba(255,107,74,.35)}
+  .zipgo[disabled]{opacity:.55}
+  .zipclear{font:inherit;font-weight:800;font-size:14.5px;color:#47617A;width:100%;margin-top:10px;padding:12px;cursor:pointer;
+    border-radius:13px;border:1.5px solid #EADFCB;background:#fff}
   #sheet{position:fixed;left:50%;transform:translateX(-50%);width:min(430px,100vw);bottom:0;top:56px;z-index:75;
     background:rgba(251,245,234,.9);backdrop-filter:blur(20px) saturate(1.5);-webkit-backdrop-filter:blur(20px) saturate(1.5);
     border-radius:30px 30px 0 0;padding:12px 20px calc(24px + env(safe-area-inset-bottom));overflow-y:auto;overflow-x:hidden;box-shadow:var(--shadow-lg);
@@ -261,6 +275,7 @@
     <div>
       <div class="appname" id="appname">Poppy's <em>Picks</em></div>
       <div class="appsub" id="appsub">Family fun near home</div>
+      <button id="zipline" type="button" hidden></button>
     </div>
     <span id="balloonSlot"></span>
   </header>
@@ -366,7 +381,7 @@ const TABS = [
   { id:"picks", label:"Our Picks", icon:"heartF", sub:"Everything you both love · shared" },
 ];
 const CARD_COLORS = ["coral","blue","green","plum"];
-const state = { me:null, events:[], updatedAt:null, favs:new Map(), tab:"local", wx:null, sheetId:null };
+const state = { me:null, events:[], updatedAt:null, favs:new Map(), tab:"local", wx:null, sheetId:null, profile:null };
 
 async function api(method, path, body){
   const res = await fetch(path, { method, headers: body ? {"Content-Type":"application/json"} : {}, body: body ? JSON.stringify(body) : undefined });
@@ -468,8 +483,43 @@ function gcalURL(ev){
     + (det ? "&details=" + encodeURIComponent(det) : "");
 }
 function distLabel(ev){
+  if (ev.customDist){
+    if (ev.uMi == null) return "";
+    return "\u2248 " + (ev.uMi < 10 ? ev.uMi.toFixed(1) : Math.round(ev.uMi)) + " mi";
+  }
   if (ev.distanceMi == null) return "";
   return ev.distanceMi < 10 ? ev.distanceMi.toFixed(1) + " mi" : Math.round(ev.distanceMi) + " mi";
+}
+function havMi(aLat, aLng, bLat, bLng){
+  const R = 3958.8, t = Math.PI / 180;
+  const dLat = (bLat - aLat) * t, dLng = (bLng - aLng) * t;
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(aLat * t) * Math.cos(bLat * t) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(h));
+}
+/* Home base: with a custom zip on the account, distances and the
+   Local/Farther split are recomputed from that point (straight-line
+   miles, marked \u2248). Date picks keep their tab. Without one, the
+   published Windermere road distances rule, untouched. */
+function applyProfile(){
+  const p = state.profile; if (!p) return;
+  for (const ev of state.events){
+    if (ev._ptab === undefined){ ev._ptab = ev.tab; ev._pdrv = ev.driveMin; }
+    if (p.custom){
+      ev.uMi = (ev.lat != null && ev.lng != null) ? havMi(p.lat, p.lng, ev.lat, ev.lng) : null;
+      ev.customDist = true; ev.driveMin = null;
+      if (ev._ptab !== "date" && ev.uMi != null) ev.tab = ev.uMi <= 13 ? "local" : "far";
+    } else {
+      ev.customDist = false; ev.uMi = null; ev.tab = ev._ptab; ev.driveMin = ev._pdrv;
+    }
+  }
+  renderZipline();
+}
+function renderZipline(){
+  const el = $("#zipline"); if (!el) return;
+  const p = state.profile;
+  if (!p){ el.hidden = true; return; }
+  el.hidden = false;
+  el.textContent = "Near " + (p.label || "") + " \u00b7 " + p.zip;
 }
 function colorFor(ev){ let h = 0; for (const c of ev.id) h = (h * 31 + c.charCodeAt(0)) >>> 0; return CARD_COLORS[h % CARD_COLORS.length]; }
 
@@ -757,6 +807,50 @@ function closeSheet(){
   setTimeout(() => { sheet.hidden = true; sheet.style.transform = ""; }, 300);
 }
 $("#scrim").addEventListener("click", closeSheet);
+$("#zipline").addEventListener("click", openZipSheet);
+function showSheetAnim(){
+  const sheet = $("#sheet");
+  $("#scrim").hidden = false;
+  sheet.style.transition = "none";
+  sheet.style.transform = "translate(-50%, 100%)";
+  sheet.hidden = false;
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    sheet.style.transition = "";
+    sheet.style.transform = "translate(-50%, 0)";
+  }));
+  document.body.style.overflow = "hidden";
+}
+function openZipSheet(){
+  const p = state.profile || {};
+  const sheet = $("#sheet");
+  sheet.innerHTML = `<div class="grab"></div><div class="zipwrap">
+    <h2>Your home base</h2>
+    <p class="blurb">Poppy measures every pick from this zip — the distances and what counts as \u201cLocal\u201d follow it. It\u2019s saved to your account, so it\u2019s the same on every device you sign in with.</p>
+    <label class="ziplabel" for="zipInput">Zip code</label>
+    <input class="zipinput" id="zipInput" type="text" inputmode="numeric" autocomplete="postal-code" maxlength="5" value="${p.custom ? esc(p.zip) : ""}" placeholder="e.g. 34786">
+    <p class="ziperr" id="zipErr"></p>
+    <button class="zipgo" id="zipSave" type="button">Save home base</button>
+    ${p.custom ? `<button class="zipclear" id="zipClear" type="button">Back to the default (Windermere)</button>` : ""}
+  </div>`;
+  showSheetAnim();
+  $("#zipSave").addEventListener("click", () => saveZip(null));
+  const clr = $("#zipClear");
+  if (clr) clr.addEventListener("click", () => saveZip(""));
+}
+async function saveZip(force){
+  const v = typeof force === "string" ? force : $("#zipInput").value.trim();
+  const err = $("#zipErr"), btn = $("#zipSave");
+  if (btn) btn.disabled = true;
+  try {
+    state.profile = await api("POST", "/api/poppy/profile", { zip: v });
+    applyProfile(); render();
+    closeSheet();
+    toast("Home base: " + state.profile.label + " \u00b7 " + state.profile.zip);
+  } catch (e) {
+    if (err) err.textContent = e.message || "That didn\u2019t work \u2014 try again.";
+    if (btn) btn.disabled = false;
+  }
+}
 
 /* ---- sheet drag-to-dismiss: pull down from the top of the sheet ---- */
 (() => {
@@ -975,13 +1069,16 @@ $("#signin-btn").addEventListener("click", faceIdSignIn);
 
 /* ---- boot ---- */
 async function loadAll(){
-  const [eventsRes, favRes] = await Promise.all([
+  const [eventsRes, favRes, profRes] = await Promise.all([
     api("GET", "/api/poppy/events"),
     api("GET", "/api/poppy/favorites"),
+    api("GET", "/api/poppy/profile").catch(() => null),
   ]);
+  state.profile = profRes;
   state.events = (eventsRes.events || []).filter(ev => !ev.date || dayDiff(ev.date, todayStr()) >= -1);
   state.updatedAt = eventsRes.updatedAt || null;
   state.favs = new Map((favRes.favorites || []).map(f => [f.eventId, f]));
+  applyProfile();
   renderTabs(); render();
   const h = new URLSearchParams(location.hash.slice(1));
   if (h.get("event")) openSheet(h.get("event"));
