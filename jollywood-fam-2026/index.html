@@ -182,15 +182,18 @@
   .mapwrap{margin-top:14px; border-radius:18px; overflow:hidden; border:1px solid rgba(232,196,118,.25);
     background:radial-gradient(120% 120% at 50% 0%, #103824, #071A10)}
   .mapwrap svg{display:block; width:100%; height:auto}
-  .zone rect, .zone ellipse, .zone circle{fill:rgba(255,255,255,.045); stroke:rgba(232,196,118,.35); stroke-width:1}
-  .zone.context rect{fill:rgba(255,255,255,.02); stroke:rgba(232,196,118,.16)}
-  .zone.haspicks rect, .zone.haspicks ellipse, .zone.haspicks circle{stroke:rgba(232,196,118,.75)}
-  .zone.focus rect, .zone.focus ellipse, .zone.focus circle{stroke:var(--gold-hi); stroke-width:2.4}
+  .zone .zshape{fill:rgba(255,255,255,.05); stroke:rgba(232,196,118,.38); stroke-width:1}
+  .zone.context .zshape{fill:rgba(255,255,255,.022); stroke:rgba(232,196,118,.17)}
+  .zone.haspicks .zshape{fill:rgba(232,196,118,.08); stroke:rgba(232,196,118,.85); stroke-width:1.2}
+  .zone.focus .zshape{stroke:var(--gold-hi); stroke-width:2.4}
+  .zone .zshape.water{fill:url(#lakegrad); stroke:rgba(169,223,194,.5)}
+  .zone.haspicks .zshape.water{stroke:rgba(169,223,194,.9)}
   .zlabel{font-family:"Jost",sans-serif; font-weight:600; letter-spacing:.13em; fill:var(--cream-dim); text-anchor:middle}
   .zone.haspicks .zlabel{fill:var(--gold-hi)}
   .zone.context .zlabel{fill:rgba(238,234,216,.32)}
-  .zcount{fill:#23180A; font-family:"Jost",sans-serif; font-weight:700}
-  .zcountbg{fill:var(--gold); stroke:rgba(255,249,227,.85); stroke-width:1.2}
+  .mark{fill:none; stroke:rgba(246,222,156,.8); stroke-width:1.3; stroke-linecap:round; stroke-linejoin:round}
+  .mark.water-mark{stroke:rgba(169,223,194,.55)}
+  .zbub{filter:drop-shadow(0 3px 5px rgba(0,0,0,.6))}
   .mapcap{margin-top:9px; font-size:12px; color:var(--cream-faint); text-align:center; letter-spacing:.04em}
   .mapgroup{margin-top:16px; padding:13px 15px; border-radius:16px; background:rgba(255,255,255,.04); border:1px solid rgba(232,196,118,.18)}
   .mapgroup.focus{border-color:var(--gold-hi); box-shadow:0 0 0 1px var(--gold-hi)}
@@ -723,17 +726,42 @@ function zoneOf(area) {
   return "hollywood";
 }
 const ZONES = [
-  { id: "galaxy", label: ["GALAXY'S EDGE"], shape: '<rect x="10" y="16" width="116" height="72" rx="14"/>', lx: 68, ly: 56, context: true },
-  { id: "pixar", label: ["PIXAR PLAZA"], shape: '<rect x="196" y="20" width="96" height="50" rx="12"/>', lx: 244, ly: 49 },
-  { id: "toy", label: ["TOY STORY", "LAND"], shape: '<rect x="300" y="16" width="52" height="72" rx="12"/>', lx: 326, ly: 48, context: true },
-  { id: "animation", label: ["ANIMATION", "COURTYARD"], shape: '<rect x="228" y="96" width="122" height="80" rx="14"/>', lx: 289, ly: 132 },
-  { id: "echo", label: ["ECHO LAKE"], shape: '<ellipse cx="88" cy="148" rx="68" ry="44"/>', lx: 88, ly: 152 },
-  { id: "hub", label: ["THE HUB"], shape: '<circle cx="184" cy="168" r="27"/>', lx: 184, ly: 172, context: true },
-  { id: "hollywood", label: ["HOLLYWOOD", "BOULEVARD"], shape: '<rect x="156" y="182" width="56" height="106" rx="12"/>', lx: 184, ly: 230 },
-  { id: "sunset", label: ["SUNSET", "BOULEVARD"], shape: '<rect x="222" y="192" width="128" height="88" rx="14"/>', lx: 278, ly: 231 },
-  { id: "commissary", label: ["COMMISSARY LN"], shape: '<rect x="24" y="206" width="104" height="42" rx="12"/>', lx: 76, ly: 231 },
-  { id: "grand", label: ["GRAND AVENUE"], shape: '<rect x="18" y="262" width="110" height="48" rx="12"/>', lx: 73, ly: 290 },
+  { id: "galaxy", context: true, label: ["GALAXY'S EDGE"], lx: 68, ly: 58,
+    shape: '<path class="zshape" d="M14,30 C14,18 26,14 44,14 L96,14 C116,14 126,24 126,42 L124,72 C123,86 112,92 94,92 L36,92 C20,92 12,84 12,66 C12,48 12,40 14,30 Z"/>',
+    mark: '<path class="mark" d="M28,46 L35,24 L42,46 M43,46 L49,30 L55,46"/>' },
+  { id: "pixar", label: ["PIXAR PLAZA"], lx: 244, ly: 49, pin: [284, 30],
+    shape: '<path class="zshape" d="M204,28 C204,20 214,18 226,18 L270,18 C286,18 292,25 292,37 L292,50 C292,63 284,70 269,70 L224,70 C209,70 202,62 202,48 C202,39 202,33 204,28 Z"/>' },
+  { id: "toy", context: true, label: ["TOY STORY", "LAND"], lx: 326, ly: 47,
+    shape: '<path class="zshape" d="M304,22 C304,14 312,12 322,12 L337,12 C348,12 352,19 352,31 L352,64 C352,78 346,84 333,84 L319,84 C307,84 302,76 302,61 C302,44 302,31 304,22 Z"/>' },
+  { id: "animation", label: ["ANIMATION", "COURTYARD"], lx: 289, ly: 133, pin: [320, 158],
+    shape: '<path class="zshape" d="M238,104 C240,97 248,94 260,94 L320,94 C337,94 348,103 348,118 L348,150 C348,167 338,176 321,176 L258,176 C241,176 232,167 232,151 L232,124 C232,113 234,108 238,104 Z"/>' },
+  { id: "echo", label: ["ECHO LAKE"], lx: 88, ly: 138, pin: [50, 118],
+    shape: '<path class="zshape water" d="M40,124 C52,108 84,102 108,110 C134,118 152,132 150,152 C148,174 128,190 100,192 C70,194 38,184 30,162 C24,146 30,136 40,124 Z"/>',
+    mark: '<path class="mark water-mark" d="M48,168 q7,-5 14,0 q7,5 14,0 M94,178 q7,-5 14,0 q7,5 14,0"/>' },
+  { id: "hub", context: true, label: [], lx: 184, ly: 202,
+    shape: '<path class="zshape" d="M180,146 C196,146 208,159 208,176 C208,193 195,206 178,206 C161,206 150,193 150,176 C150,159 164,146 180,146 Z"/>',
+    mark: '<g class="mark"><path d="M165,160 L195,160 L188,151 L172,151 Z"/><path d="M172,151 L180,143 L188,151"/><path d="M170,160 v9 M180,160 v9 M190,160 v9"/><path d="M165,171 h30"/></g>' },
+  { id: "hollywood", label: ["HOLLYWOOD", "BOULEVARD"], lx: 184, ly: 264, pin: [184, 224],
+    shape: '<path class="zshape" d="M159,208 C160,200 166,196 177,196 L186,196 C197,196 203,201 203,210 L203,284 C203,297 196,303 184,303 L178,303 C166,303 159,297 159,284 Z"/>' },
+  { id: "sunset", label: ["SUNSET", "BOULEVARD"], lx: 264, ly: 250, rot: -21, pin: [322, 204],
+    shape: '<path class="zshape" d="M214,196 C227,190 245,197 263,207 L329,240 C342,247 344,259 336,269 C328,279 311,279 295,272 L233,243 C215,235 206,221 208,208 C209,201 210,198 214,196 Z"/>',
+    mark: '<g class="mark"><path d="M314,240 V215 l5,-5 v-9 l2.5,-4.5 L324,201 v9 l5,5 v25 Z"/><path d="M318,222 h2 M322,228 h2"/></g>' },
+  { id: "commissary", label: ["COMMISSARY LN"], lx: 76, ly: 224, pin: [76, 200],
+    shape: '<path class="zshape" d="M30,209 C30,201 39,198 51,198 L105,198 C120,198 128,205 128,216 C128,228 120,240 105,240 L53,240 C39,240 30,233 30,221 Z"/>' },
+  { id: "grand", label: ["GRAND AVENUE"], lx: 73, ly: 283, pin: [104, 262],
+    shape: '<path class="zshape" d="M22,263 C22,254 31,250 45,250 L91,250 C106,250 114,257 114,268 L114,281 C114,294 106,300 91,300 L47,300 C32,300 24,293 24,281 Z"/>' },
 ];
+const MAP_ROUTES = [
+  "M180,332 C180,295 180,245 180,200",
+  "M198,188 C238,197 282,214 318,230",
+  "M158,174 C128,166 108,159 92,151",
+  "M156,196 C124,205 98,213 80,219",
+  "M198,166 C224,149 248,133 266,120",
+  "M166,158 C138,118 108,80 84,56",
+  "M204,152 C238,112 282,72 314,50",
+  "M96,240 C88,252 80,262 74,270",
+];
+const MAP_BOUNDARY = "M180,326 C118,326 58,318 33,292 C8,266 10,214 16,166 C22,114 15,58 45,31 C72,7 122,3 180,3 C238,3 302,8 329,33 C355,55 353,108 349,158 C345,212 355,266 329,292 C303,318 242,326 180,326 Z";
 function zoneCounts() {
   const counts = {};
   for (const pr of picksList()) { const z = zoneOf(pr.area); counts[z] = (counts[z] || 0) + 1; }
@@ -741,13 +769,21 @@ function zoneCounts() {
 }
 function renderMap(focusZone) {
   const counts = zoneCounts();
+  const defs = `<defs>
+    <linearGradient id="goldgrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F8E3A1"/><stop offset="1" stop-color="#C08A2D"/></linearGradient>
+    <linearGradient id="lakegrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1B5A4C"/><stop offset="1" stop-color="#0C352C"/></linearGradient>
+    <pattern id="leaf" width="27" height="27" patternUnits="userSpaceOnUse"><circle cx="6" cy="9" r="1.7" fill="rgba(232,196,118,.55)"/><circle cx="19" cy="19" r="1.3" fill="rgba(232,196,118,.4)"/><circle cx="14" cy="4" r="1" fill="rgba(232,196,118,.35)"/></pattern>
+  </defs>`;
+  const routes = MAP_ROUTES.map((d) => `<path d="${d}" fill="none" stroke="rgba(246,222,156,.10)" stroke-width="7" stroke-linecap="round"/>`).join("")
+    + MAP_ROUTES.map((d) => `<path d="${d}" fill="none" stroke="rgba(255,249,227,.13)" stroke-width="1" stroke-dasharray="0.5 5" stroke-linecap="round"/>`).join("");
   const zonesSvg = ZONES.map((z) => {
     const n = counts[z.id] || 0;
-    const label = z.label.map((line, i) => `<text class="zlabel" x="${z.lx}" y="${z.ly + (i - (z.label.length - 1) / 2) * 11}" font-size="${z.context ? 8 : 9.5}">${line}</text>`).join("");
-    const bubble = n ? `<g><circle class="zcountbg" cx="${z.lx + 34}" cy="${z.ly - 16}" r="10"/><text class="zcount" x="${z.lx + 34}" y="${z.ly - 12.5}" font-size="10.5" text-anchor="middle">${n}</text></g>` : "";
-    return `<g class="zone${z.context ? " context" : ""}${n ? " haspicks" : ""}${focusZone === z.id ? " focus" : ""}">${z.shape}${label}${bubble}</g>`;
+    const lines = z.label.map((line, i) => `<text class="zlabel" x="${z.lx}" y="${z.ly + (i - (z.label.length - 1) / 2) * 11}" font-size="${z.context ? 8 : 9.5}">${line}</text>`).join("");
+    const label = z.rot ? `<g transform="rotate(${z.rot} ${z.lx} ${z.ly})">${lines}</g>` : lines;
+    const pin = n && z.pin ? `<g class="zbub" transform="translate(${z.pin[0]},${z.pin[1]})"><ellipse cx="0" cy="13" rx="4.5" ry="1.7" fill="rgba(0,0,0,.4)"/><path d="M0,12 C-2,5 -11,2 -11,-7 A11,11 0 1 1 11,-7 C11,2 2,5 0,12 Z" fill="url(#goldgrad)" stroke="#FFF6D8" stroke-width="1.6"/><text x="0" y="-7" dy=".36em" text-anchor="middle" font-size="11.5" font-weight="700" fill="#12291A" font-family="Jost,sans-serif">${n}</text></g>` : "";
+    return `<g class="zone${z.context ? " context" : ""}${n ? " haspicks" : ""}${focusZone === z.id ? " focus" : ""}">${z.shape}${z.mark || ""}${label}${pin}</g>`;
   }).join("");
-  $("#mapSvgWrap").innerHTML = `<svg viewBox="0 0 360 330" role="img" aria-label="Schematic map of Hollywood Studios">${zonesSvg}<text class="zlabel" x="184" y="322" font-size="8.5" fill="var(--gold)">\u2605 ENTRANCE</text></svg>`;
+  $("#mapSvgWrap").innerHTML = `<svg viewBox="0 0 360 330" role="img" aria-label="Stylized map of Hollywood Studios">${defs}<path d="${MAP_BOUNDARY}" fill="#0A2317" stroke="rgba(232,196,118,.3)"/><path d="${MAP_BOUNDARY}" fill="url(#leaf)" opacity=".16"/>${routes}${zonesSvg}<text class="zlabel" x="180" y="322" font-size="8.5" fill="var(--gold)">\u2605 ENTRANCE</text></svg>`;
   const groups = new Map();
   const addPick = (zone, venueName, pickName) => {
     if (!groups.has(zone)) groups.set(zone, new Map());
