@@ -90,8 +90,8 @@
     border:1px solid var(--glass-brd); backdrop-filter:blur(16px) saturate(1.4); -webkit-backdrop-filter:blur(16px) saturate(1.4);
     box-shadow:0 14px 30px -14px rgba(0,0,0,.65)}
   header.topbar .tstar{color:var(--gold); font-size:17px}
-  header.topbar .ttitle{font-family:"Cinzel",serif; font-weight:700; font-size:16.5px; letter-spacing:.09em; white-space:nowrap}
-  header.topbar .me{margin-left:auto; font-size:12.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--gold-hi);
+  header.topbar .ttitle{font-family:"Cinzel",serif; font-weight:700; font-size:clamp(13.5px, 4vw, 16.5px); letter-spacing:clamp(.05em, 1vw, .09em); white-space:nowrap; min-width:0; overflow:hidden; text-overflow:ellipsis}
+  header.topbar .me{margin-left:auto; flex:0 0 auto; font-size:clamp(11px, 2.9vw, 12.5px); letter-spacing:.12em; text-transform:uppercase; color:var(--gold-hi);
     border:1px solid rgba(232,196,118,.4); padding:5px 11px; border-radius:999px; white-space:nowrap; background:rgba(8,26,18,.4)}
   .loading{padding:90px 0; text-align:center; font-family:"Cinzel",serif; letter-spacing:.18em; color:var(--gold); font-size:15px}
 
@@ -253,7 +253,7 @@
 <div class="wrap" id="app" hidden>
   <header class="topbar">
     <span class="tstar">★</span>
-    <span class="ttitle">JOLLYWOOD FAM 2026</span>
+    <span class="ttitle">JOLLYWOOD FAM</span>
     <span class="me" id="meChip" hidden></span>
   </header>
 

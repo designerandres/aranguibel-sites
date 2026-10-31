@@ -1,4 +1,4 @@
-const CACHE = "jollywood-v4";
+const CACHE = "jollywood-v5";
 const SHELL = [
   ".",
   "index.html",
