@@ -1,12 +1,12 @@
-const CACHE = "jollywood-v5";
+const CACHE = "jollywood-v6";
 const SHELL = [
   ".",
   "index.html",
   "manifest.webmanifest",
   "icons/icon.svg",
   "icons/icon-512.png",
-  "img/hero.jpg",
-  "img/event-keyart.jpg",
+  "photos/hero.jpg",
+  "photos/event-keyart.jpg",
   "deco-fan.svg",
 ];
 
@@ -26,7 +26,7 @@ self.addEventListener("fetch", (e) => {
   const url = new URL(e.request.url);
   if (url.pathname.startsWith("/api/")) return; // never cache account APIs
   if (e.request.method !== "GET") return;
-  if (url.pathname.includes("/img/")) {
+  if (url.pathname.includes("/photos/")) {
     // Photos: cache-first (they never change within a season)
     e.respondWith(
       caches.match(e.request).then((hit) => hit || fetch(e.request).then((res) => {

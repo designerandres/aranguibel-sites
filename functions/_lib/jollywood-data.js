@@ -17,7 +17,7 @@ export const GUIDE = {
      ],
      "isNew": false,
      "kidPick": false,
-     "img": "img/gingerbread-bites.jpg"
+     "img": "photos/gingerbread-bites.jpg"
     }
    ]
   },
@@ -35,7 +35,7 @@ export const GUIDE = {
      ],
      "isNew": true,
      "kidPick": false,
-     "img": "img/brown-derby-chicken-yakitori.jpg"
+     "img": "photos/brown-derby-chicken-yakitori.jpg"
     },
     {
      "id": "jazzy-holidays-at-the-hollywood-brown-derby--charcuterie",
@@ -44,7 +44,7 @@ export const GUIDE = {
      "tags": [],
      "isNew": false,
      "kidPick": false,
-     "img": "img/brown-derby-charcuterie.jpg"
+     "img": "photos/brown-derby-charcuterie.jpg"
     },
     {
      "id": "jazzy-holidays-at-the-hollywood-brown-derby--chorizo-arancini",
@@ -53,7 +53,7 @@ export const GUIDE = {
      "tags": [],
      "isNew": false,
      "kidPick": false,
-     "img": "img/chorizo-arancini.jpg"
+     "img": "photos/chorizo-arancini.jpg"
     },
     {
      "id": "jazzy-holidays-at-the-hollywood-brown-derby--hamachi",
@@ -62,7 +62,7 @@ export const GUIDE = {
      "tags": [],
      "isNew": false,
      "kidPick": false,
-     "img": "img/brown-derby-hamachi.jpg"
+     "img": "photos/brown-derby-hamachi.jpg"
     },
     {
      "id": "jazzy-holidays-at-the-hollywood-brown-derby--jazzy-sliders",
@@ -71,7 +71,7 @@ export const GUIDE = {
      "tags": [],
      "isNew": false,
      "kidPick": false,
-     "img": "img/jazzy-holiday-slider.jpg"
+     "img": "photos/jazzy-holiday-slider.jpg"
     },
     {
      "id": "jazzy-holidays-at-the-hollywood-brown-derby--pork-belly-bao",
@@ -80,7 +80,7 @@ export const GUIDE = {
      "tags": [],
      "isNew": false,
      "kidPick": false,
-     "img": "img/pork-belly-bao.jpg"
+     "img": "photos/pork-belly-bao.jpg"
     },
     {
      "id": "jazzy-holidays-at-the-hollywood-brown-derby--shrimp-cocktail",
@@ -89,7 +89,7 @@ export const GUIDE = {
      "tags": [],
      "isNew": false,
      "kidPick": false,
-     "img": "img/shrimp-cocktail.jpg"
+     "img": "photos/shrimp-cocktail.jpg"
     },
     {
      "id": "jazzy-holidays-at-the-hollywood-brown-derby--tofu-bao",
@@ -100,7 +100,7 @@ export const GUIDE = {
      ],
      "isNew": false,
      "kidPick": false,
-     "img": "img/tofu-bao-jollywood.jpg"
+     "img": "photos/tofu-bao-jollywood.jpg"
     },
     {
      "id": "jazzy-holidays-at-the-hollywood-brown-derby--the-sleigh-bell",
@@ -111,7 +111,7 @@ export const GUIDE = {
      ],
      "isNew": false,
      "kidPick": false,
-     "img": "img/brown-derby-beverages.jpg"
+     "img": "photos/brown-derby-beverages.jpg"
     },
     {
      "id": "jazzy-holidays-at-the-hollywood-brown-derby--holiday-mickey-hot-cocoa",
@@ -122,7 +122,7 @@ export const GUIDE = {
      ],
      "isNew": false,
      "kidPick": false,
-     "img": "img/holiday-mickey-hot-cocoa.jpg"
+     "img": "photos/holiday-mickey-hot-cocoa.jpg"
     },
     {
      "id": "jazzy-holidays-at-the-hollywood-brown-derby--cranberry-jalapeno-margarita",
@@ -133,7 +133,7 @@ export const GUIDE = {
      ],
      "isNew": true,
      "kidPick": false,
-     "img": "img/brown-derby-beverages.jpg"
+     "img": "photos/brown-derby-beverages.jpg"
     },
     {
      "id": "jazzy-holidays-at-the-hollywood-brown-derby--spiced-pear-martini",
@@ -142,7 +142,7 @@ export const GUIDE = {
      "tags": [],
      "isNew": false,
      "kidPick": false,
-     "img": "img/brown-derby-beverages.jpg"
+     "img": "photos/brown-derby-beverages.jpg"
     },
     {
      "id": "jazzy-holidays-at-the-hollywood-brown-derby--salted-caramel-hot-chocolate",
@@ -151,7 +151,7 @@ export const GUIDE = {
      "tags": [],
      "isNew": false,
      "kidPick": false,
-     "img": "img/brown-derby-beverages.jpg"
+     "img": "photos/brown-derby-beverages.jpg"
     },
     {
      "id": "jazzy-holidays-at-the-hollywood-brown-derby--vodka-martini",
@@ -160,7 +160,7 @@ export const GUIDE = {
      "tags": [],
      "isNew": false,
      "kidPick": false,
-     "img": "img/brown-derby-beverages.jpg"
+     "img": "photos/brown-derby-beverages.jpg"
     },
     {
      "id": "jazzy-holidays-at-the-hollywood-brown-derby--hollywood-lights",
@@ -169,7 +169,7 @@ export const GUIDE = {
      "tags": [],
      "isNew": false,
      "kidPick": false,
-     "img": "img/brown-derby-beverages.jpg"
+     "img": "photos/brown-derby-beverages.jpg"
     },
     {
      "id": "jazzy-holidays-at-the-hollywood-brown-derby--mocha-espresso-mint-tini",
@@ -178,7 +178,7 @@ export const GUIDE = {
      "tags": [],
      "isNew": false,
      "kidPick": false,
-     "img": "img/brown-derby-beverages.jpg"
+     "img": "photos/brown-derby-beverages.jpg"
     },
     {
      "id": "jazzy-holidays-at-the-hollywood-brown-derby--old-fashioned",
@@ -187,7 +187,7 @@ export const GUIDE = {
      "tags": [],
      "isNew": false,
      "kidPick": false,
-     "img": "img/brown-derby-beverages.jpg"
+     "img": "photos/brown-derby-beverages.jpg"
     },
     {
      "id": "jazzy-holidays-at-the-hollywood-brown-derby--peanut-butter-whiskey-cream",
@@ -196,7 +196,7 @@ export const GUIDE = {
      "tags": [],
      "isNew": false,
      "kidPick": false,
-     "img": "img/brown-derby-beverages.jpg"
+     "img": "photos/brown-derby-beverages.jpg"
     },
     {
      "id": "jazzy-holidays-at-the-hollywood-brown-derby--poinsettia-fizz",
@@ -205,7 +205,7 @@ export const GUIDE = {
      "tags": [],
      "isNew": false,
      "kidPick": false,
-     "img": "img/brown-derby-beverages.jpg"
+     "img": "photos/brown-derby-beverages.jpg"
     }
    ]
   },
@@ -223,7 +223,7 @@ export const GUIDE = {
      ],
      "isNew": true,
      "kidPick": false,
-     "img": "img/a-twix-on-a-classic-pie.jpg"
+     "img": "photos/a-twix-on-a-classic-pie.jpg"
     },
     {
      "id": "fairfax-fare--yuletide-ham-popover",
@@ -235,7 +235,7 @@ export const GUIDE = {
      ],
      "isNew": true,
      "kidPick": true,
-     "img": "img/yuletide-ham-popover.jpg"
+     "img": "photos/yuletide-ham-popover.jpg"
     },
     {
      "id": "fairfax-fare--holiday-turkey-popover",
@@ -244,7 +244,7 @@ export const GUIDE = {
      "tags": [],
      "isNew": false,
      "kidPick": false,
-     "img": "img/holiday-turkey-popover.jpg"
+     "img": "photos/holiday-turkey-popover.jpg"
     },
     {
      "id": "fairfax-fare--eggnog",
@@ -255,7 +255,7 @@ export const GUIDE = {
      ],
      "isNew": false,
      "kidPick": false,
-     "img": "img/eggnog.jpg"
+     "img": "photos/eggnog.jpg"
     },
     {
      "id": "fairfax-fare--mistletoe-martini",
@@ -264,7 +264,7 @@ export const GUIDE = {
      "tags": [],
      "isNew": false,
      "kidPick": false,
-     "img": "img/mistletoe-martini.jpg"
+     "img": "photos/mistletoe-martini.jpg"
     },
     {
      "id": "fairfax-fare--eggnog-with-whisky",
@@ -273,7 +273,7 @@ export const GUIDE = {
      "tags": [],
      "isNew": false,
      "kidPick": false,
-     "img": "img/eggnog.jpg"
+     "img": "photos/eggnog.jpg"
     }
    ]
   },
@@ -291,7 +291,7 @@ export const GUIDE = {
      ],
      "isNew": true,
      "kidPick": false,
-     "img": "img/kermit-chocolate-pistachio-sundae.jpg"
+     "img": "photos/kermit-chocolate-pistachio-sundae.jpg"
     },
     {
      "id": "hollywood-scoops--miss-piggy-strawberry-sundae",
@@ -302,7 +302,7 @@ export const GUIDE = {
      ],
      "isNew": false,
      "kidPick": true,
-     "img": "img/miss-piggy-strawberry-sundae.jpg"
+     "img": "photos/miss-piggy-strawberry-sundae.jpg"
     }
    ]
   },
@@ -320,7 +320,7 @@ export const GUIDE = {
      ],
      "isNew": false,
      "kidPick": false,
-     "img": "img/sparking-pomegranate-apple-cider.jpg"
+     "img": "photos/sparking-pomegranate-apple-cider.jpg"
     },
     {
      "id": "twilight-soiree-at-the-tip-top-club--1939-royale",
@@ -329,7 +329,7 @@ export const GUIDE = {
      "tags": [],
      "isNew": false,
      "kidPick": false,
-     "img": "img/royale-top-floor-daquiri.jpg"
+     "img": "photos/royale-top-floor-daquiri.jpg"
     },
     {
      "id": "twilight-soiree-at-the-tip-top-club--sparkling-cider",
@@ -340,7 +340,7 @@ export const GUIDE = {
      ],
      "isNew": false,
      "kidPick": false,
-     "img": "img/royale-top-floor-daquiri.jpg"
+     "img": "photos/royale-top-floor-daquiri.jpg"
     },
     {
      "id": "twilight-soiree-at-the-tip-top-club--top-floor-daiquiri",
@@ -349,7 +349,7 @@ export const GUIDE = {
      "tags": [],
      "isNew": false,
      "kidPick": false,
-     "img": "img/royale-top-floor-daquiri.jpg"
+     "img": "photos/royale-top-floor-daquiri.jpg"
     },
     {
      "id": "twilight-soiree-at-the-tip-top-club--domaine-ste-michelle-brut",
@@ -358,7 +358,7 @@ export const GUIDE = {
      "tags": [],
      "isNew": false,
      "kidPick": false,
-     "img": "img/royale-top-floor-daquiri.jpg"
+     "img": "photos/royale-top-floor-daquiri.jpg"
     }
    ]
   },
@@ -377,7 +377,7 @@ export const GUIDE = {
      ],
      "isNew": true,
      "kidPick": false,
-     "img": "img/jollywood-bar-beverages.jpg"
+     "img": "photos/jollywood-bar-beverages.jpg"
     },
     {
      "id": "checkin-it-twice-lounge--fizz-the-season",
@@ -388,7 +388,7 @@ export const GUIDE = {
      ],
      "isNew": true,
      "kidPick": false,
-     "img": "img/jollywood-bar-beverages.jpg"
+     "img": "photos/jollywood-bar-beverages.jpg"
     },
     {
      "id": "checkin-it-twice-lounge--lump-of-coal",
@@ -397,7 +397,7 @@ export const GUIDE = {
      "tags": [],
      "isNew": false,
      "kidPick": false,
-     "img": "img/jollywood-bar-beverages.jpg"
+     "img": "photos/jollywood-bar-beverages.jpg"
     },
     {
      "id": "checkin-it-twice-lounge--snow-hopper",
@@ -408,7 +408,7 @@ export const GUIDE = {
      ],
      "isNew": true,
      "kidPick": false,
-     "img": "img/jollywood-bar-beverages.jpg"
+     "img": "photos/jollywood-bar-beverages.jpg"
     }
    ]
   },
@@ -427,7 +427,7 @@ export const GUIDE = {
      ],
      "isNew": true,
      "kidPick": true,
-     "img": "img/partysaurus-rex-brookie.jpg"
+     "img": "photos/partysaurus-rex-brookie.jpg"
     },
     {
      "id": "market--teriyaki-chicken-pot-stickers",
@@ -438,7 +438,7 @@ export const GUIDE = {
      ],
      "isNew": true,
      "kidPick": false,
-     "img": "img/potstickers-box-1.jpg"
+     "img": "photos/potstickers-box-1.jpg"
     },
     {
      "id": "market--bing-bong-candy-lemonade",
@@ -449,7 +449,7 @@ export const GUIDE = {
      ],
      "isNew": false,
      "kidPick": false,
-     "img": "img/bing-bong-candy-lemonade.jpg"
+     "img": "photos/bing-bong-candy-lemonade.jpg"
     },
     {
      "id": "market--caramel-apple-cider-with-moonshine",
@@ -460,7 +460,7 @@ export const GUIDE = {
      ],
      "isNew": true,
      "kidPick": false,
-     "img": "img/caramel-apple-cider-with-moonshine.jpg"
+     "img": "photos/caramel-apple-cider-with-moonshine.jpg"
     },
     {
      "id": "market--caramel-apple-cider",
@@ -472,7 +472,7 @@ export const GUIDE = {
      ],
      "isNew": true,
      "kidPick": false,
-     "img": "img/caramel-apple-cider-with-moonshine.jpg"
+     "img": "photos/caramel-apple-cider-with-moonshine.jpg"
     }
    ]
   },
@@ -488,7 +488,7 @@ export const GUIDE = {
      "tags": [],
      "isNew": false,
      "kidPick": false,
-     "img": "img/sweet-corn-chicken-empanada.jpg"
+     "img": "photos/sweet-corn-chicken-empanada.jpg"
     },
     {
      "id": "abc-commissary--arepas-de-choclo",
@@ -497,7 +497,7 @@ export const GUIDE = {
      "tags": [],
      "isNew": false,
      "kidPick": false,
-     "img": "img/arepas-de-chocolo.jpg"
+     "img": "photos/arepas-de-chocolo.jpg"
     },
     {
      "id": "abc-commissary--birria-taco",
@@ -506,7 +506,7 @@ export const GUIDE = {
      "tags": [],
      "isNew": false,
      "kidPick": false,
-     "img": "img/birria-taco.jpg"
+     "img": "photos/birria-taco.jpg"
     },
     {
      "id": "abc-commissary--cauliflower-taco",
@@ -515,7 +515,7 @@ export const GUIDE = {
      "tags": [],
      "isNew": false,
      "kidPick": false,
-     "img": "img/cauliflower-taco.jpg"
+     "img": "photos/cauliflower-taco.jpg"
     },
     {
      "id": "abc-commissary--mexican-hot-cocoa-cheesecake",
@@ -524,7 +524,7 @@ export const GUIDE = {
      "tags": [],
      "isNew": false,
      "kidPick": false,
-     "img": "img/mexican-hot-cocoa-cheesecake.jpg"
+     "img": "photos/mexican-hot-cocoa-cheesecake.jpg"
     },
     {
      "id": "abc-commissary--christmas-taco-cookie",
@@ -533,7 +533,7 @@ export const GUIDE = {
      "tags": [],
      "isNew": false,
      "kidPick": false,
-     "img": "img/taco-bout-a-holiday-cookie.jpg"
+     "img": "photos/taco-bout-a-holiday-cookie.jpg"
     },
     {
      "id": "abc-commissary--berry-lime-cheer",
@@ -545,7 +545,7 @@ export const GUIDE = {
      ],
      "isNew": true,
      "kidPick": false,
-     "img": "img/berry-lime-fizz.jpg"
+     "img": "photos/berry-lime-fizz.jpg"
     },
     {
      "id": "abc-commissary--prickly-pear-margarita",
@@ -556,7 +556,7 @@ export const GUIDE = {
      ],
      "isNew": true,
      "kidPick": false,
-     "img": "img/prickly-pear-margarita.jpg"
+     "img": "photos/prickly-pear-margarita.jpg"
     },
     {
      "id": "abc-commissary--coquito",
@@ -565,7 +565,7 @@ export const GUIDE = {
      "tags": [],
      "isNew": false,
      "kidPick": false,
-     "img": "img/coquito-jollywood-night.jpg"
+     "img": "photos/coquito-jollywood-night.jpg"
     }
    ]
   },
@@ -581,7 +581,7 @@ export const GUIDE = {
      "tags": [],
      "isNew": false,
      "kidPick": false,
-     "img": "img/mac-and-cheese-croquette.jpg"
+     "img": "photos/mac-and-cheese-croquette.jpg"
     },
     {
      "id": "baseline-tap-house--merry-mango-shandy",
@@ -592,7 +592,7 @@ export const GUIDE = {
      ],
      "isNew": true,
      "kidPick": false,
-     "img": "img/merry-mango-shandy.jpg"
+     "img": "photos/merry-mango-shandy.jpg"
     }
    ]
   },
@@ -610,7 +610,7 @@ export const GUIDE = {
      ],
      "isNew": true,
      "kidPick": false,
-     "img": "img/salted-caramel-stuffed-churro.jpg"
+     "img": "photos/salted-caramel-stuffed-churro.jpg"
     },
     {
      "id": "ice-cold-hydraulics--gingerbread-bites",
@@ -621,7 +621,7 @@ export const GUIDE = {
      ],
      "isNew": false,
      "kidPick": false,
-     "img": "img/gingerbread-bites.jpg"
+     "img": "photos/gingerbread-bites.jpg"
     },
     {
      "id": "ice-cold-hydraulics--churro-crafted-soda",
@@ -633,7 +633,7 @@ export const GUIDE = {
      ],
      "isNew": true,
      "kidPick": false,
-     "img": "img/churro-soda.jpg"
+     "img": "photos/churro-soda.jpg"
     },
     {
      "id": "ice-cold-hydraulics--popcorn-crafted-soda",
@@ -645,7 +645,7 @@ export const GUIDE = {
      ],
      "isNew": true,
      "kidPick": false,
-     "img": "img/popcorn-soda.jpg"
+     "img": "photos/popcorn-soda.jpg"
     }
    ]
   },
@@ -663,7 +663,7 @@ export const GUIDE = {
      ],
      "isNew": true,
      "kidPick": false,
-     "img": "img/banana-bread-pudding.jpg"
+     "img": "photos/banana-bread-pudding.jpg"
     },
     {
      "id": "backlot-express--jolly-jam-slider",
@@ -672,7 +672,7 @@ export const GUIDE = {
      "tags": [],
      "isNew": false,
      "kidPick": false,
-     "img": "img/jolly-jam-slider.jpg"
+     "img": "photos/jolly-jam-slider.jpg"
     },
     {
      "id": "backlot-express--sleigh-bell-brussels-sprouts",
@@ -683,7 +683,7 @@ export const GUIDE = {
      ],
      "isNew": false,
      "kidPick": false,
-     "img": "img/sleigh-bell-brussel-sprouts.jpg"
+     "img": "photos/sleigh-bell-brussel-sprouts.jpg"
     },
     {
      "id": "backlot-express--sweet-chili-cheer-chicken-slider",
@@ -692,7 +692,7 @@ export const GUIDE = {
      "tags": [],
      "isNew": false,
      "kidPick": false,
-     "img": "img/chicken-sliders.jpg"
+     "img": "photos/chicken-sliders.jpg"
     },
     {
      "id": "backlot-express--hickory-holiday-mac",
@@ -703,7 +703,7 @@ export const GUIDE = {
      ],
      "isNew": false,
      "kidPick": true,
-     "img": "img/hickory-holiday-mac.jpg"
+     "img": "photos/hickory-holiday-mac.jpg"
     },
     {
      "id": "backlot-express--frozen-hot-cocoa",
@@ -715,7 +715,7 @@ export const GUIDE = {
      ],
      "isNew": true,
      "kidPick": false,
-     "img": "img/frozen-hot-cocoa.jpg"
+     "img": "photos/frozen-hot-cocoa.jpg"
     },
     {
      "id": "backlot-express--frozen-hot-cocoa-with-creme-liqueur",
@@ -726,7 +726,7 @@ export const GUIDE = {
      ],
      "isNew": true,
      "kidPick": false,
-     "img": "img/frozen-hot-cocoa.jpg"
+     "img": "photos/frozen-hot-cocoa.jpg"
     },
     {
      "id": "backlot-express--seas-and-greetings-colada",
@@ -737,7 +737,7 @@ export const GUIDE = {
      ],
      "isNew": true,
      "kidPick": false,
-     "img": "img/seas-and-greetings-colada.jpg"
+     "img": "photos/seas-and-greetings-colada.jpg"
     }
    ]
   },
@@ -755,7 +755,7 @@ export const GUIDE = {
      ],
      "isNew": true,
      "kidPick": false,
-     "img": "img/cookie-butter-croissant-beignet.jpg"
+     "img": "photos/cookie-butter-croissant-beignet.jpg"
     },
     {
      "id": "epic-eats--warm-spiced-chai-cocktail",
@@ -764,7 +764,7 @@ export const GUIDE = {
      "tags": [],
      "isNew": false,
      "kidPick": false,
-     "img": "img/warm-spiced-chai-cocktail.jpg"
+     "img": "photos/warm-spiced-chai-cocktail.jpg"
     }
    ]
   },
@@ -782,7 +782,7 @@ export const GUIDE = {
      ],
      "isNew": false,
      "kidPick": true,
-     "img": "img/christmas-gertie-cookie.jpg"
+     "img": "photos/christmas-gertie-cookie.jpg"
     }
    ]
   },
@@ -798,7 +798,7 @@ export const GUIDE = {
      "tags": [],
      "isNew": false,
      "kidPick": false,
-     "img": "img/holiday-dill-ight.jpg"
+     "img": "photos/holiday-dill-ight.jpg"
     },
     {
      "id": "tune-in-lounge--the-tinsel-twist",
@@ -809,7 +809,7 @@ export const GUIDE = {
      ],
      "isNew": true,
      "kidPick": false,
-     "img": "img/tinsel-twist.jpg"
+     "img": "photos/tinsel-twist.jpg"
     },
     {
      "id": "tune-in-lounge--the-bauble-bright",
@@ -829,7 +829,7 @@ export const GUIDE = {
      "tags": [],
      "isNew": false,
      "kidPick": false,
-     "img": "img/in-holiday-fashion.jpg"
+     "img": "photos/in-holiday-fashion.jpg"
     },
     {
      "id": "tune-in-lounge--sugar-cookie-martini",
@@ -838,7 +838,7 @@ export const GUIDE = {
      "tags": [],
      "isNew": false,
      "kidPick": false,
-     "img": "img/sugar-cookie-martini.jpg"
+     "img": "photos/sugar-cookie-martini.jpg"
     }
    ]
   },
@@ -854,7 +854,7 @@ export const GUIDE = {
      "tags": [],
      "isNew": false,
      "kidPick": false,
-     "img": "img/samosas-jollywood-nights.jpg"
+     "img": "photos/samosas-jollywood-nights.jpg"
     },
     {
      "id": "dockside-diner--meatball-and-polenta",
@@ -863,7 +863,7 @@ export const GUIDE = {
      "tags": [],
      "isNew": false,
      "kidPick": false,
-     "img": "img/meatball-and-polenta.jpg"
+     "img": "photos/meatball-and-polenta.jpg"
     },
     {
      "id": "dockside-diner--christmas-tree-cookie-stack",
@@ -872,7 +872,7 @@ export const GUIDE = {
      "tags": [],
      "isNew": false,
      "kidPick": false,
-     "img": "img/christmas-tree-cookie-stack.jpg"
+     "img": "photos/christmas-tree-cookie-stack.jpg"
     },
     {
      "id": "dockside-diner--holiday-mickey-hot-cocoa",
@@ -883,7 +883,7 @@ export const GUIDE = {
      ],
      "isNew": false,
      "kidPick": false,
-     "img": "img/holiday-mickey-hot-cocoa.jpg"
+     "img": "photos/holiday-mickey-hot-cocoa.jpg"
     },
     {
      "id": "dockside-diner--stroopwafel-bourbon-coffee",
@@ -892,7 +892,7 @@ export const GUIDE = {
      "tags": [],
      "isNew": false,
      "kidPick": false,
-     "img": "img/stroopwafel-bourbon-coffee.jpg"
+     "img": "photos/stroopwafel-bourbon-coffee.jpg"
     }
    ]
   },
@@ -910,7 +910,7 @@ export const GUIDE = {
      ],
      "isNew": true,
      "kidPick": false,
-     "img": "img/golden-gimlet-jollywood-nights.jpg"
+     "img": "photos/golden-gimlet-jollywood-nights.jpg"
     },
     {
      "id": "snack-cart--golden-cheer",
@@ -921,7 +921,7 @@ export const GUIDE = {
      ],
      "isNew": true,
      "kidPick": false,
-     "img": "img/golden-gimlet-jollywood-nights.jpg"
+     "img": "photos/golden-gimlet-jollywood-nights.jpg"
     },
     {
      "id": "snack-cart--in-holiday-fashion",
@@ -930,7 +930,7 @@ export const GUIDE = {
      "tags": [],
      "isNew": false,
      "kidPick": false,
-     "img": "img/in-holiday-fashion.jpg"
+     "img": "photos/in-holiday-fashion.jpg"
     },
     {
      "id": "snack-cart--sugar-cookie-martini",
@@ -939,7 +939,7 @@ export const GUIDE = {
      "tags": [],
      "isNew": false,
      "kidPick": false,
-     "img": "img/sugar-cookie-martini.jpg"
+     "img": "photos/sugar-cookie-martini.jpg"
     },
     {
      "id": "snack-cart--gingerbread-bites",
@@ -950,7 +950,7 @@ export const GUIDE = {
      ],
      "isNew": false,
      "kidPick": false,
-     "img": "img/gingerbread-bites.jpg"
+     "img": "photos/gingerbread-bites.jpg"
     }
    ]
   },
@@ -977,7 +977,7 @@ export const GUIDE = {
    "name": "Disney Holidays in Hollywood",
    "where": "Theater of the Stars · Sunset Boulevard",
    "desc": "A star-studded Christmas variety show hosted by Kermit the Frog and Miss Piggy — singing, dancing, and very special guests from classic Disney favorites.",
-   "img": "img/event-keyart.jpg",
+   "img": "photos/event-keyart.jpg",
    "motif": "stage"
   },
   {
@@ -993,7 +993,7 @@ export const GUIDE = {
    "name": "Twilight Soirée at the Tip Top Club",
    "where": "The Hollywood Tower Hotel · Sunset Boulevard",
    "desc": "Cocktails, live music and dancing in the Tip Top Club, high in the Hollywood Tower Hotel — the swankiest room of the night. Its drinks are over in the Food tab.",
-   "img": "img/royale-top-floor-daquiri.jpg",
+   "img": "photos/royale-top-floor-daquiri.jpg",
    "motif": "soiree"
   },
   {
@@ -1001,7 +1001,7 @@ export const GUIDE = {
    "name": "Jazzy Holidays at The Hollywood Brown Derby",
    "where": "Hollywood Boulevard",
    "desc": "Live jazz with dinner and drinks inside the golden-age Brown Derby. Reservations recommended — its full holiday menu is in the Food tab.",
-   "img": "img/brown-derby-beverages.jpg",
+   "img": "photos/brown-derby-beverages.jpg",
    "motif": "jazz"
   },
   {

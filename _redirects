@@ -1,0 +1,5 @@
+# Jollywood Fam 2026 photos are served under /photos/ (files live in /img/).
+# The app's first service worker cached failed loads under the /img/ paths
+# before the photos were uploaded; the /photos/ route steps around those
+# stale entries entirely.
+/jollywood-fam-2026/photos/* /jollywood-fam-2026/img/:splat 200
