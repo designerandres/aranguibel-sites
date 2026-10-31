@@ -231,8 +231,10 @@
     font-size:16px;font-weight:900;box-shadow:0 12px 26px -10px rgba(90,20,0,.5)}
   #signin-btn[disabled]{opacity:.6}
   #signin-err{min-height:20px;margin-top:12px;font-size:13px;font-weight:800;color:#FFE1D6}
-  #hsToast{position:fixed;left:50%;transform:translateX(-50%);width:min(398px,calc(100vw - 32px));
-    bottom:calc(96px + env(safe-area-inset-bottom));z-index:89;display:flex;gap:12px;align-items:flex-start;
+  #hsWrap{position:fixed;inset:0;z-index:200;overflow:hidden}
+  #hsWrap .hsscrim{position:absolute;inset:0;background:rgba(0,0,0,.25)}
+  #hsToast{position:absolute;left:50%;transform:translateX(-50%);width:min(398px,calc(100vw - 32px));
+    bottom:calc(10px + env(safe-area-inset-bottom));display:flex;gap:12px;align-items:flex-start;
     padding:15px 40px 15px 15px;border-radius:20px;background:#FFFDF8;border:1px solid var(--line);
     box-shadow:var(--shadow-lg);color:var(--ink);animation:phsin .45s cubic-bezier(.2,.9,.3,1)}
   @keyframes phsin{from{transform:translate(-50%,18px);opacity:0} to{transform:translate(-50%,0);opacity:1}}
@@ -295,11 +297,14 @@
   </div>
 
   <div id="toast" hidden></div>
-  <div id="hsToast" hidden>
+  <div id="hsWrap" hidden>
+   <div class="hsscrim" data-hsdismiss></div>
+   <div id="hsToast">
     <img src="icons/icon.svg" alt="">
     <p><b>Add Poppy's Picks to your Home Screen</b> so the family's plans are one tap away. Tap <svg class="shareic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4"/><path d="M8 7l4-4 4 4"/><path d="M6 12H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-1"/></svg> then <b class="coral">Add to Home Screen</b>.</p>
     <button id="hsClose" type="button" aria-label="Dismiss"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg></button>
     <span class="hstail"></span>
+   </div>
   </div>
 </div>
 <script>
@@ -1005,10 +1010,10 @@ function maybeShowHsToast(){
     if (!/iPhone|iPad|iPod/.test(navigator.userAgent || "")) return;
     if (localStorage.getItem("poppy.hstip")) return;
     localStorage.setItem("poppy.hstip", "1");
-    setTimeout(() => { const t = $("#hsToast"); if (t) t.hidden = false; }, 1500);
+    setTimeout(() => { const t = $("#hsWrap"); if (t) t.hidden = false; }, 1500);
   }catch(e){}
 }
-document.addEventListener("click", (e) => { if (e.target.closest("#hsClose")) $("#hsToast").hidden = true; });
+document.addEventListener("click", (e) => { if (e.target.closest("#hsClose") || e.target.closest("[data-hsdismiss]")) $("#hsWrap").hidden = true; });
 boot();
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
 </script>

@@ -204,7 +204,9 @@
   #detailSheet .sheethead, #mapSheet .sheethead{touch-action:none}
   .dphoto{touch-action:none}
   /* ============ ADD-TO-HOME-SCREEN TOAST (first visit, invited crew) ============ */
-  #hsToast{position:fixed; left:14px; right:14px; bottom:calc(96px + env(safe-area-inset-bottom)); z-index:85;
+  #hsWrap{position:fixed; inset:0; z-index:200; overflow:hidden}
+  #hsWrap .hsscrim{position:absolute; inset:0; background:rgba(0,0,0,.25)}
+  #hsToast{position:absolute; left:14px; right:14px; bottom:calc(10px + env(safe-area-inset-bottom));
     display:flex; gap:12px; align-items:flex-start; padding:15px 40px 15px 15px; border-radius:18px;
     border:1px solid rgba(232,196,118,.55); color:var(--cream);
     background:linear-gradient(165deg, rgba(21,58,39,.97), rgba(8,26,17,.98));
@@ -541,11 +543,14 @@
   </div>
 </div>
 
-<div id="hsToast" hidden>
+<div id="hsWrap" hidden>
+  <div class="hsscrim" data-hsdismiss></div>
+  <div id="hsToast">
   <img src="icons/icon.svg" alt="">
   <p><b>Add Jollywood Fam 2026 to your Home Screen</b> for the full premiere-night experience. Tap <svg class="shareic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4"/><path d="M8 7l4-4 4 4"/><path d="M6 12H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-1"/></svg> then <b>Add to Home Screen</b>.</p>
   <button id="hsClose" type="button" aria-label="Dismiss"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg></button>
   <span class="hstail"></span>
+  </div>
 </div>
 <div id="toast" role="status"></div>
 
@@ -1115,10 +1120,11 @@ async function maybeShowHsToast() {
     const meRes = await api("GET", "/api/auth/me").catch(() => null);
     if (!meRes || !meRes.signedIn || meRes.role === "admin") return;
     localStorage.setItem("jollywood.hstip", "1");
-    setTimeout(() => { const t = $("#hsToast"); if (t) t.hidden = false; }, 1500);
+    setTimeout(() => { const t = $("#hsWrap"); if (t) t.hidden = false; }, 1500);
   } catch {}
 }
-$("#hsClose").addEventListener("click", () => { $("#hsToast").hidden = true; });
+$("#hsClose").addEventListener("click", () => { $("#hsWrap").hidden = true; });
+document.addEventListener("click", (e) => { if (e.target.closest("[data-hsdismiss]")) $("#hsWrap").hidden = true; });
 
 async function boot() {
   try {
