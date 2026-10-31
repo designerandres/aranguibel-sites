@@ -203,6 +203,22 @@
     background:rgba(246,222,156,.5); box-shadow:0 1px 5px rgba(0,0,0,.45); z-index:6; touch-action:none; cursor:grab}
   #detailSheet .sheethead, #mapSheet .sheethead{touch-action:none}
   .dphoto{touch-action:none}
+  /* ============ ADD-TO-HOME-SCREEN TOAST (first visit, invited crew) ============ */
+  #hsToast{position:fixed; left:14px; right:14px; bottom:calc(96px + env(safe-area-inset-bottom)); z-index:85;
+    display:flex; gap:12px; align-items:flex-start; padding:15px 40px 15px 15px; border-radius:18px;
+    border:1px solid rgba(232,196,118,.55); color:var(--cream);
+    background:linear-gradient(165deg, rgba(21,58,39,.97), rgba(8,26,17,.98));
+    box-shadow:0 20px 44px rgba(0,0,0,.55); animation:hsin .45s cubic-bezier(.2,.9,.3,1)}
+  @keyframes hsin{from{transform:translateY(18px); opacity:0} to{transform:none; opacity:1}}
+  #hsToast img{width:46px; height:46px; border-radius:11px; flex:0 0 auto; box-shadow:0 6px 16px rgba(0,0,0,.4)}
+  #hsToast p{font-size:14.5px; line-height:1.5; color:var(--cream-dim)}
+  #hsToast p b{color:var(--gold-hi); font-weight:700}
+  #hsToast .shareic{display:inline-block; width:15px; height:15px; vertical-align:-2px; color:var(--gold-hi)}
+  #hsClose{position:absolute; top:8px; right:8px; width:28px; height:28px; border-radius:50%; cursor:pointer; color:var(--cream);
+    display:flex; align-items:center; justify-content:center; border:1px solid rgba(232,196,118,.45); background:rgba(0,0,0,.3)}
+  #hsClose svg{width:11px; height:11px}
+  #hsToast .hstail{position:absolute; left:50%; bottom:-8px; width:17px; height:17px; transform:translateX(-50%) rotate(45deg);
+    background:#081A11; border-right:1px solid rgba(232,196,118,.55); border-bottom:1px solid rgba(232,196,118,.55)}
   /* ============ PARK MAP FAB + SHEET ============ */
   #mapFab{position:fixed; right:16px; bottom:calc(96px + env(safe-area-inset-bottom)); z-index:65; width:58px; height:58px;
     border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; color:#23180A;
@@ -525,6 +541,12 @@
   </div>
 </div>
 
+<div id="hsToast" hidden>
+  <img src="icons/icon.svg" alt="">
+  <p><b>Add Jollywood Fam 2026 to your Home Screen</b> for the full premiere-night experience. Tap <svg class="shareic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4"/><path d="M8 7l4-4 4 4"/><path d="M6 12H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-1"/></svg> then <b>Add to Home Screen</b>.</p>
+  <button id="hsClose" type="button" aria-label="Dismiss"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg></button>
+  <span class="hstail"></span>
+</div>
 <div id="toast" role="status"></div>
 
 <script>
@@ -1083,7 +1105,21 @@ async function loadApp() {
   $("#mapFab").hidden = false;
   renderFood(); renderDrinks(); renderActivities(); renderGameplan();
   tickCountdown(); setInterval(tickCountdown, 1000);
+  maybeShowHsToast();
 }
+async function maybeShowHsToast() {
+  try {
+    if (window.navigator.standalone || window.matchMedia("(display-mode: standalone)").matches) return;
+    if (!/iPhone|iPad|iPod/.test(navigator.userAgent || "")) return;
+    if (localStorage.getItem("jollywood.hstip")) return;
+    const meRes = await api("GET", "/api/auth/me").catch(() => null);
+    if (!meRes || !meRes.signedIn || meRes.role === "admin") return;
+    localStorage.setItem("jollywood.hstip", "1");
+    setTimeout(() => { const t = $("#hsToast"); if (t) t.hidden = false; }, 1500);
+  } catch {}
+}
+$("#hsClose").addEventListener("click", () => { $("#hsToast").hidden = true; });
+
 async function boot() {
   try {
     const meRes = await api("GET", "/api/auth/me");
