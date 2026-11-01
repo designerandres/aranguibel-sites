@@ -420,7 +420,7 @@
     <div class="summary" id="summaryRow"></div>
 
     <div class="secttl"><h3>Tonight's Itinerary</h3><div class="rule"></div></div>
-    <p class="sectsub">Everything the fam starred, in the order you'll hit it. Stops with a suggested time line up by time; the rest follow in the order you arrange with Reorder. Tap any card for the full story, its spot on the map, and a suggested time — it's all shared, so the night stays in sync for everyone.</p>
+    <p class="sectsub">Everything the fam starred, in the order you'll hit it. Stops with a suggested time line up by time; the rest rank by the fam's stars, most-wanted first. Tap any card for the full story, its spot on the map, and a suggested time — it's all shared, so the night stays in sync for everyone.</p>
     <div id="planList"></div>
   </section>
 
@@ -749,11 +749,11 @@ function effectiveOrder(picks) {
   for (const id of orderIds) if (byId.has(id)) { ordered.push(byId.get(id)); byId.delete(id); }
   const rest = [...byId.values()].sort((a, b) => b.votes.count - a.votes.count || a.name.localeCompare(b.name));
   const base = ordered.concat(rest);
-  const timed = base.filter((p) => times[p.id]);
-  if (!timed.length) return base;
   const baseIndex = new Map(base.map((p, i) => [p.id, i]));
-  timed.sort((a, b) => timeKey(times[a.id]) - timeKey(times[b.id]) || baseIndex.get(a.id) - baseIndex.get(b.id));
+  const timed = base.filter((p) => times[p.id]);
   const untimed = base.filter((p) => !times[p.id]);
+  timed.sort((a, b) => timeKey(times[a.id]) - timeKey(times[b.id]) || b.votes.count - a.votes.count || baseIndex.get(a.id) - baseIndex.get(b.id));
+  untimed.sort((a, b) => b.votes.count - a.votes.count || baseIndex.get(a.id) - baseIndex.get(b.id));
   return timed.concat(untimed);
 }
 const CHEV_UP = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 14.5 12 7.5l7 7"/></svg>';
