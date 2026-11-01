@@ -259,7 +259,9 @@
   .mapcap{margin-top:9px; font-size:12px; color:var(--cream-faint); text-align:center; letter-spacing:.04em}
   .mapgroup{margin-top:16px; padding:13px 15px; border-radius:16px; background:rgba(255,255,255,.04); border:1px solid rgba(232,196,118,.18)}
   .mapgroup.focus{border-color:var(--gold-hi); box-shadow:0 0 0 1px var(--gold-hi)}
-  .mapgroup h5{font-family:"Cinzel",serif; font-size:13.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--gold-hi)}
+  .mapgroup h5{display:flex; align-items:center; gap:8px; font-family:"Cinzel",serif; font-size:13.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--gold-hi)}
+  .mapnum{display:inline-flex; align-items:center; justify-content:center; flex:0 0 auto; width:20px; height:20px; border-radius:50%; background:linear-gradient(180deg, #F8E3A1, #C08A2D); color:#12291A; font-family:"Jost",sans-serif; font-size:12px; font-weight:700; letter-spacing:0; box-shadow:0 2px 6px rgba(0,0,0,.35)}
+  .mapcount{margin-left:auto; font-family:"Jost",sans-serif; font-size:11.5px; font-weight:500; letter-spacing:.04em; text-transform:none; color:var(--cream-dim); white-space:nowrap}
   .mapvenue{margin-top:9px}
   .mapvenue .mvname{font-size:14.5px; font-weight:600; color:var(--cream)}
   .mappick{font-size:13.5px; color:var(--cream-dim); margin-top:2px; padding-left:14px}
@@ -744,9 +746,9 @@ function effectiveOrder(picks) {
 const CHEV_UP = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 14.5 12 7.5l7 7"/></svg>';
 const CHEV_DN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9.5 12 16.5l7-7"/></svg>';
 const KIND_ICON = {
-  food: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5.5 3v3.8c0 1.2 1 2 2.25 2s2.25-.8 2.25-2V3M7.75 3v4M7.75 8.8V21M17.2 3c1.9 2.3 2.6 5.4 2.4 8.4-.1 1.8-1 2.8-2.4 3.1V21"/></svg>',
-  drink: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 5.5h15L12 13.2zM12 13.2V19M8.6 21h6.8M14.1 9.6l2.9-3.9"/><circle cx="15.4" cy="8.4" r="1.2" fill="currentColor" stroke="none"/></svg>',
-  act: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"><path d="M12 3.5l2.5 5.3 5.8.7-4.3 4 1.1 5.7L12 16.4l-5.1 2.8L8 13.5l-4.3-4 5.8-.7z"/></svg>',
+  food: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 17h16M12 8a8 8 0 0 1 8 8H4a8 8 0 0 1 8-8zM12 8V6.5M10 4.2h4"/></svg>',
+  drink: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M7 3h10v5a5 5 0 0 1-10 0zM12 13v6M8.5 21h7M9.5 6.2h5"/></svg>',
+  act: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h11A2.5 2.5 0 0 1 20 8.5c-1.4 0-2.5 1.1-2.5 2.5s1.1 2.5 2.5 2.5A2.5 2.5 0 0 1 17.5 16h-11A2.5 2.5 0 0 1 4 13.5c1.4 0 2.5-1.1 2.5-2.5S5.4 8.5 4 8.5z"/><path d="M13 6v2M13 11v2M13 16v2" stroke-dasharray="0.5 3"/></svg>',
 };
 function planRow(p, idx, total) {
   const fig = p.img
@@ -853,12 +855,19 @@ const MAP_ROUTES = [
   "M96,240 C88,252 80,262 74,270",
 ];
 const MAP_BOUNDARY = "M180,326 C118,326 58,318 33,292 C8,266 10,214 16,166 C22,114 15,58 45,31 C72,7 122,3 180,3 C238,3 302,8 329,33 C355,55 353,108 349,158 C345,212 355,266 329,292 C303,318 242,326 180,326 Z";
+const ZONE_ORDER = ["hollywood", "sunset", "echo", "animation", "pixar", "commissary", "grand"];
+function zoneNumbers(counts) {
+  const numbers = {};
+  let next = 0;
+  for (const z of ZONE_ORDER) if (counts[z] > 0) numbers[z] = ++next;
+  return numbers;
+}
 function zoneCounts() {
   const counts = {};
   for (const pr of picksList()) { const z = zoneOf(pr.area); counts[z] = (counts[z] || 0) + 1; }
   return counts;
 }
-function buildMapSvg(focusZone, counts, singlePinZone) {
+function buildMapSvg(focusZone, counts, singlePinZone, numbers) {
   const defs = `<defs>
     <linearGradient id="goldgrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F8E3A1"/><stop offset="1" stop-color="#C08A2D"/></linearGradient>
     <linearGradient id="lakegrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1B5A4C"/><stop offset="1" stop-color="#0C352C"/></linearGradient>
@@ -873,13 +882,15 @@ function buildMapSvg(focusZone, counts, singlePinZone) {
     const pinInner = (txt, fs) => `<g class="zbub" transform="translate(${z.pin[0]},${z.pin[1]})"><ellipse cx="0" cy="13" rx="4.5" ry="1.7" fill="rgba(0,0,0,.4)"/><path d="M0,12 C-2,5 -11,2 -11,-7 A11,11 0 1 1 11,-7 C11,2 2,5 0,12 Z" fill="url(#goldgrad)" stroke="#FFF6D8" stroke-width="1.6"/><text x="0" y="-7" dy=".36em" text-anchor="middle" font-size="${fs}" font-weight="700" fill="#12291A" font-family="Jost,sans-serif">${txt}</text></g>`;
     const pin = singlePinZone
       ? (z.id === singlePinZone && z.pin ? pinInner("\u2605", 12) : "")
-      : (n && z.pin ? pinInner(n, 11.5) : "");
+      : (numbers && numbers[z.id] && z.pin ? pinInner(numbers[z.id], 11.5) : "");
     return `<g class="zone${z.context ? " context" : ""}${n || focusZone === z.id ? " haspicks" : ""}${focusZone === z.id ? " focus" : ""}">${z.shape}${z.mark || ""}${label}${pin}</g>`;
   }).join("");
   return `<svg viewBox="0 0 360 330" role="img" aria-label="Stylized map of Hollywood Studios">${defs}<path d="${MAP_BOUNDARY}" fill="#0A2317" stroke="rgba(232,196,118,.3)"/><path d="${MAP_BOUNDARY}" fill="url(#leaf)" opacity=".16"/>${routes}${zonesSvg}<text class="zlabel" x="180" y="322" font-size="8.5" fill="var(--gold)">\u2605 ENTRANCE</text></svg>`;
 }
 function renderMap(focusZone) {
-  $("#mapSvgWrap").innerHTML = buildMapSvg(focusZone, zoneCounts());
+  const counts = zoneCounts();
+  const numbers = zoneNumbers(counts);
+  $("#mapSvgWrap").innerHTML = buildMapSvg(focusZone, counts, null, numbers);
   const groups = new Map();
   const addPick = (zone, venueName, pickName) => {
     if (!groups.has(zone)) groups.set(zone, new Map());
@@ -889,9 +900,9 @@ function renderMap(focusZone) {
   };
   for (const pr of picksList()) addPick(zoneOf(pr.area), pr.sub, pr.name);
   const zoneName = (id) => ({ sunset: "Sunset Boulevard", echo: "Echo Lake", animation: "Animation Courtyard", pixar: "Pixar Plaza", commissary: "Commissary Lane", grand: "Grand Avenue", hollywood: "Hollywood Boulevard" }[id] || id);
-  const order = ["hollywood", "sunset", "echo", "animation", "pixar", "commissary", "grand"];
+  const order = ZONE_ORDER;
   $("#mapList").innerHTML = groups.size
-    ? order.filter((z) => groups.has(z)).map((z) => `<div class="mapgroup${focusZone === z ? " focus" : ""}" data-zone="${z}"><h5>${esc(zoneName(z))}</h5>${[...groups.get(z)].map(([venue, names]) => `<div class="mapvenue"><div class="mvname">${esc(venue)}</div>${names.map((nm) => `<div class="mappick"><b>\u2605</b> ${esc(nm)}</div>`).join("")}</div>`).join("")}</div>`).join("")
+    ? order.filter((z) => groups.has(z)).map((z) => { const stopCount = [...groups.get(z).values()].reduce((total, names) => total + names.length, 0); return `<div class="mapgroup${focusZone === z ? " focus" : ""}" data-zone="${z}"><h5><span class="mapnum">${numbers[z]}</span>${esc(zoneName(z))}<span class="mapcount">${stopCount} stop${stopCount === 1 ? "" : "s"}</span></h5>${[...groups.get(z)].map(([venue, names]) => `<div class="mapvenue"><div class="mvname">${esc(venue)}</div>${names.map((nm) => `<div class="mappick"><b>\u2605</b> ${esc(nm)}</div>`).join("")}</div>`).join("")}</div>`; }).join("")
     : `<div class="mapgroup"><h5>No stops yet</h5><div class="mappick">Star a few bites, sips, and shows and they'll be pinned here.</div></div>`;
 }
 function openMap(zone) {
