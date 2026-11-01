@@ -158,6 +158,7 @@
   .ptime{flex:0 0 auto; margin-left:10px; padding:7px 12px; border-radius:999px; font-size:13px; font-weight:700;
     letter-spacing:.05em; color:#23180A; background:linear-gradient(180deg, var(--gold-hi), var(--gold-deep));
     box-shadow:0 4px 10px rgba(0,0,0,.4); white-space:nowrap}
+  .ptime.def{background:rgba(232,196,118,.12); color:var(--gold-hi); border:1px dashed rgba(232,196,118,.55); box-shadow:none}
   .prow{cursor:pointer}
   /* ============ DETAIL SHEET ============ */
   #detailSheet{position:fixed; inset:0; z-index:92}
@@ -420,7 +421,7 @@
     <div class="summary" id="summaryRow"></div>
 
     <div class="secttl"><h3>Tonight's Itinerary</h3><div class="rule"></div></div>
-    <p class="sectsub">Everything the fam starred, in the order you'll hit it. Stops with a suggested time line up by time; the rest rank by the fam's stars, most-wanted first. Tap any card for the full story, its spot on the map, and a suggested time — it's all shared, so the night stays in sync for everyone.</p>
+    <p class="sectsub">Everything the fam starred, in the order you'll hit it. Starred shows get a penciled-in time that keeps them from overlapping until someone picks one. Stops with a time line up by time; the rest rank by the fam's stars, most-wanted first. Tap any card for the full story, its spot on the map, and a suggested time — it's all shared, so the night stays in sync for everyone.</p>
     <div id="planList"></div>
   </section>
 
@@ -743,6 +744,30 @@ function timeKey(t) {
   if (mins < 12 * 60) mins += 24 * 60; // after-midnight times (12:30 AM) close out the night
   return mins;
 }
+const SHOW_BLOCK_MIN = 45; // a show blocks 45 minutes: the performance plus getting there and settling in
+let planEff = {};          // effective times for the current gameplan render (defaults + saved)
+let planDefaults = {};     // subset of planEff that the app penciled in (not picked by anyone)
+function computeDefaultTimes(picks) {
+  const defaults = {};
+  const occupied = [];
+  const block = (t) => { const s = timeKey(t); occupied.push([s, s + SHOW_BLOCK_MIN]); };
+  for (const p of picks) if (times[p.id]) block(times[p.id]); // saved times are fixed commitments
+  const queue = picks.filter((p) => p.kind === "act" && !times[p.id])
+    .sort((a, b) => b.votes.count - a.votes.count || a.name.localeCompare(b.name));
+  for (const p of queue) {
+    const showtimes = parseShowTimes(p.shows);
+    const candidates = showtimes.length ? showtimes : TIME_SLOTS;
+    for (const c of candidates) {
+      const s = timeKey(c);
+      if (!occupied.some(([a, b]) => s < b && a < s + SHOW_BLOCK_MIN)) { defaults[p.id] = c; block(c); break; }
+    }
+  }
+  return defaults;
+}
+function effTimesMap() {
+  const defaults = computeDefaultTimes(picksList());
+  return { map: { ...defaults, ...times }, defaults };
+}
 function effectiveOrder(picks) {
   const byId = new Map(picks.map((p) => [p.id, p]));
   const ordered = [];
@@ -750,9 +775,11 @@ function effectiveOrder(picks) {
   const rest = [...byId.values()].sort((a, b) => b.votes.count - a.votes.count || a.name.localeCompare(b.name));
   const base = ordered.concat(rest);
   const baseIndex = new Map(base.map((p, i) => [p.id, i]));
-  const timed = base.filter((p) => times[p.id]);
-  const untimed = base.filter((p) => !times[p.id]);
-  timed.sort((a, b) => timeKey(times[a.id]) - timeKey(times[b.id]) || b.votes.count - a.votes.count || baseIndex.get(a.id) - baseIndex.get(b.id));
+  planDefaults = computeDefaultTimes(picks);
+  planEff = { ...planDefaults, ...times };
+  const timed = base.filter((p) => planEff[p.id]);
+  const untimed = base.filter((p) => !planEff[p.id]);
+  timed.sort((a, b) => timeKey(planEff[a.id]) - timeKey(planEff[b.id]) || b.votes.count - a.votes.count || baseIndex.get(a.id) - baseIndex.get(b.id));
   untimed.sort((a, b) => b.votes.count - a.votes.count || baseIndex.get(a.id) - baseIndex.get(b.id));
   return timed.concat(untimed);
 }
@@ -776,7 +803,7 @@ function planRow(p, idx, total) {
   return `<div class="prow" data-detail="${esc(p.id)}">${fig}
     <div class="pmeta"><div class="pname">${esc(p.name)}</div>${showsHtml(p, "pshows")}
     ${p.desc ? `<p class="pblurb">${esc(p.desc)}</p>` : ""}
-    <div class="ploc"><span class="picon ${p.kind === "drink" ? "drink" : p.kind === "act" ? "act" : "food"}" role="img" aria-label="${p.kind === "drink" ? "Drink" : p.kind === "act" ? "Activity" : "Food"}">${KIND_ICON[p.kind] || KIND_ICON.food}</span><span class="pwhere"><span class="pvenue">${esc(p.sub)}</span><span class="pstars">\u2605 ${esc(names)}</span></span>${times[p.id] ? `<span class="ptime">${esc(fmtTime(times[p.id]))}</span>` : ""}</div></div>${ctl}</div>`;
+    <div class="ploc"><span class="picon ${p.kind === "drink" ? "drink" : p.kind === "act" ? "act" : "food"}" role="img" aria-label="${p.kind === "drink" ? "Drink" : p.kind === "act" ? "Activity" : "Food"}">${KIND_ICON[p.kind] || KIND_ICON.food}</span><span class="pwhere"><span class="pvenue">${esc(p.sub)}</span><span class="pstars">\u2605 ${esc(names)}</span></span>${planEff[p.id] ? `<span class="ptime${planDefaults[p.id] ? " def" : ""}">${esc(fmtTime(planEff[p.id]))}</span>` : ""}</div></div>${ctl}</div>`;
 }
 function renderGameplan() {
   const picks = picksList();
@@ -972,14 +999,25 @@ function renderDetail() {
     ? `<div class="dphoto"><img src="${esc(meta.img)}" alt="${esc(meta.name)}">${raw.isNew ? '<span class="ribbon" style="position:absolute; top:14px; left:14px; z-index:2">\u2605 New</span>' : ""}</div>`
     : `<div class="dphoto"><div class="motif">${motifSvg(meta.motif)}</div></div>`;
   const whereLine = meta.kind === "act" ? esc(full.venue) : esc(full.venue) + (full.area ? " \u00b7 " + esc(full.area) : "");
-  const t = times[detailId];
+  const savedT = times[detailId];
+  const effAll = effTimesMap();
+  const t = effAll.map[detailId];
+  const isDefault = !!effAll.defaults[detailId];
   const showSlots = meta.kind === "act" ? parseShowTimes(meta.shows) : [];
   const slots = showSlots.length ? showSlots : TIME_SLOTS;
-  let note = t
-    ? `The fam's aiming for <b>${esc(fmtTime(t))}</b>${timeMeta[detailId] && timeMeta[detailId].by ? ` \u2014 suggested by <b>${esc(timeMeta[detailId].by)}</b>` : ""}. It shows on the card for everyone.`
-    : "No suggested time yet \u2014 pick one and it'll appear on the card for the whole fam.";
-  if (showSlots.length && !t) note = "This show has set showtimes \u2014 pick the performance you're aiming for and it'll appear on the card for the whole fam.";
-  if (showSlots.length && t && !showSlots.includes(t)) note += " That isn't one of its posted showtimes \u2014 pick a performance below to line it up, or clear it.";
+  let note;
+  if (savedT) {
+    note = `The fam's aiming for <b>${esc(fmtTime(savedT))}</b>${timeMeta[detailId] && timeMeta[detailId].by ? ` \u2014 suggested by <b>${esc(timeMeta[detailId].by)}</b>` : ""}. It shows on the card for everyone.`;
+    if (showSlots.length && !showSlots.includes(savedT)) note += " That isn't one of its posted showtimes \u2014 pick a performance below to line it up, or clear it.";
+  } else if (isDefault) {
+    note = showSlots.length
+      ? `Nobody's picked a time yet, so the app penciled in the <b>${esc(fmtTime(t))}</b> performance \u2014 it keeps your shows from overlapping, so you can make them all. Tap another performance to make it your own pick.`
+      : `Nobody's picked a time yet, so the app penciled in <b>${esc(fmtTime(t))}</b> so it doesn't clash with your other stops. Tap a time to make it your own pick.`;
+  } else if (showSlots.length) {
+    note = "This show has set showtimes \u2014 pick the performance you're aiming for and it'll appear on the card for the whole fam.";
+  } else {
+    note = "No suggested time yet \u2014 pick one and it'll appear on the card for the whole fam.";
+  }
   $("#detailBody").innerHTML = `${photo}
   <div class="dbody">
     <div class="dkind"><span class="picon ${meta.kind === "drink" ? "drink" : meta.kind === "act" ? "act" : "food"}">${KIND_ICON[meta.kind] || KIND_ICON.food}</span>${meta.kind === "drink" ? "Drink" : meta.kind === "act" ? "Activity" : "Food"} \u00b7 ${whereLine}</div>
@@ -995,8 +1033,8 @@ function renderDetail() {
       <p class="dnote">${note}</p>
       <div class="tchips">${slots.map((slot) => `<button class="tchip${t === slot ? " on" : ""}" data-timepick="${slot}" type="button">${esc(fmtTime(slot))}</button>`).join("")}</div>
       ${showSlots.length
-        ? (t ? '<div class="trow"><button class="tbtn2 plain" data-timeclear type="button">Clear</button></div>' : "")
-        : `<div class="trow"><input type="time" id="dTimeInput" step="300" value="${esc(t || "19:30")}"><button class="tbtn2" data-timeset type="button">Set time</button>${t ? '<button class="tbtn2 plain" data-timeclear type="button">Clear</button>' : ""}</div>`}
+        ? (savedT ? '<div class="trow"><button class="tbtn2 plain" data-timeclear type="button">Clear</button></div>' : "")
+        : `<div class="trow"><input type="time" id="dTimeInput" step="300" value="${esc(t || "19:30")}"><button class="tbtn2" data-timeset type="button">Set time</button>${savedT ? '<button class="tbtn2 plain" data-timeclear type="button">Clear</button>' : ""}</div>`}
     </div>
   </div>`;
   if (sheet) sheet.scrollTop = sc;
