@@ -8,7 +8,7 @@
 <link rel="icon" href="/assets/icons/cycles.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600&family=Cinzel:wght@700&family=Lora:wght@600&family=IM+Fell+English+SC&family=IM+Fell+English:ital@0;1&family=Special+Elite&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600&family=Cinzel:wght@700&family=Lora:wght@600&family=Mountains+of+Christmas:wght@700&family=IM+Fell+English+SC&family=IM+Fell+English:ital@0;1&family=Special+Elite&display=swap" rel="stylesheet">
 <style>
   :root{ color-scheme:dark; --ink:#F1E5C6; --ink2:rgba(241,229,198,.72); --line:rgba(217,161,59,.38); --card:#173322;
          --accent:#F0C569; --accent2:#D9A13B; --danger:#F0A58E; --radius:22px; --fieldbg:#0C2113;
@@ -116,6 +116,7 @@
           <label class="scoperow"><input type="checkbox" class="inv-app" value="max-pocket-agenda"> MAX Pocket Agenda</label>
           <label class="scoperow"><input type="checkbox" class="inv-app" value="lodge-boys-2026"> Lodge Boys 2026</label>
           <label class="scoperow"><input type="checkbox" class="inv-app" value="wish-day-guide"> Wish Day Guide</label>
+          <label class="scoperow"><input type="checkbox" class="inv-app" value="hatchs-countdown"> Hatch's Countdown</label>
           <p class="scopehint">Tick one or more apps to limit this invite to just those. Leave everything unticked for a full account that opens everything.</p>
         </div>
       </details>
@@ -250,6 +251,9 @@ const APP_THEMES = {
   "lodge-boys-2026": { name: "Lodge Boys 2026", icon: "/lodge-boys-2026/icons/icon.svg",
     bg: "radial-gradient(900px 480px at 85% -10%, rgba(238,194,106,.16), transparent 60%), linear-gradient(170deg,#0C2316,#081A10)",
     vars: { "--ink":"#F4EEDD", "--ink2":"#C6BDA1", "--card":"rgba(18,52,32,.85)", "--line":"rgba(244,238,221,.18)", "--accent":"#EEC26A", "--accent2":"#D9A94A", "--fieldbg":"#0E2C1D", "--btnink":"#241A05" }, scheme: "dark", font: '"Lora",serif' },
+  "hatchs-countdown": { name: "Hatch's Countdown", icon: "/hatchs-countdown/icons/icon.svg",
+    bg: "radial-gradient(900px 480px at 85% -10%, rgba(193,39,45,.13), transparent 60%), radial-gradient(700px 420px at 0% 110%, rgba(46,125,79,.12), transparent 60%), linear-gradient(180deg,#FFFBF4,#FDEFE9)",
+    vars: { "--ink":"#571C1C", "--ink2":"#97705F", "--card":"rgba(255,255,255,.88)", "--line":"rgba(150,50,40,.18)", "--accent":"#C1272D", "--accent2":"#2E7D4F", "--fieldbg":"#FFFFFF", "--btnink":"#FFFFFF" }, scheme: "light", font: '"Mountains of Christmas",serif' },
   "wish-day-guide": { name: "Wish Day Guide", icon: "/wish-day-guide/icons/icon.svg",
     bg: "radial-gradient(900px 480px at 85% -10%, rgba(201,161,74,.25), transparent 60%), linear-gradient(180deg,#F5F9FC,#EAF1F7)",
     vars: { "--ink":"#0E2A52", "--ink2":"#51708F", "--card":"rgba(255,255,255,.82)", "--line":"rgba(14,54,92,.16)", "--accent":"#C9A14A", "--accent2":"#0E2A52", "--fieldbg":"#FFFFFF", "--btnink":"#FFFFFF" }, scheme: "light", font: '"Fraunces",serif' },

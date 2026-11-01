@@ -466,6 +466,25 @@
       fig: "the star of\nthe holiday season"
     },
     {
+      path: "hatchs-countdown/",
+      title: "Hatch's Countdown",
+      description: "A Christmas countdown with Hatch the Elf — a new gift to unwrap every day, with a drawing adventure for the whole family.",
+      icon: "hatchs-countdown/icons/icon.svg",
+      monogram: "H",
+      tab: "family",
+      section: "The Christmas Countdown",
+      territory: "The mantel shelf, North Pole route",
+      teaser: "Hatch the Elf is back — and he brought a present for every day until Christmas.",
+      story: "From his post on the mantel shelf, Hatch keeps the official count to Christmas morning — days, hours, minutes and seconds — and hides a fresh gift in the app every single day. Unwrap it to find Hatch up to something festive, plus a drawing adventure for a dad and his favorite three-year-old artist: dinosaurs, rockets, dolphins and one very fast gingerbread man.",
+      marginalia: "he sees you when you're drawing",
+      marginaliaClass: "",
+      stamp: "Countdown to Dec 25",
+      stampClass: "rust",
+      waters: "Hot cocoa, extra marshmallows",
+      bearings: "Dec 25, 2026 · The North Pole",
+      fig: "the elf on\nthe shelf, reporting"
+    },
+    {
       path: "cycles/",
       title: "Cycles",
       description: "Recurring chores and to-dos — each on its own cadence, resetting when done.",
@@ -553,7 +572,7 @@
   try { const t = sessionStorage.getItem("skipperslog.tab"); if (TABS.includes(t)) activeTab = t; } catch (e) {}
   const openByTab = { family: null, personal: null }; // path of the expanded entry per tab
   let crewAdmin = false; // Invite Crew is the skipper's alone: set from /api/auth/me
-  const INVITABLE_SLUGS = ["jollywood-fam-2026", "poppy-picks", "cycles", "max-pocket-agenda", "lodge-boys-2026", "wish-day-guide"];
+  const INVITABLE_SLUGS = ["jollywood-fam-2026", "poppy-picks", "cycles", "max-pocket-agenda", "lodge-boys-2026", "wish-day-guide", "hatchs-countdown"];
 
   function applyOrder(order) {
     if (!Array.isArray(order)) return;
