@@ -934,6 +934,21 @@ document.addEventListener("click", (e) => {
 
 /* ---------- item detail sheet ---------- */
 const TIME_SLOTS = ["19:30", "20:00", "20:30", "21:00", "21:30", "22:00", "22:30", "23:00", "23:30", "00:00", "00:30"];
+function parseShowTimes(shows) {
+  if (!shows || shows === "TBA") return [];
+  const out = [];
+  for (const part of String(shows).split("\u00b7")) {
+    const m = part.trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i);
+    if (!m) continue;
+    let h = Number(m[1]);
+    const min = Number(m[2]);
+    let ap = m[3] ? m[3].toUpperCase() : null;
+    if (!ap) ap = h === 12 || h < 6 ? "AM" : "PM"; // party-night inference: 6\u201311 = PM; 12 and the small hours = AM
+    h = ap === "PM" ? h % 12 + 12 : h % 12;
+    out.push(`${String(h).padStart(2, "0")}:${String(min).padStart(2, "0")}`);
+  }
+  return out;
+}
 function openDetail(id) {
   detailId = id;
   renderDetail();
@@ -958,9 +973,13 @@ function renderDetail() {
     : `<div class="dphoto"><div class="motif">${motifSvg(meta.motif)}</div></div>`;
   const whereLine = meta.kind === "act" ? esc(full.venue) : esc(full.venue) + (full.area ? " \u00b7 " + esc(full.area) : "");
   const t = times[detailId];
-  const note = t
+  const showSlots = meta.kind === "act" ? parseShowTimes(meta.shows) : [];
+  const slots = showSlots.length ? showSlots : TIME_SLOTS;
+  let note = t
     ? `The fam's aiming for <b>${esc(fmtTime(t))}</b>${timeMeta[detailId] && timeMeta[detailId].by ? ` \u2014 suggested by <b>${esc(timeMeta[detailId].by)}</b>` : ""}. It shows on the card for everyone.`
     : "No suggested time yet \u2014 pick one and it'll appear on the card for the whole fam.";
+  if (showSlots.length && !t) note = "This show has set showtimes \u2014 pick the performance you're aiming for and it'll appear on the card for the whole fam.";
+  if (showSlots.length && t && !showSlots.includes(t)) note += " That isn't one of its posted showtimes \u2014 pick a performance below to line it up, or clear it.";
   $("#detailBody").innerHTML = `${photo}
   <div class="dbody">
     <div class="dkind"><span class="picon ${meta.kind === "drink" ? "drink" : meta.kind === "act" ? "act" : "food"}">${KIND_ICON[meta.kind] || KIND_ICON.food}</span>${meta.kind === "drink" ? "Drink" : meta.kind === "act" ? "Activity" : "Food"} \u00b7 ${whereLine}</div>
@@ -974,8 +993,10 @@ function renderDetail() {
     </div>
     <div class="dsect"><h5>Suggested time</h5>
       <p class="dnote">${note}</p>
-      <div class="tchips">${TIME_SLOTS.map((slot) => `<button class="tchip${t === slot ? " on" : ""}" data-timepick="${slot}" type="button">${esc(fmtTime(slot))}</button>`).join("")}</div>
-      <div class="trow"><input type="time" id="dTimeInput" step="300" value="${esc(t || "19:30")}"><button class="tbtn2" data-timeset type="button">Set time</button>${t ? '<button class="tbtn2 plain" data-timeclear type="button">Clear</button>' : ""}</div>
+      <div class="tchips">${slots.map((slot) => `<button class="tchip${t === slot ? " on" : ""}" data-timepick="${slot}" type="button">${esc(fmtTime(slot))}</button>`).join("")}</div>
+      ${showSlots.length
+        ? (t ? '<div class="trow"><button class="tbtn2 plain" data-timeclear type="button">Clear</button></div>' : "")
+        : `<div class="trow"><input type="time" id="dTimeInput" step="300" value="${esc(t || "19:30")}"><button class="tbtn2" data-timeset type="button">Set time</button>${t ? '<button class="tbtn2 plain" data-timeclear type="button">Clear</button>' : ""}</div>`}
     </div>
   </div>`;
   if (sheet) sheet.scrollTop = sc;
