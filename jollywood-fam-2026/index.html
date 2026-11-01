@@ -773,23 +773,33 @@ function effTimesMap() {
 }
 const NIGHT_START_MIN = 19 * 60 + 30;  // 7:30 PM, in timeKey minutes
 const NIGHT_END_MIN = 24 * 60 + 30;    // 12:30 AM
-const STOP_MIN = 40;                   // one untimed stop fills roughly 40 minutes of a gap
 function interleave(anchors, fillers) {
   if (!anchors.length || !fillers.length) return anchors.concat(fillers);
-  const caps = [];
-  let prevEnd = NIGHT_START_MIN;
+  // Spread the untimed stops across the whole night in proportion to how long
+  // each stretch between timed stops is — long stretches get more, but every
+  // stretch gets its share, so timed stops never stack up on their own.
+  const gaps = [];
+  let prev = NIGHT_START_MIN;
   for (const a of anchors) {
     const start = timeKey(planEff[a.id]);
-    caps.push(Math.max(0, Math.floor((start - prevEnd) / STOP_MIN)));
-    prevEnd = Math.max(prevEnd, start + (a.kind === "act" ? SHOW_BLOCK_MIN : 30));
+    gaps.push(Math.max(0, start - prev));
+    prev = Math.max(prev, start);
   }
-  caps.push(Math.max(0, Math.floor((NIGHT_END_MIN - prevEnd) / STOP_MIN)));
-  const buckets = caps.map(() => []);
+  gaps.push(Math.max(0, NIGHT_END_MIN - prev));
+  const total = gaps.reduce((x, y) => x + y, 0);
+  const counts = gaps.map(() => 0);
+  if (total > 0) {
+    const exact = gaps.map((g) => (g / total) * fillers.length);
+    exact.forEach((x, i) => { counts[i] = Math.floor(x); });
+    let left = fillers.length - counts.reduce((x, y) => x + y, 0);
+    const byRemainder = exact.map((x, i) => [x - Math.floor(x), i]).sort((a, b) => b[0] - a[0] || a[1] - b[1]);
+    for (let k = 0; k < byRemainder.length && left > 0; k++, left--) counts[byRemainder[k][1]]++;
+  } else {
+    counts[counts.length - 1] = fillers.length;
+  }
+  const buckets = gaps.map(() => []);
   let fi = 0;
-  for (let g = 0; g < buckets.length && fi < fillers.length; g++) {
-    while (buckets[g].length < caps[g] && fi < fillers.length) buckets[g].push(fillers[fi++]);
-  }
-  while (fi < fillers.length) buckets[buckets.length - 1].push(fillers[fi++]); // overflow trails at the end of the night
+  counts.forEach((c, g) => { while (buckets[g].length < c && fi < fillers.length) buckets[g].push(fillers[fi++]); });
   const out = [];
   for (let g = 0; g < anchors.length; g++) out.push(...buckets[g], anchors[g]);
   out.push(...buckets[buckets.length - 1]);
