@@ -139,8 +139,11 @@
   .pfig.motif svg{width:46px; height:46px}
   .pfig::after{content:""; position:absolute; left:0; right:0; bottom:0; height:58%; pointer-events:none;
     background:linear-gradient(180deg, rgba(7,26,17,0), rgba(7,26,17,.55) 58%, rgba(5,20,12,.92))}
-  .pfig .pnum{position:absolute; left:13px; bottom:10px; z-index:2; font-family:"Cinzel",serif; font-weight:700;
+  .pfigmeta{position:absolute; left:12px; bottom:10px; z-index:2; display:flex; align-items:center; gap:8px; flex-wrap:wrap; max-width:calc(100% - 20px)}
+  .pfig .pnum{font-family:"Cinzel",serif; font-weight:700;
     font-size:27px; line-height:1; color:var(--gold-hi); text-shadow:0 2px 10px rgba(0,0,0,.75)}
+  .pfig .ptime{margin-left:0; padding:6px 10px; font-size:12.5px}
+  .pfig .ptime.def{background:rgba(8,26,18,.55)}
   .picon{display:inline-flex; align-items:center; justify-content:center; width:27px; height:27px; border-radius:50%;
     margin-right:9px; vertical-align:-8px; border:1px solid rgba(232,196,118,.55); color:var(--gold-hi); background:rgba(232,196,118,.12)}
   .picon svg{width:15px; height:15px}
@@ -421,7 +424,7 @@
     <div class="summary" id="summaryRow"></div>
 
     <div class="secttl"><h3>Tonight's Itinerary</h3><div class="rule"></div></div>
-    <p class="sectsub">Everything the fam starred, in the order you'll hit it. Starred shows get a penciled-in time that keeps them from overlapping until someone picks one. Stops with a time line up by time; the rest rank by the fam's stars, most-wanted first. Tap any card for the full story, its spot on the map, and a suggested time — it's all shared, so the night stays in sync for everyone.</p>
+    <p class="sectsub">Everything the fam starred, in the order you'll hit it. Starred shows get a penciled-in time that keeps them from overlapping until someone picks one. Stops with a time line up by time; the rest slot in between by the fam's stars, most-wanted first, so the night flows like one itinerary. Tap any card for the full story, its spot on the map, and a suggested time — it's all shared, so the night stays in sync for everyone.</p>
     <div id="planList"></div>
   </section>
 
@@ -768,6 +771,30 @@ function effTimesMap() {
   const defaults = computeDefaultTimes(picksList());
   return { map: { ...defaults, ...times }, defaults };
 }
+const NIGHT_START_MIN = 19 * 60 + 30;  // 7:30 PM, in timeKey minutes
+const NIGHT_END_MIN = 24 * 60 + 30;    // 12:30 AM
+const STOP_MIN = 40;                   // one untimed stop fills roughly 40 minutes of a gap
+function interleave(anchors, fillers) {
+  if (!anchors.length || !fillers.length) return anchors.concat(fillers);
+  const caps = [];
+  let prevEnd = NIGHT_START_MIN;
+  for (const a of anchors) {
+    const start = timeKey(planEff[a.id]);
+    caps.push(Math.max(0, Math.floor((start - prevEnd) / STOP_MIN)));
+    prevEnd = Math.max(prevEnd, start + (a.kind === "act" ? SHOW_BLOCK_MIN : 30));
+  }
+  caps.push(Math.max(0, Math.floor((NIGHT_END_MIN - prevEnd) / STOP_MIN)));
+  const buckets = caps.map(() => []);
+  let fi = 0;
+  for (let g = 0; g < buckets.length && fi < fillers.length; g++) {
+    while (buckets[g].length < caps[g] && fi < fillers.length) buckets[g].push(fillers[fi++]);
+  }
+  while (fi < fillers.length) buckets[buckets.length - 1].push(fillers[fi++]); // overflow trails at the end of the night
+  const out = [];
+  for (let g = 0; g < anchors.length; g++) out.push(...buckets[g], anchors[g]);
+  out.push(...buckets[buckets.length - 1]);
+  return out;
+}
 function effectiveOrder(picks) {
   const byId = new Map(picks.map((p) => [p.id, p]));
   const ordered = [];
@@ -781,7 +808,7 @@ function effectiveOrder(picks) {
   const untimed = base.filter((p) => !planEff[p.id]);
   timed.sort((a, b) => timeKey(planEff[a.id]) - timeKey(planEff[b.id]) || b.votes.count - a.votes.count || baseIndex.get(a.id) - baseIndex.get(b.id));
   untimed.sort((a, b) => b.votes.count - a.votes.count || baseIndex.get(a.id) - baseIndex.get(b.id));
-  return timed.concat(untimed);
+  return interleave(timed, untimed);
 }
 const CHEV_UP = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 14.5 12 7.5l7 7"/></svg>';
 const CHEV_DN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9.5 12 16.5l7-7"/></svg>';
@@ -791,9 +818,10 @@ const KIND_ICON = {
   act: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h11A2.5 2.5 0 0 1 20 8.5c-1.4 0-2.5 1.1-2.5 2.5s1.1 2.5 2.5 2.5A2.5 2.5 0 0 1 17.5 16h-11A2.5 2.5 0 0 1 4 13.5c1.4 0 2.5-1.1 2.5-2.5S5.4 8.5 4 8.5z"/><path d="M13 6v2M13 11v2M13 16v2" stroke-dasharray="0.5 3"/></svg>',
 };
 function planRow(p, idx, total) {
+  const chip = planEff[p.id] ? `<span class="ptime${planDefaults[p.id] ? " def" : ""}">${esc(fmtTime(planEff[p.id]))}</span>` : "";
   const fig = p.img
-    ? `<div class="pfig"><img src="${esc(p.img)}" alt="" loading="lazy" decoding="async"><span class="pnum">${idx + 1}</span></div>`
-    : `<div class="pfig motif">${motifSvg(p.motif)}<span class="pnum">${idx + 1}</span></div>`;
+    ? `<div class="pfig"><img src="${esc(p.img)}" alt="" loading="lazy" decoding="async"><div class="pfigmeta"><span class="pnum">${idx + 1}</span>${chip}</div></div>`
+    : `<div class="pfig motif">${motifSvg(p.motif)}<div class="pfigmeta"><span class="pnum">${idx + 1}</span>${chip}</div></div>`;
   const names = p.votes.list.map((v) => v.by).join(" \u00b7 ");
   const ctl = reorderMode ? `
     <div class="ordctl">
@@ -803,7 +831,7 @@ function planRow(p, idx, total) {
   return `<div class="prow" data-detail="${esc(p.id)}">${fig}
     <div class="pmeta"><div class="pname">${esc(p.name)}</div>${showsHtml(p, "pshows")}
     ${p.desc ? `<p class="pblurb">${esc(p.desc)}</p>` : ""}
-    <div class="ploc"><span class="picon ${p.kind === "drink" ? "drink" : p.kind === "act" ? "act" : "food"}" role="img" aria-label="${p.kind === "drink" ? "Drink" : p.kind === "act" ? "Activity" : "Food"}">${KIND_ICON[p.kind] || KIND_ICON.food}</span><span class="pwhere"><span class="pvenue">${esc(p.sub)}</span><span class="pstars">\u2605 ${esc(names)}</span></span>${planEff[p.id] ? `<span class="ptime${planDefaults[p.id] ? " def" : ""}">${esc(fmtTime(planEff[p.id]))}</span>` : ""}</div></div>${ctl}</div>`;
+    <div class="ploc"><span class="picon ${p.kind === "drink" ? "drink" : p.kind === "act" ? "act" : "food"}" role="img" aria-label="${p.kind === "drink" ? "Drink" : p.kind === "act" ? "Activity" : "Food"}">${KIND_ICON[p.kind] || KIND_ICON.food}</span><span class="pwhere"><span class="pvenue">${esc(p.sub)}</span><span class="pstars">\u2605 ${esc(names)}</span></span></div></div>${ctl}</div>`;
 }
 function renderGameplan() {
   const picks = picksList();
