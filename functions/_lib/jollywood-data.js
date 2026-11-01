@@ -1026,7 +1026,7 @@ export const GUIDE = {
    "where": "Theater of the Stars · Sunset Boulevard",
    "shows": "7:00 · 8:15 · 9:15 · 11:00 PM · 12:00 AM",
    "desc": "A star-studded Christmas variety show hosted by Kermit the Frog and Miss Piggy — singing, dancing, and very special guests from classic Disney favorites.",
-   "img": "photos/event-keyart.jpg",
+   "img": "photos/act-holidays-in-hollywood.jpg",
    "motif": "stage"
   },
   {
@@ -1035,7 +1035,7 @@ export const GUIDE = {
    "where": "Hyperion Theater · Echo Lake",
    "shows": "6:30 · 7:30 · 8:30 · 9:30 · 11:30 PM",
    "desc": "Jack Skellington hosts a musical retelling of The Nightmare Before Christmas, and the whole theater sings along — 'What's This?', 'This Is Halloween', and all the rest. The 6:30 show starts before the party officially opens, during early entry.",
-   "img": null,
+   "img": "photos/act-nightmare-singalong.jpg",
    "motif": "stage"
   },
   {
@@ -1044,7 +1044,7 @@ export const GUIDE = {
    "where": "Hollywood Boulevard",
    "shows": "TBA",
    "desc": "Champion ice skaters carve up Hollywood Boulevard in a glittering holiday skating spectacular, with guest appearances from classic Disney friends.",
-   "img": null,
+   "img": "photos/act-glisten.jpg",
    "motif": "skate"
   },
   {
@@ -1052,7 +1052,7 @@ export const GUIDE = {
    "name": "Twilight Soirée at the Tip Top Club",
    "where": "The Hollywood Tower Hotel · Sunset Boulevard",
    "desc": "Cocktails, live music and dancing in the Tip Top Club, high in the Hollywood Tower Hotel — the swankiest room of the night. Its drinks are over in the Food tab.",
-   "img": "photos/royale-top-floor-daquiri.jpg",
+   "img": "photos/act-tip-top-soiree.jpg",
    "motif": "soiree"
   },
   {
@@ -1060,7 +1060,7 @@ export const GUIDE = {
    "name": "Jazzy Holidays at The Hollywood Brown Derby",
    "where": "Hollywood Boulevard",
    "desc": "Live jazz with dinner and drinks inside the golden-age Brown Derby. Reservations recommended — its full holiday menu is in the Food tab.",
-   "img": "photos/brown-derby-beverages.jpg",
+   "img": "photos/act-jazzy-holidays.jpg",
    "motif": "jazz"
   },
   {
@@ -1069,7 +1069,7 @@ export const GUIDE = {
    "where": "Hollywood Boulevard",
    "shows": "10:00 PM",
    "desc": "The grand finale: fireworks, lasers, lights and projections set to holiday moments from classic Disney movies. The whole boulevard looks up.",
-   "img": null,
+   "img": "photos/act-jingle-bam.jpg",
    "motif": "finale"
   }
  ]
