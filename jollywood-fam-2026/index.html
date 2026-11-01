@@ -420,7 +420,7 @@
     <div class="summary" id="summaryRow"></div>
 
     <div class="secttl"><h3>Tonight's Itinerary</h3><div class="rule"></div></div>
-    <p class="sectsub">Everything the fam starred, in the order you'll hit it. Tap any card for the full story, its spot on the map, and a suggested time. Tap Reorder to arrange the running order — it's shared, so the night stays in sync for everyone.</p>
+    <p class="sectsub">Everything the fam starred, in the order you'll hit it. Stops with a suggested time line up by time; the rest follow in the order you arrange with Reorder. Tap any card for the full story, its spot on the map, and a suggested time — it's all shared, so the night stays in sync for everyone.</p>
     <div id="planList"></div>
   </section>
 
@@ -736,12 +736,25 @@ function picksList() {
   }
   return picks;
 }
+function timeKey(t) {
+  if (!t) return null;
+  const [h, m] = t.split(":").map(Number);
+  let mins = h * 60 + (m || 0);
+  if (mins < 12 * 60) mins += 24 * 60; // after-midnight times (12:30 AM) close out the night
+  return mins;
+}
 function effectiveOrder(picks) {
   const byId = new Map(picks.map((p) => [p.id, p]));
   const ordered = [];
   for (const id of orderIds) if (byId.has(id)) { ordered.push(byId.get(id)); byId.delete(id); }
   const rest = [...byId.values()].sort((a, b) => b.votes.count - a.votes.count || a.name.localeCompare(b.name));
-  return ordered.concat(rest);
+  const base = ordered.concat(rest);
+  const timed = base.filter((p) => times[p.id]);
+  if (!timed.length) return base;
+  const baseIndex = new Map(base.map((p, i) => [p.id, i]));
+  timed.sort((a, b) => timeKey(times[a.id]) - timeKey(times[b.id]) || baseIndex.get(a.id) - baseIndex.get(b.id));
+  const untimed = base.filter((p) => !times[p.id]);
+  return timed.concat(untimed);
 }
 const CHEV_UP = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 14.5 12 7.5l7 7"/></svg>';
 const CHEV_DN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9.5 12 16.5l7-7"/></svg>';
