@@ -447,6 +447,25 @@
       fig: "insignia of\nthe northern party"
     },
     {
+      path: "yellowstone-2027/",
+      title: "Yellowstone 2027",
+      description: "Our Yellowstone trip \u2014 the 7 Bears Lodge itinerary out of Island Park, May 27\u201331, 2027.",
+      icon: "yellowstone-2027/icons/icon.svg",
+      monogram: "Y",
+      tab: "family",
+      section: "The Western Voyage",
+      territory: "the Yellowstone country, by way of Island Park",
+      teaser: "Five late-May days at a lodge in the pines \u2014 geysers, falls and dawn wildlife patrols.",
+      story: "A spring voyage west to a lodge in the pines at Island Park \u2014 five days of geyser basins, canyon falls, and dawn patrols for wolves and red-dog calves, with a full house of eight provisioned by Airbnb. The itinerary, bookings and bearings are recorded herein; the day plans are still taking shape on the trail.",
+      marginalia: "mind the bison \u2014 May 27\u201331",
+      marginaliaClass: "rust",
+      stamp: "Voyage Booked",
+      stampClass: "rust",
+      waters: "The Henry\u2019s Fork of the Snake River",
+      bearings: "44.42\u00B0 N, 111.37\u00B0 W",
+      fig: "the arrowhead\nthat marks the territory"
+    },
+    {
       path: "jollywood-fam-2026/",
       title: "Jollywood Fam 2026",
       description: "Our Jollywood Nights gameplan — the foodie-guide ballot, our picks as a timed itinerary, and a countdown to premiere night, Saturday Nov 28.",
@@ -591,7 +610,7 @@
   try { const t = sessionStorage.getItem("skipperslog.tab"); if (TABS.includes(t)) activeTab = t; } catch (e) {}
   const openByTab = { family: null, personal: null }; // path of the expanded entry per tab
   let crewAdmin = false; // Invite Crew is the skipper's alone: set from /api/auth/me
-  const INVITABLE_SLUGS = ["jollywood-fam-2026", "poppy-picks", "cycles", "max-pocket-agenda", "lodge-boys-2026", "wish-day-guide", "hatchs-countdown", "nov-visit"];
+  const INVITABLE_SLUGS = ["jollywood-fam-2026", "poppy-picks", "cycles", "max-pocket-agenda", "lodge-boys-2026", "wish-day-guide", "hatchs-countdown", "nov-visit", "yellowstone-2027"];
 
   function applyOrder(order) {
     if (!Array.isArray(order)) return;

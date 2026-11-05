@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <path id="ah" d="M256 18 C318 56 398 74 450 76 C450 238 424 384 256 494 C88 384 62 238 62 76 C114 74 194 56 256 18 Z"/>
+    <clipPath id="clip"><use href="#ah" transform="translate(256 256) scale(.88) translate(-256 -256)"/></clipPath>
+  </defs>
+  <use href="#ah" fill="#23402c"/>
+  <g clip-path="url(#clip)">
+    <rect x="40" y="40" width="432" height="262" fill="#efc65c"/>
+    <circle cx="362" cy="126" r="33" fill="#f7e7b0"/>
+    <polygon points="30,262 128,164 206,226 298,146 394,218 482,172 482,318 30,318" fill="#7c6aae"/>
+    <polygon points="280,168 298,146 318,170 304,160 294,174" fill="#f4ecd8"/>
+    <polygon points="30,306 482,292 482,352 30,352" fill="#4e6b4a"/>
+    <g fill="#1e3325">
+      <path d="M118 318 l11 -24 h-5 l8 -14 h-4 l7 -13 7 13 h-4 l8 14 h-5 l11 24 z"/>
+      <path d="M382 312 l10 -22 h-5 l7 -13 h-4 l6 -12 6 12 h-4 l7 13 h-5 l10 22 z"/>
+    </g>
+    <g transform="translate(336,344) scale(.58)">
+      <path d="M-8 0 C-15 -22 -17 -40 -10 -58 C-19 -76 -15 -96 -2 -106 C-4 -124 7 -138 19 -134 C29 -144 45 -136 45 -121 C57 -117 61 -101 53 -91 C63 -79 59 -59 49 -51 C55 -33 47 -12 34 0 Z" fill="#fbfdfc"/>
+      <path d="M-27 0 L-12 -17 H17 L29 0 Z" fill="#b9a888"/>
+    </g>
+    <rect x="30" y="344" width="452" height="134" fill="#a9bc8e"/>
+    <g transform="translate(158,352) scale(.92)" fill="#3a2a1c">
+      <path d="M14 44 C8 44 4 38 5 30 L7 20 C9 12 16 6 27 5 C38 4 44 7 54 8 L78 10 C92 11 102 16 104 26 L105 40 L104 49 H94 L92 40 H40 L38 49 H27 L25 39 C21 42 18 44 14 44 Z"/>
+      <path d="M11 19 C9 14 11 10 16 9 L17.5 13.5 C14.5 14.5 13.5 16.5 13.5 20.5 Z" fill="#e8dcc2"/>
+    </g>
+  </g>
+  <use href="#ah" transform="translate(256 256) scale(.88) translate(-256 -256)" fill="none" stroke="#f4ecd8" stroke-width="7"/>
+</svg>

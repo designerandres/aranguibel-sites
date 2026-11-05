@@ -1,0 +1,27 @@
+{
+ "name": "Yellowstone 2027 \u2014 7 Bears Lodge",
+ "short_name": "Yellowstone",
+ "description": "A private trip guide for the Yellowstone vacation at 7 Bears Lodge, Island Park, Idaho \u2014 May 27\u201331, 2027.",
+ "start_url": "/yellowstone-2027/app",
+ "scope": "/yellowstone-2027/",
+ "display": "standalone",
+ "background_color": "#F7F1DE",
+ "theme_color": "#23402C",
+ "icons": [
+  {
+   "src": "/yellowstone-2027/icons/icon-192.png",
+   "sizes": "192x192",
+   "type": "image/png"
+  },
+  {
+   "src": "/yellowstone-2027/icons/icon-512.png",
+   "sizes": "512x512",
+   "type": "image/png"
+  },
+  {
+   "src": "/yellowstone-2027/icons/icon.svg",
+   "sizes": "any",
+   "type": "image/svg+xml"
+  }
+ ]
+}
