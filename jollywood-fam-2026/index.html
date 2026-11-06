@@ -275,6 +275,24 @@
     color:var(--gold-hi); background:rgba(8,26,18,.45); border:1px solid rgba(232,196,118,.45); -webkit-tap-highlight-color:transparent}
   .reorderbtn svg{width:13px; height:13px}
   .reorderbtn.on{color:#23180A; background:linear-gradient(180deg, var(--gold-hi), var(--gold-deep)); border-color:var(--gold-hi)}
+  .segrow{display:flex; justify-content:center; margin:14px 0 4px}
+  .seg{display:inline-flex; gap:3px; padding:3px; border-radius:999px; background:rgba(8,26,18,.55);
+    border:1px solid rgba(232,196,118,.35); box-shadow:inset 0 1px 4px rgba(0,0,0,.45)}
+  .segbtn{padding:8px 18px; border-radius:999px; cursor:pointer; border:1px solid transparent; background:transparent;
+    font-family:"Jost",sans-serif; font-size:13px; font-weight:600; letter-spacing:.09em; text-transform:uppercase;
+    color:var(--cream-dim); -webkit-tap-highlight-color:transparent; transition:color .15s ease, background .15s ease}
+  .segbtn.on{color:#23180A; background:linear-gradient(180deg, var(--gold-hi), var(--gold-deep)); border-color:var(--gold-hi);
+    box-shadow:0 3px 9px rgba(0,0,0,.4)}
+  .zonehead{display:flex; align-items:center; gap:12px; margin:26px -4px 14px; padding:11px 15px; border-radius:16px;
+    background:linear-gradient(165deg, rgba(23,72,47,.99), rgba(7,26,17,.99)); border:1px solid var(--gold);
+    box-shadow:0 14px 24px -12px rgba(0,0,0,.75), inset 0 1px 0 rgba(246,222,156,.4)}
+  .zonehead .znum{flex:0 0 auto; width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-family:"Cinzel",serif; font-size:16px; font-weight:700; color:#23180A;
+    background:radial-gradient(circle at 32% 28%, var(--gold-hi), var(--gold) 58%, var(--gold-deep));
+    border:1.5px solid rgba(255,249,227,.8); box-shadow:0 4px 10px rgba(0,0,0,.5), 0 0 0 4px rgba(232,196,118,.16)}
+  .zonehead .zn{font-family:"Cinzel",serif; font-weight:700; font-size:16.5px; letter-spacing:.06em; color:var(--gold-hi); line-height:1.2}
+  .zonehead .zcount{margin-left:auto; flex:0 0 auto; font-size:11px; font-weight:700; letter-spacing:.13em; text-transform:uppercase;
+    color:#23180A; background:linear-gradient(180deg, var(--gold-hi), var(--gold-deep)); padding:5px 10px; border-radius:999px}
   .ashows{display:inline-block; margin-top:9px; padding:6px 11px; border-radius:999px; font-size:12.5px; font-weight:600; letter-spacing:.02em;
     color:var(--gold-hi); border:1px solid rgba(232,196,118,.35); background:rgba(8,26,18,.4)}
   .ashows.tba{color:var(--cream-dim); font-weight:500}
@@ -425,11 +443,12 @@
     <p class="sectsub">Every bite from the official Jollywood Nights foodie guide. Star what you want to try — the fam's stars build the gameplan.</p>
     <div class="filters" id="foodFilters">
       <button class="fchip on" data-f="all" type="button">All</button>
+      <button class="fchip" data-f="mine" type="button">My stars</button>
+      <button class="fchip" data-f="allstars" type="button">All stars</button>
       <button class="fchip" data-f="new" type="button">★ New</button>
       <button class="fchip" data-f="kid" type="button">Kids picks</button>
       <button class="fchip" data-f="na" type="button">Non-alcoholic</button>
       <button class="fchip" data-f="pb" type="button">Plant-based</button>
-      <button class="fchip" data-f="mine" type="button">My stars</button>
     </div>
     <div id="foodList"></div>
   </section>
@@ -439,11 +458,12 @@
     <p class="sectsub">Every sip from the official guide — cocktails, cocoa, ciders, and crafted sodas. Star your pours and they'll join the gameplan.</p>
     <div class="filters" id="drinkFilters">
       <button class="fchip on" data-f="all" type="button">All</button>
+      <button class="fchip" data-f="mine" type="button">My stars</button>
+      <button class="fchip" data-f="allstars" type="button">All stars</button>
       <button class="fchip" data-f="new" type="button">★ New</button>
       <button class="fchip" data-f="kid" type="button">Kids picks</button>
       <button class="fchip" data-f="na" type="button">Non-alcoholic</button>
       <button class="fchip" data-f="pb" type="button">Plant-based</button>
-      <button class="fchip" data-f="mine" type="button">My stars</button>
     </div>
     <div id="drinkList"></div>
   </section>
@@ -451,6 +471,11 @@
   <section id="tab-activities" hidden>
     <div class="secttl"><h3>The Marquee</h3><div class="rule"></div></div>
     <p class="sectsub">The night's headline acts. Star the must-dos and they'll join the gameplan alongside the food.</p>
+    <div class="filters" id="actFilters">
+      <button class="fchip on" data-f="all" type="button">All</button>
+      <button class="fchip" data-f="mine" type="button">My stars</button>
+      <button class="fchip" data-f="allstars" type="button">All stars</button>
+    </div>
     <div id="actList"></div>
   </section>
 
@@ -586,6 +611,9 @@ let reorderMode = false;   // gameplan arrows only show in reorder mode
 const INDEX = new Map();   // itemId -> {kind, name, sub, img, motif, shows}
 let foodFilter = "all";
 let drinkFilter = "all";
+let actFilter = "all";
+let planMode = "optimal";   // running order view: optimal | ranked | locations
+try { const pm = localStorage.getItem("jollywood.planmode"); if (pm === "ranked" || pm === "locations") planMode = pm; } catch (e) {}
 
 function toast(msg) {
   const t = $("#toast"); t.textContent = msg; t.classList.add("on");
@@ -669,6 +697,7 @@ function matchFilter(it, f) {
   if (f === "na") return (it.tags || []).includes("Non-alcoholic");
   if (f === "pb") return (it.tags || []).includes("Plant-based");
   if (f === "mine") return voteInfo(it.id).mine;
+  if (f === "allstars") return voteInfo(it.id).count > 0;
   return true;
 }
 function renderMenu(kind) {
@@ -696,8 +725,11 @@ function wireFilters(barSel, set) {
 }
 wireFilters("#foodFilters", (f) => { foodFilter = f; renderFood(); });
 wireFilters("#drinkFilters", (f) => { drinkFilter = f; renderDrinks(); });
+wireFilters("#actFilters", (f) => { actFilter = f; renderActivities(); });
 function renderActivities() {
-  $("#actList").innerHTML = guide.activities.map((a) => {
+  const acts = guide.activities.filter((a) => matchFilter(a, actFilter));
+  if (!acts.length) { $("#actList").innerHTML = `<div class="empty"><span class="big">★</span>Nothing matches that filter yet — star a few things and they'll show up here.</div>`; return; }
+  $("#actList").innerHTML = acts.map((a) => {
     const ph = a.img
       ? `<div class="ph"><img src="${esc(a.img)}" alt="${esc(a.name)}" loading="lazy" decoding="async"></div>`
       : `<div class="ph"><div class="motif">${motifSvg(a.motif)}</div></div>`;
@@ -850,11 +882,40 @@ function renderGameplan() {
     host.innerHTML = `<div class="empty"><span class="big">\u2605</span>No picks yet. Star the bites you want in <b>Food</b>, the sips in <b>Drinks</b>, and the shows you can't miss in <b>Activities</b> \u2014 they'll line up here as tonight's itinerary.</div>`;
     return;
   }
-  const ordered = effectiveOrder(picks);
-  let html = `<div class="secttl"><h3 style="font-size:16px">The Running Order</h3><div class="rule"></div><button class="reorderbtn${reorderMode ? " on" : ""}" data-reorder type="button" aria-pressed="${reorderMode}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v13M7 4L4.4 6.6M7 4l2.6 2.6M17 20V7M17 20l2.6-2.6M17 20l-2.6-2.6"/></svg><span>${reorderMode ? "Done" : "Reorder"}</span></button></div>`;
-  html += ordered.map((p, i) => planRow(p, i, ordered.length)).join("");
+  const optimal = effectiveOrder(picks);
+  const reorderBtn = planMode === "optimal" ? `<button class="reorderbtn${reorderMode ? " on" : ""}" data-reorder type="button" aria-pressed="${reorderMode}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4v13M7 4L4.4 6.6M7 4l2.6 2.6M17 20V7M17 20l2.6-2.6M17 20l-2.6-2.6"/></svg><span>${reorderMode ? "Done" : "Reorder"}</span></button>` : "";
+  let html = `<div class="secttl"><h3 style="font-size:16px">The Running Order</h3><div class="rule"></div>${reorderBtn}</div>`;
+  html += `<div class="segrow"><div class="seg" role="tablist" aria-label="Running order view">
+    <button class="segbtn${planMode === "optimal" ? " on" : ""}" data-planmode="optimal" type="button">Optimal</button>
+    <button class="segbtn${planMode === "ranked" ? " on" : ""}" data-planmode="ranked" type="button">Ranked</button>
+    <button class="segbtn${planMode === "locations" ? " on" : ""}" data-planmode="locations" type="button">Locations</button>
+  </div></div>`;
+  if (planMode === "ranked") {
+    const optIdx = new Map(optimal.map((p, i) => [p.id, i]));
+    const ranked = [...optimal].sort((a, b) => b.votes.count - a.votes.count || optIdx.get(a.id) - optIdx.get(b.id));
+    html += ranked.map((p, i) => planRow(p, i, ranked.length)).join("");
+  } else if (planMode === "locations") {
+    const nums = zoneNumbers(zoneCounts());
+    let n = 0;
+    for (const z of ZONE_ORDER) {
+      const group = optimal.filter((p) => zoneOf(p.area) === z);
+      if (!group.length) continue;
+      html += `<div class="zonehead"><span class="znum">${nums[z] || "★"}</span><span class="zn">${esc(ZONE_NAME[z] || z)}</span><span class="zcount">${group.length} stop${group.length === 1 ? "" : "s"}</span></div>`;
+      html += group.map((p) => planRow(p, n++, picks.length)).join("");
+    }
+  } else {
+    html += optimal.map((p, i) => planRow(p, i, optimal.length)).join("");
+  }
   host.innerHTML = html;
 }
+document.addEventListener("click", (e) => {
+  const seg = e.target.closest("[data-planmode]");
+  if (!seg) return;
+  planMode = seg.dataset.planmode;
+  reorderMode = false;
+  try { localStorage.setItem("jollywood.planmode", planMode); } catch (err) {}
+  renderGameplan();
+});
 document.addEventListener("click", (e) => {
   if (e.target.closest("[data-reorder]")) { reorderMode = !reorderMode; renderGameplan(); }
 });
@@ -901,6 +962,7 @@ const ZONES = [
   { id: "grand", pin: [47, 72], hl: [52, 84, 36, 30] },
 ];
 const ZONE_ORDER = ["hollywood", "sunset", "echo", "animation", "pixar", "commissary", "grand"];
+const ZONE_NAME = { sunset: "Sunset Boulevard", echo: "Echo Lake", animation: "Animation Courtyard", pixar: "Pixar Plaza", commissary: "Commissary Lane", grand: "Grand Avenue", hollywood: "Hollywood Boulevard" };
 function zoneNumbers(counts) {
   const numbers = {};
   let next = 0;
