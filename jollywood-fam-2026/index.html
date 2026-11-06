@@ -294,6 +294,10 @@
   .zonehead .zn{font-family:"Cinzel",serif; font-weight:700; font-size:16.5px; letter-spacing:.06em; color:var(--gold-hi); line-height:1.2}
   .zonehead .zcount{margin-left:auto; flex:0 0 auto; font-size:11px; font-weight:700; letter-spacing:.13em; text-transform:uppercase;
     color:#23180A; background:linear-gradient(180deg, var(--gold-hi), var(--gold-deep)); padding:5px 10px; border-radius:999px}
+  .venuehead, .zonehead, .mapgroup h5{cursor:pointer; -webkit-tap-highlight-color:transparent}
+  .vcount, .zcount, .mapcount{display:inline-flex; align-items:center}
+  .tri{width:9px; height:9px; margin-left:7px; flex:0 0 auto; transition:transform .22s ease}
+  .venue.collapsed .tri, .zonegroup.collapsed .tri, .mapgroup.collapsed .tri{transform:rotate(180deg)}
   .ashows{display:inline-block; margin-top:9px; padding:6px 11px; border-radius:999px; font-size:12.5px; font-weight:600; letter-spacing:.02em;
     color:var(--gold-hi); border:1px solid rgba(232,196,118,.35); background:rgba(8,26,18,.4)}
   .ashows.tba{color:var(--cream-dim); font-weight:500}
@@ -613,6 +617,10 @@ const INDEX = new Map();   // itemId -> {kind, name, sub, img, motif, shows}
 let foodFilter = "all";
 let drinkFilter = "all";
 let actFilter = "all";
+const TRI = '<svg class="tri" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true"><path d="M6 1.6 L11.2 10.4 H0.8 Z"/></svg>';
+const collapsedVenues = new Set();   // Food/Drinks venue sections start expanded
+const expandedZones = new Set();     // Gameplan Locations groups start collapsed
+const collapsedMapZones = new Set(); // Map-sheet groups start expanded
 let planMode = "optimal";   // running order view: optimal | ranked | locations
 try { const pm = localStorage.getItem("jollywood.planmode"); if (pm === "ranked" || pm === "locations") planMode = pm; } catch (e) {}
 
@@ -721,8 +729,9 @@ function renderMenu(kind) {
   }
   let html = "";
   for (const { v, items } of sections) {
-    html += `<section class="venue"><div class="venuehead"><span class="vmedal">★</span><div><div class="vn">${esc(v.name)}</div><div class="va">${esc(v.area)}</div></div><span class="vcount">${items.length} ${isDrink ? "sips" : "bites"}</span></div>`;
-    html += items.map(foodCard).join("");
+    const vCollapsed = collapsedVenues.has(v.name);
+    html += `<section class="venue${vCollapsed ? " collapsed" : ""}"><div class="venuehead" data-venuetoggle="${esc(v.name)}" role="button" aria-expanded="${!vCollapsed}"><span class="vmedal">★</span><div><div class="vn">${esc(v.name)}</div><div class="va">${esc(v.area)}</div></div><span class="vcount">${items.length} ${isDrink ? "sips" : "bites"}${TRI}</span></div>`;
+    html += `<div class="venuebody"${vCollapsed ? " hidden" : ""}>` + items.map(foodCard).join("") + `</div>`;
     html += `</section>`;
   }
   host.innerHTML = html || `<div class="empty"><span class="big">★</span>Nothing matches that filter yet — star a few things and they'll show up here.</div>`;
@@ -914,14 +923,47 @@ function renderGameplan() {
     for (const z of ZONE_ORDER) {
       const group = optimal.filter((p) => zoneOf(p.area) === z);
       if (!group.length) continue;
-      html += `<div class="zonehead"><span class="znum">${nums[z] || "★"}</span><span class="zn">${esc(ZONE_NAME[z] || z)}</span><span class="zcount">${group.length} stop${group.length === 1 ? "" : "s"}</span></div>`;
-      html += group.map((p) => planRow(p, n++, picks.length)).join("");
+      const zOpen = expandedZones.has(z);
+      html += `<div class="zonegroup${zOpen ? "" : " collapsed"}"><div class="zonehead" data-zonetoggle="${z}" role="button" aria-expanded="${zOpen}"><span class="znum">${nums[z] || "★"}</span><span class="zn">${esc(ZONE_NAME[z] || z)}</span><span class="zcount">${group.length} stop${group.length === 1 ? "" : "s"}${TRI}</span></div>`;
+      html += `<div class="zonebody"${zOpen ? "" : " hidden"}>` + group.map((p) => planRow(p, n++, picks.length)).join("") + `</div></div>`;
     }
   } else {
     html += optimal.map((p, i) => planRow(p, i, optimal.length)).join("");
   }
   host.innerHTML = html;
 }
+document.addEventListener("click", (e) => {
+  const vh = e.target.closest("[data-venuetoggle]");
+  if (vh) {
+    const name = vh.dataset.venuetoggle;
+    const nowCollapsed = !collapsedVenues.has(name);
+    if (nowCollapsed) collapsedVenues.add(name); else collapsedVenues.delete(name);
+    const sec = vh.closest(".venue");
+    if (sec) { sec.classList.toggle("collapsed", nowCollapsed); const b = sec.querySelector(".venuebody"); if (b) b.hidden = nowCollapsed; }
+    vh.setAttribute("aria-expanded", String(!nowCollapsed));
+    return;
+  }
+  const zh = e.target.closest("[data-zonetoggle]");
+  if (zh) {
+    const z = zh.dataset.zonetoggle;
+    const nowOpen = !expandedZones.has(z);
+    if (nowOpen) expandedZones.add(z); else expandedZones.delete(z);
+    const grp = zh.closest(".zonegroup");
+    if (grp) { grp.classList.toggle("collapsed", !nowOpen); const b = grp.querySelector(".zonebody"); if (b) b.hidden = !nowOpen; }
+    zh.setAttribute("aria-expanded", String(nowOpen));
+    return;
+  }
+  const mh = e.target.closest("[data-maptoggle]");
+  if (mh) {
+    const z = mh.dataset.maptoggle;
+    const nowCollapsed = !collapsedMapZones.has(z);
+    if (nowCollapsed) collapsedMapZones.add(z); else collapsedMapZones.delete(z);
+    const grp = mh.closest(".mapgroup");
+    if (grp) { grp.classList.toggle("collapsed", nowCollapsed); const b = grp.querySelector(".mapbody"); if (b) b.hidden = nowCollapsed; }
+    mh.setAttribute("aria-expanded", String(!nowCollapsed));
+    return;
+  }
+});
 document.addEventListener("click", (e) => {
   const seg = e.target.closest("[data-planmode]");
   if (!seg) return;
@@ -1063,10 +1105,11 @@ function renderMap(focusZone) {
   const zoneName = (id) => ({ sunset: "Sunset Boulevard", echo: "Echo Lake", animation: "Animation Courtyard", pixar: "Pixar Plaza", commissary: "Commissary Lane", grand: "Grand Avenue", hollywood: "Hollywood Boulevard" }[id] || id);
   const order = ZONE_ORDER;
   $("#mapList").innerHTML = groups.size
-    ? order.filter((z) => groups.has(z)).map((z) => { const stopCount = [...groups.get(z).values()].reduce((total, names) => total + names.length, 0); return `<div class="mapgroup${focusZone === z ? " focus" : ""}" data-zone="${z}"><h5><span class="mapnum">${numbers[z]}</span>${esc(zoneName(z))}<span class="mapcount">${stopCount} stop${stopCount === 1 ? "" : "s"}</span></h5>${[...groups.get(z)].map(([venue, names]) => `<div class="mapvenue"><div class="mvname">${esc(venue)}</div>${names.map((nm) => `<div class="mappick"><b>\u2605</b> ${esc(nm)}</div>`).join("")}</div>`).join("")}</div>`; }).join("")
+    ? order.filter((z) => groups.has(z)).map((z) => { const stopCount = [...groups.get(z).values()].reduce((total, names) => total + names.length, 0); const mCollapsed = collapsedMapZones.has(z); return `<div class="mapgroup${focusZone === z ? " focus" : ""}${mCollapsed ? " collapsed" : ""}" data-zone="${z}"><h5 data-maptoggle="${z}" role="button" aria-expanded="${!mCollapsed}"><span class="mapnum">${numbers[z]}</span>${esc(zoneName(z))}<span class="mapcount">${stopCount} stop${stopCount === 1 ? "" : "s"}${TRI}</span></h5><div class="mapbody"${mCollapsed ? " hidden" : ""}>${[...groups.get(z)].map(([venue, names]) => `<div class="mapvenue"><div class="mvname">${esc(venue)}</div>${names.map((nm) => `<div class="mappick"><b>\u2605</b> ${esc(nm)}</div>`).join("")}</div>`).join("")}</div></div>`; }).join("")
     : `<div class="mapgroup"><h5>No stops yet</h5><div class="mappick">Star a few bites, sips, and shows and they'll be pinned here.</div></div>`;
 }
 function openMap(zone) {
+  if (zone) collapsedMapZones.delete(zone);
   renderMap(zone || null);
   $("#mapSheet").hidden = false;
   document.body.style.overflow = "hidden";
