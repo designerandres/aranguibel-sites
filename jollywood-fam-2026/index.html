@@ -414,6 +414,20 @@
   .pm-obar i{display:block; height:100%; background:linear-gradient(90deg, var(--gold-deep), var(--gold) 60%, var(--gold-hi))}
   .pm-opct{flex:0 0 42px; text-align:right; font-family:"Cinzel",serif; font-weight:700; font-size:15.5px; color:var(--gold-hi)}
   .pm-olead{flex:0 0 auto; font-size:9.5px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--gold-hi)}
+  .pm-mng-note{font-size:14px; color:var(--cream-dim); line-height:1.5; margin-top:4px}
+  .pm-mrow{display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid rgba(232,196,118,.14)}
+  .pm-mq{flex:1 1 auto; font-size:14.5px; color:var(--cream); line-height:1.4}
+  .pm-mq span{display:block; font-size:12px; color:var(--cream-faint); margin-top:2px}
+  .pm-del{flex:0 0 auto; border:1px solid rgba(217,123,74,.5); background:rgba(168,78,36,.12); color:#F2A97E; border-radius:999px; padding:6px 12px; font-family:"Jost",sans-serif; font-size:12px; font-weight:700; letter-spacing:.06em; cursor:pointer; -webkit-tap-highlight-color:transparent}
+  .pm-del.arm{background:linear-gradient(180deg, #F2A97E, #D97B4A); color:#2A1408; border-color:transparent}
+  .pm-lab{display:block; font-size:11px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:var(--gold-hi); margin:14px 0 7px}
+  #pmQ, .pm-opt-in{width:100%; padding:12px 13px; border-radius:12px; border:1px solid rgba(232,196,118,.35); background:rgba(8,26,18,.5); color:var(--cream); font-family:"Jost",sans-serif; font-size:15px; outline:none}
+  #pmQ:focus, .pm-opt-in:focus{border-color:var(--gold)}
+  .pm-opt-in{margin-bottom:8px}
+  .pm-addopt{border:none; background:none; color:var(--gold-hi); font-family:"Jost",sans-serif; font-weight:600; font-size:13.5px; letter-spacing:.06em; cursor:pointer; padding:4px 0}
+  .pm-create{display:block; width:100%; margin-top:12px; padding:13px; border:none; border-radius:13px; cursor:pointer; font-family:"Jost",sans-serif; font-weight:700; font-size:14.5px; letter-spacing:.1em; text-transform:uppercase; color:#23180A; background:linear-gradient(180deg, var(--gold-hi), var(--gold) 55%, var(--gold-deep)); box-shadow:inset 0 1px 0 #FFF9E3; -webkit-tap-highlight-color:transparent}
+  .pm-create:disabled{opacity:.55}
+  .pm-formmsg{min-height:18px; margin-top:9px; font-size:13px; color:#F0B9A8}
   .ashows{display:inline-block; margin-top:9px; padding:6px 11px; border-radius:999px; font-size:12.5px; font-weight:600; letter-spacing:.02em;
     color:var(--gold-hi); border:1px solid rgba(232,196,118,.35); background:rgba(8,26,18,.4)}
   .ashows.tba{color:var(--cream-dim); font-weight:500}
@@ -627,6 +641,18 @@
         <li>The Hollywood Scoops sundaes come in a <b>souvenir cup</b> while supplies last — same for the Tip Top Club's flute drinks.</li>
         <li>Several favorites are <b>served warm</b> — look for the caramel-apple ciders at Market on a chilly night.</li>
       </ul>
+    </div>
+    <div class="infocard" id="pmManage" hidden>
+      <h4>Prediction Markets · Manage</h4>
+      <p class="pm-mng-note">Only you see this. Add a market and it appears on the Gameplan for the whole fam, right away.</p>
+      <div id="pmMarketList"></div>
+      <label class="pm-lab" for="pmQ">New question</label>
+      <input id="pmQ" type="text" maxlength="140" placeholder="Will we…?" autocomplete="off">
+      <label class="pm-lab">Choices</label>
+      <div id="pmOptRows"></div>
+      <button class="pm-addopt" id="pmAddOpt" type="button">+ Add a choice</button>
+      <button class="pm-create" id="pmCreate" type="button">Add market</button>
+      <p class="pm-formmsg" id="pmFormMsg"></p>
     </div>
     <div class="infocard" id="meCard" hidden>
       <h4>Starring</h4>
@@ -1446,7 +1472,7 @@ function tickCountdown() {
 
 
 /* ---------- prediction markets ---------- */
-const MARKETS = [
+let MARKETS = [
   { id: "maingate-passes", q: "Will Andrés remember his maingate guest passes?", options: [{ id: "yes", label: "Yes" }, { id: "no", label: "No" }] },
   { id: "early-festival-items", q: "Will anybody let us purchase festival items before 7:30pm?", options: [{ id: "yes", label: "Yes" }, { id: "no", label: "No" }] },
   { id: "rain-this-year", q: "Will rain pour down on us this year?", options: [{ id: "yes", label: "Yes" }, { id: "no", label: "No" }] },
@@ -1638,6 +1664,55 @@ async function castCall(marketId, choice) {
     toast("That call didn't save — try again.");
   }
 }
+let isAdmin = false;
+let pmDelArm = null;
+function pmOptRow(ph) { return `<input class="pm-opt-in" type="text" maxlength="24" placeholder="${ph}" autocomplete="off">`; }
+function resetPmForm() {
+  const rows = $("#pmOptRows");
+  if (rows) rows.innerHTML = pmOptRow("Choice 1 — e.g. Yes") + pmOptRow("Choice 2 — e.g. No");
+  const q = $("#pmQ"); if (q) q.value = "";
+  const msg = $("#pmFormMsg"); if (msg) msg.textContent = "";
+}
+function renderManage() {
+  const card = $("#pmManage");
+  if (!card) return;
+  if (!isAdmin || !pmLoaded) { card.hidden = true; return; }
+  card.hidden = false;
+  $("#pmMarketList").innerHTML = MARKETS.map((m) => {
+    const n = marketVotes(m.id).length;
+    return `<div class="pm-mrow"><div class="pm-mq">${esc(m.q)}<span>${m.options.map((o) => esc(o.label)).join(" · ")} — ${n} call${n === 1 ? "" : "s"}</span></div><button class="pm-del${pmDelArm === m.id ? " arm" : ""}" data-pmdel="${esc(m.id)}" type="button">${pmDelArm === m.id ? "Sure?" : "Remove"}</button></div>`;
+  }).join("");
+}
+async function createMarket() {
+  const q = $("#pmQ").value.trim();
+  const labels = [...document.querySelectorAll(".pm-opt-in")].map((i) => i.value.trim()).filter(Boolean);
+  const msg = $("#pmFormMsg");
+  if (q.length < 3) { msg.textContent = "Give the market a question (at least 3 characters)."; return; }
+  if (labels.length < 2) { msg.textContent = "Give the market at least two choices."; return; }
+  const btn = $("#pmCreate"); btn.disabled = true; msg.textContent = "Adding…";
+  try {
+    const res = await api("POST", "/api/jollywood/markets", { question: q, options: labels.map((label) => ({ label })) });
+    if (res && res.market) MARKETS.push(res.market);
+    pmDelArm = null;
+    resetPmForm(); renderManage(); renderPM();
+    toast("Market added — it's live on the Gameplan.");
+  } catch (e) { msg.textContent = "That didn't save — check the question and choices and try again."; }
+  btn.disabled = false;
+}
+async function deleteMarket(id) {
+  try {
+    await api("DELETE", "/api/jollywood/markets?id=" + encodeURIComponent(id));
+    MARKETS = MARKETS.filter((m) => m.id !== id);
+    predictions.delete(id);
+    pmDelArm = null;
+    if (pmIndex >= MARKETS.length) pmIndex = Math.max(0, MARKETS.length - 1);
+    renderManage(); renderPM();
+    toast("Market removed.");
+  } catch (e) { toast("That market didn't remove — try again."); }
+}
+{ const addBtn = $("#pmAddOpt"); if (addBtn) addBtn.addEventListener("click", () => { const rows = $("#pmOptRows"); if (rows && rows.querySelectorAll(".pm-opt-in").length < 5) rows.insertAdjacentHTML("beforeend", pmOptRow("Another choice")); });
+  const createBtn = $("#pmCreate"); if (createBtn) createBtn.addEventListener("click", createMarket);
+  resetPmForm(); }
 document.addEventListener("click", (e) => {
   const vote = e.target.closest("[data-pmvote]");
   if (vote) { castCall(MARKETS[pmIndex].id, vote.dataset.pmvote); return; }
@@ -1652,6 +1727,8 @@ document.addEventListener("click", (e) => {
   if (e.target.closest("[data-pmboard]")) { openMarkets(); return; }
   const gv = e.target.closest("[data-pmgotovote]");
   if (gv) { closeMarkets(); pmIndex = Number(gv.dataset.pmgotovote); pmReveal = false; renderPM(); setTimeout(() => $("#pmCard").scrollIntoView({ block: "center", behavior: "smooth" }), 60); return; }
+  const del = e.target.closest("[data-pmdel]");
+  if (del) { const did = del.dataset.pmdel; if (pmDelArm === did) { pmDelArm = null; deleteMarket(did); } else { pmDelArm = did; renderManage(); } return; }
   if (e.target.closest("[data-pmclose]")) closeMarkets();
 });
 
@@ -1668,12 +1745,14 @@ async function loadApp() {
   $("#gate").hidden = true;
   $("#app").hidden = false; $("#tabbar").hidden = false;
   $("#planList").innerHTML = `<div class="loading">Raising the curtain…</div>`;
-  const [g, v, p, pr] = await Promise.all([
+  const [g, v, p, pr, meInfo] = await Promise.all([
     api("GET", "/api/jollywood/items"),
     api("GET", "/api/jollywood/votes"),
     api("GET", "/api/jollywood/plan"),
     api("GET", "/api/jollywood/predictions").catch(() => ({ predictions: [] })),
+    api("GET", "/api/auth/me").catch(() => null),
   ]);
+  isAdmin = !!(meInfo && meInfo.role === "admin");
   guide = g; me = v.me || null; orderIds = Array.isArray(p.order) ? p.order : [];
   times = p.times || {}; timeMeta = p.timeMeta || {};
   predictions.clear();
@@ -1681,6 +1760,7 @@ async function loadApp() {
     if (!predictions.has(row.marketId)) predictions.set(row.marketId, []);
     predictions.get(row.marketId).push({ by: row.by, mine: row.mine, choice: row.choice, at: row.at });
   }
+  if (Array.isArray(pr.markets) && pr.markets.length) MARKETS = pr.markets;
   pmLoaded = true;
   { const firstOpen = MARKETS.findIndex((m) => !myCall(m.id)); pmIndex = firstOpen === -1 ? 0 : firstOpen; pmReveal = false; }
   votes.clear();
@@ -1703,7 +1783,7 @@ async function loadApp() {
     $("#meText").innerHTML = `You're signed in as <b>${esc(me)}</b> — your stars show in gold, and the fam's gameplan is built from everyone's picks together.`;
   }
   $("#mapFab").hidden = false;
-  renderFood(); renderDrinks(); renderActivities(); renderGameplan(); renderPM();
+  renderFood(); renderDrinks(); renderActivities(); renderGameplan(); renderPM(); renderManage();
   tickCountdown(); setInterval(tickCountdown, 1000);
   maybeShowHsToast();
 }

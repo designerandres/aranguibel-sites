@@ -1,15 +1,9 @@
 import { appAllowed, json, requireIdentity } from "../../_lib/auth.js";
+import { listMarkets } from "./markets.js";
 
 // Jollywood Fam 2026 prediction markets — each signed-in person calls each
 // market Yes or No. Calls can be flipped; created_at keeps the first-cast
 // time so the odds graph steps in the order the fam first weighed in.
-const MARKET_OPTIONS = {
-  "maingate-passes": ["yes", "no"],
-  "early-festival-items": ["yes", "no"],
-  "rain-this-year": ["yes", "no"],
-  "how-long-will-we-last": ["11pm", "12am", "1am"],
-};
-
 async function ensureSchema(db) {
   await db.prepare(
     "CREATE TABLE IF NOT EXISTS jollywood_predictions (market_id TEXT NOT NULL, voter_email TEXT NOT NULL, voter_name TEXT, choice TEXT NOT NULL, created_at TEXT NOT NULL, updated_at TEXT NOT NULL, PRIMARY KEY (market_id, voter_email))"
@@ -40,7 +34,8 @@ export async function onRequestGet(context) {
     choice: r.choice,
     at: r.created_at,
   }));
-  return json({ predictions, me: displayName(id) });
+  const markets = await listMarkets(env.DB).catch(() => []);
+  return json({ predictions, me: displayName(id), markets });
 }
 
 export async function onRequestPost(context) {
@@ -51,9 +46,11 @@ export async function onRequestPost(context) {
   let body;
   try { body = await request.json(); } catch { return json({ error: "bad json" }, 400); }
   const marketId = body && typeof body.marketId === "string" ? body.marketId.trim() : "";
-  if (!Object.prototype.hasOwnProperty.call(MARKET_OPTIONS, marketId)) return json({ error: "unknown market" }, 400);
+  const markets = await listMarkets(env.DB).catch(() => []);
+  const market = markets.find((m) => m.id === marketId);
+  if (!market) return json({ error: "unknown market" }, 400);
   const choice = body && typeof body.choice === "string" ? body.choice : "";
-  if (!MARKET_OPTIONS[marketId].includes(choice)) return json({ error: "choice is not an option in this market" }, 400);
+  if (!market.options.some((o) => o.id === choice)) return json({ error: "choice is not an option in this market" }, 400);
   await ensureSchema(env.DB);
   const now = new Date().toISOString();
   await env.DB
