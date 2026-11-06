@@ -283,6 +283,7 @@
     color:var(--cream-dim); -webkit-tap-highlight-color:transparent; transition:color .15s ease, background .15s ease}
   .segbtn.on{color:#23180A; background:linear-gradient(180deg, var(--gold-hi), var(--gold-deep)); border-color:var(--gold-hi);
     box-shadow:0 3px 9px rgba(0,0,0,.4)}
+  #planList .segrow + .prow{margin-top:16px}
   .zonehead{display:flex; align-items:center; gap:12px; margin:26px -4px 14px; padding:11px 15px; border-radius:16px;
     background:linear-gradient(165deg, rgba(23,72,47,.99), rgba(7,26,17,.99)); border:1px solid var(--gold);
     box-shadow:0 14px 24px -12px rgba(0,0,0,.75), inset 0 1px 0 rgba(246,222,156,.4)}
@@ -704,10 +705,22 @@ function renderMenu(kind) {
   const isDrink = kind === "drink";
   const host = $(isDrink ? "#drinkList" : "#foodList");
   const f = isDrink ? drinkFilter : foodFilter;
-  let html = "";
+  const sections = [];
   for (const v of guide.venues) {
     const items = v.items.filter((it) => !!it.drink === isDrink && matchFilter(it, f));
-    if (!items.length) continue;
+    if (items.length) sections.push({ v, items });
+  }
+  if (f === "allstars") {
+    // Rank locations by their stars: most-starred items first inside each venue,
+    // then venues by total stars (ties: venue's top item, then guide order).
+    const stars = (it) => voteInfo(it.id).count;
+    for (const sec of sections) sec.items.sort((a, b) => stars(b) - stars(a));
+    const sum = (sec) => sec.items.reduce((n, it) => n + stars(it), 0);
+    const top = (sec) => Math.max(...sec.items.map(stars));
+    sections.sort((a, b) => sum(b) - sum(a) || top(b) - top(a));
+  }
+  let html = "";
+  for (const { v, items } of sections) {
     html += `<section class="venue"><div class="venuehead"><span class="vmedal">★</span><div><div class="vn">${esc(v.name)}</div><div class="va">${esc(v.area)}</div></div><span class="vcount">${items.length} ${isDrink ? "sips" : "bites"}</span></div>`;
     html += items.map(foodCard).join("");
     html += `</section>`;
@@ -728,6 +741,7 @@ wireFilters("#drinkFilters", (f) => { drinkFilter = f; renderDrinks(); });
 wireFilters("#actFilters", (f) => { actFilter = f; renderActivities(); });
 function renderActivities() {
   const acts = guide.activities.filter((a) => matchFilter(a, actFilter));
+  if (actFilter === "allstars") acts.sort((a, b) => voteInfo(b.id).count - voteInfo(a.id).count);
   if (!acts.length) { $("#actList").innerHTML = `<div class="empty"><span class="big">★</span>Nothing matches that filter yet — star a few things and they'll show up here.</div>`; return; }
   $("#actList").innerHTML = acts.map((a) => {
     const ph = a.img
