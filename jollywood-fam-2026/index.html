@@ -398,6 +398,22 @@
   .mk-lock p{font-size:13.5px; line-height:1.45; color:var(--cream-dim)}
   .mk-lock p b{color:var(--gold-hi); font-weight:600}
   .pm-sfoot{margin-top:16px; text-align:center; font-size:12.5px; color:var(--cream-faint); font-style:italic; line-height:1.55}
+  .pm-call.gold{color:#23180A; background:linear-gradient(180deg, var(--gold-hi), var(--gold))}
+  .pm-opts{display:flex; gap:9px; margin-top:16px}
+  .pm-opt{flex:1 1 0; padding:14px 0 12px; border-radius:15px; cursor:pointer; font-family:"Jost",sans-serif;
+    font-size:16px; font-weight:700; letter-spacing:.06em; color:var(--cream);
+    background:rgba(8,26,18,.45); border:1px solid rgba(232,196,118,.45); -webkit-tap-highlight-color:transparent}
+  .pm-opt:active{transform:translateY(1px); background:rgba(232,196,118,.16)}
+  .pm-change .co{background:rgba(8,26,18,.4); color:var(--cream); border:1px solid rgba(232,196,118,.4)}
+  .pm-change .co.on{color:#23180A; background:linear-gradient(180deg, var(--gold-hi), var(--gold)); border-color:transparent}
+  .pm-outcomes{margin-top:14px; display:flex; flex-direction:column; gap:9px}
+  .pm-orow{display:flex; align-items:center; gap:10px}
+  .pm-olab{flex:0 0 46px; font-weight:700; font-size:14.5px; color:var(--cream); white-space:nowrap}
+  .pm-orow.mine .pm-olab{color:var(--gold-hi)}
+  .pm-obar{flex:1 1 auto; height:8px; border-radius:99px; background:rgba(247,239,218,.12); overflow:hidden}
+  .pm-obar i{display:block; height:100%; background:linear-gradient(90deg, var(--gold-deep), var(--gold) 60%, var(--gold-hi))}
+  .pm-opct{flex:0 0 42px; text-align:right; font-family:"Cinzel",serif; font-weight:700; font-size:15.5px; color:var(--gold-hi)}
+  .pm-olead{flex:0 0 auto; font-size:9.5px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--gold-hi)}
   .ashows{display:inline-block; margin-top:9px; padding:6px 11px; border-radius:999px; font-size:12.5px; font-weight:600; letter-spacing:.02em;
     color:var(--gold-hi); border:1px solid rgba(232,196,118,.35); background:rgba(8,26,18,.4)}
   .ashows.tba{color:var(--cream-dim); font-weight:500}
@@ -1431,10 +1447,24 @@ function tickCountdown() {
 
 /* ---------- prediction markets ---------- */
 const MARKETS = [
-  { id: "maingate-passes", q: "Will Andrés remember his maingate guest passes?" },
-  { id: "early-festival-items", q: "Will anybody let us purchase festival items before 7:30pm?" },
-  { id: "rain-this-year", q: "Will rain pour down on us this year?" },
+  { id: "maingate-passes", q: "Will Andrés remember his maingate guest passes?", options: [{ id: "yes", label: "Yes" }, { id: "no", label: "No" }] },
+  { id: "early-festival-items", q: "Will anybody let us purchase festival items before 7:30pm?", options: [{ id: "yes", label: "Yes" }, { id: "no", label: "No" }] },
+  { id: "rain-this-year", q: "Will rain pour down on us this year?", options: [{ id: "yes", label: "Yes" }, { id: "no", label: "No" }] },
+  { id: "how-long-will-we-last", q: "How long will we last?", options: [{ id: "11pm", label: "11pm" }, { id: "12am", label: "12am" }, { id: "1am", label: "1am" }] },
 ];
+function marketById(id) { return MARKETS.find((m) => m.id === id); }
+function isBinary(m) { return m.options.length === 2 && m.options[0].id === "yes" && m.options[1].id === "no"; }
+function optLabel(m, choice) { const o = m.options.find((x) => x.id === choice); return o ? o.label : choice; }
+function optPct(marketId, optId) {
+  const vs = marketVotes(marketId);
+  if (!vs.length) return 0;
+  return Math.round((vs.filter((x) => x.choice === optId).length / vs.length) * 100);
+}
+function leaderOf(m) {
+  let best = m.options[0], bestPct = -1;
+  for (const o of m.options) { const p = optPct(m.id, o.id); if (p > bestPct) { bestPct = p; best = o; } }
+  return { opt: best, pct: Math.max(0, bestPct) };
+}
 const predictions = new Map();
 let pmLoaded = false;
 let pmIndex = 0;
@@ -1465,7 +1495,21 @@ function sparkSvg(id) {
   return `<svg class="mk-chart" width="128" height="48" viewBox="0 0 128 48" aria-hidden="true"><line x1="2" y1="${Y(50).toFixed(1)}" x2="126" y2="${Y(50).toFixed(1)}" stroke="rgba(247,239,218,.22)" stroke-width="1" stroke-dasharray="3 4"/><path d="${area}" fill="rgba(232,196,118,.07)"/><polyline points="${line}" fill="none" stroke="#E8C476" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/><circle cx="${X(pts.length - 1).toFixed(1)}" cy="${Y(pts[pts.length - 1]).toFixed(1)}" r="3.4" fill="#F6DE9C" stroke="#0A2318" stroke-width="1.6"/></svg>`;
 }
 function voterChips(id) {
-  return marketVotes(id).map((v) => `<span class="pmvchip"><b>${v.mine ? "You" : esc(v.by)}</b> · <span class="${v.choice === "yes" ? "vy" : "vn"}">${v.choice === "yes" ? "Yes" : "No"}</span></span>`).join("");
+  const m = marketById(id);
+  return marketVotes(id).map((v) => `<span class="pmvchip"><b>${v.mine ? "You" : esc(v.by)}</b> · <span class="${v.choice === "no" ? "vn" : "vy"}">${esc(optLabel(m, v.choice))}</span></span>`).join("");
+}
+function outcomesHtml(m) {
+  const mine = myCall(m.id);
+  const lead = leaderOf(m);
+  return `<div class="pm-outcomes">${m.options.map((o) => { const p = optPct(m.id, o.id); return `<div class="pm-orow${mine === o.id ? " mine" : ""}"><span class="pm-olab">${esc(o.label)}</span><span class="pm-obar"><i style="width:${p}%"></i></span><span class="pm-opct">${p}%</span>${lead.opt.id === o.id && marketVotes(m.id).length ? '<span class="pm-olead">Leading</span>' : ''}</div>`; }).join("")}</div>`;
+}
+function changeRowHtml(m) {
+  const mine = myCall(m.id);
+  const btns = m.options.map((o) => {
+    const cls = isBinary(m) ? (o.id === "yes" ? "cy" : "cn") : "co";
+    return `<button class="${cls}${mine === o.id ? " on" : ""}" data-pmflip="${o.id}" type="button">${esc(o.label)}</button>`;
+  }).join("");
+  return `<div class="pm-change"><span>Change your call</span>${btns}</div>`;
 }
 function pmDots() {
   return MARKETS.map((m, i) => `<button class="pmdot${i === pmIndex ? " on" : ""}${myCall(m.id) ? " done" : ""}" data-pmdot="${i}" type="button" aria-label="Market ${i + 1}"><i></i></button>`).join("");
@@ -1485,7 +1529,7 @@ function renderPM() {
   if (answered === total && !pmReveal) {
     host.innerHTML = `<div class="pmcard">
       <div class="pm-top"><span class="pm-mkt">Prediction Markets</span><span class="pm-done">✓ All markets called</span></div>
-      ${MARKETS.map((m, i) => `<button class="pm-sumrow" data-pmgo="${i}" type="button"><span class="pm-sumq">${esc(m.q)}</span><span class="pm-sumpct">${yesPct(m.id)}%<small>chance yes</small></span></button>`).join("")}
+      ${MARKETS.map((m, i) => { const cell = isBinary(m) ? `${yesPct(m.id)}%<small>chance yes</small>` : `${leaderOf(m).pct}%<small>${esc(leaderOf(m).opt.label)} leads</small>`; return `<button class="pm-sumrow" data-pmgo="${i}" type="button"><span class="pm-sumq">${esc(m.q)}</span><span class="pm-sumpct">${cell}</span></button>`; }).join("")}
       <button class="pm-next" data-pmboard type="button">View the markets</button>
     </div>`;
     return;
@@ -1496,9 +1540,31 @@ function renderPM() {
     host.innerHTML = `<div class="pmcard">
       <div class="pm-top"><span class="pm-mkt">Market ${pmIndex + 1} of ${total}</span><span class="pm-live"><i></i>Now trading</span></div>
       <h4 class="pm-q">${esc(m.q)}</h4>
-      <div class="pm-btns"><button class="pm-yes" data-pmvote="yes" type="button">Yes</button><button class="pm-no" data-pmvote="no" type="button">No</button></div>
+      ${isBinary(m)
+        ? `<div class="pm-btns"><button class="pm-yes" data-pmvote="yes" type="button">Yes</button><button class="pm-no" data-pmvote="no" type="button">No</button></div>`
+        : `<div class="pm-opts">${m.options.map((o) => `<button class="pm-opt" data-pmvote="${o.id}" type="button">${esc(o.label)}</button>`).join("")}</div>`}
       ${pmFoot()}
     </div>`;
+    return;
+  }
+  if (!isBinary(m)) {
+    const vs2 = marketVotes(m.id);
+    const lead = leaderOf(m);
+    const traders2 = vs2.length >= 3 ? `All ${vs2.length} traders are in` : `${vs2.length} trader${vs2.length === 1 ? "" : "s"} in so far`;
+    const nextOpen2 = MARKETS.findIndex((mm, i) => i !== pmIndex && !myCall(mm.id));
+    host.innerHTML = `<div class="pmcard">
+    <div class="pm-top"><span class="pm-mkt">Market ${pmIndex + 1} of ${total}</span><span class="pm-done">✓ Your call is in</span></div>
+    <h4 class="pm-q">${esc(m.q)}</h4>
+    <span class="pm-call gold">Your call · ${esc(optLabel(m, mine))}</span>
+    <div class="pm-split"><div class="pm-pct">${lead.pct}%<small>for ${esc(lead.opt.label)}</small></div><div class="pm-versus">The fam leans <b>${esc(lead.opt.label)}</b><br>${traders2}</div></div>
+    ${outcomesHtml(m)}
+    <div class="pm-voters">${voterChips(m.id)}</div>
+    ${changeRowHtml(m)}
+    ${nextOpen2 >= 0
+      ? `<button class="pm-next" data-pmnext="${nextOpen2}" type="button">Next market →</button>`
+      : `<button class="pm-next ghost" data-pmboard type="button">See the board</button>`}
+    ${pmFoot()}
+  </div>`;
     return;
   }
   const pct = yesPct(m.id);
@@ -1514,7 +1580,7 @@ function renderPM() {
     <div class="pm-bar"><i style="width:${pct}%"></i></div>
     <div class="pm-prices"><span class="price y">Yes ${pct}¢</span><span class="price n">No ${100 - pct}¢</span>${deltaHtml(m.id)}</div>
     <div class="pm-voters">${voterChips(m.id)}</div>
-    <div class="pm-change"><span>Change your call</span><button class="cy${mine === "yes" ? " on" : ""}" data-pmflip="yes" type="button">Yes</button><button class="cn${mine === "no" ? " on" : ""}" data-pmflip="no" type="button">No</button></div>
+    ${changeRowHtml(m)}
     ${nextOpen >= 0
       ? `<button class="pm-next" data-pmnext="${nextOpen}" type="button">Next market →</button>`
       : `<button class="pm-next ghost" data-pmboard type="button">See the board</button>`}
@@ -1532,6 +1598,15 @@ function renderMarkets() {
         <div class="mk-ghost"><div class="mk-main"><div class="mk-pct"><b>??%</b><span>Chance yes</span></div><svg class="mk-chart" width="128" height="48" viewBox="0 0 128 48" aria-hidden="true"><polyline points="2,24 44,14 84,32 126,20" fill="none" stroke="#E8C476" stroke-width="2.4"/></svg></div><div class="mk-bar"><i style="width:50%"></i></div></div>
         <button class="mk-lock" data-pmgotovote="${i}" type="button"><span class="lk">🔒</span><p><b>Market locked.</b> Cast your call on this one to reveal the odds, the graph, and how the fam voted.</p></button>
       </div>`;
+    }
+    if (!isBinary(m)) {
+      const lead = leaderOf(m);
+      return `<div class="mk">
+      <div class="mk-q">${esc(m.q)}</div>
+      <div class="mk-main"><div class="mk-pct"><b>${lead.pct}%</b><span>for ${esc(lead.opt.label)}</span></div></div>
+      ${outcomesHtml(m)}
+      <div class="pm-voters">${voterChips(m.id)}</div>
+    </div>`;
     }
     const pct = yesPct(m.id);
     return `<div class="mk">

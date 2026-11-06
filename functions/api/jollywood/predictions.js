@@ -3,7 +3,12 @@ import { appAllowed, json, requireIdentity } from "../../_lib/auth.js";
 // Jollywood Fam 2026 prediction markets — each signed-in person calls each
 // market Yes or No. Calls can be flipped; created_at keeps the first-cast
 // time so the odds graph steps in the order the fam first weighed in.
-const MARKETS = new Set(["maingate-passes", "early-festival-items", "rain-this-year"]);
+const MARKET_OPTIONS = {
+  "maingate-passes": ["yes", "no"],
+  "early-festival-items": ["yes", "no"],
+  "rain-this-year": ["yes", "no"],
+  "how-long-will-we-last": ["11pm", "12am", "1am"],
+};
 
 async function ensureSchema(db) {
   await db.prepare(
@@ -46,9 +51,9 @@ export async function onRequestPost(context) {
   let body;
   try { body = await request.json(); } catch { return json({ error: "bad json" }, 400); }
   const marketId = body && typeof body.marketId === "string" ? body.marketId.trim() : "";
-  const choice = body && (body.choice === "yes" || body.choice === "no") ? body.choice : "";
-  if (!MARKETS.has(marketId)) return json({ error: "unknown market" }, 400);
-  if (!choice) return json({ error: "choice must be yes or no" }, 400);
+  if (!Object.prototype.hasOwnProperty.call(MARKET_OPTIONS, marketId)) return json({ error: "unknown market" }, 400);
+  const choice = body && typeof body.choice === "string" ? body.choice : "";
+  if (!MARKET_OPTIONS[marketId].includes(choice)) return json({ error: "choice is not an option in this market" }, 400);
   await ensureSchema(env.DB);
   const now = new Date().toISOString();
   await env.DB
