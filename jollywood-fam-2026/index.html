@@ -233,6 +233,12 @@
   #mapFab svg{width:27px; height:27px}
   #mapFab:active{transform:scale(.95)}
   #mapSheet{position:fixed; inset:0; z-index:90}
+  #marketSheet{position:fixed; inset:0; z-index:90}
+  #marketSheet .sheetback{position:absolute; inset:0; background:rgba(3,10,6,.62); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px)}
+  #marketSheet .sheet{position:absolute; left:0; right:0; bottom:0; max-height:92dvh; overflow-y:auto; -webkit-overflow-scrolling:touch;
+    border-radius:26px 26px 0 0; border:1px solid rgba(232,196,118,.35); border-bottom:none; padding:14px 18px calc(22px + env(safe-area-inset-bottom));
+    background:linear-gradient(168deg, #0E2F20, #081C12 70%); box-shadow:0 -24px 60px rgba(0,0,0,.6);
+    animation:sheetup .32s cubic-bezier(.2,.9,.3,1)}
   #mapSheet .sheetback{position:absolute; inset:0; background:rgba(3,10,6,.62); backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px)}
   #mapSheet .sheet{position:absolute; left:0; right:0; bottom:0; max-height:90dvh; overflow-y:auto; -webkit-overflow-scrolling:touch;
     border-radius:26px 26px 0 0; border:1px solid rgba(232,196,118,.35); border-bottom:none; padding:20px 18px calc(22px + env(safe-area-inset-bottom));
@@ -298,6 +304,100 @@
   .vcount, .zcount, .mapcount{display:inline-flex; align-items:center}
   .tri{width:9px; height:9px; margin-left:7px; flex:0 0 auto; transition:transform .22s ease}
   .venue.collapsed .tri, .zonegroup.collapsed .tri, .mapgroup.collapsed .tri{transform:rotate(180deg)}
+  /* ===== Prediction Markets ===== */
+  .pmcard{position:relative; border-radius:24px; padding:18px 18px 16px; overflow:hidden; margin-top:2px;
+    background:linear-gradient(165deg, rgba(24,66,42,.88), rgba(9,30,20,.92));
+    border:1px solid rgba(232,196,118,.38);
+    box-shadow:0 22px 40px -18px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,255,255,.14)}
+  .pmcard::before{content:""; position:absolute; top:0; left:8%; right:8%; height:1px;
+    background:linear-gradient(90deg, transparent, rgba(246,222,156,.85) 50%, transparent)}
+  .pm-top{display:flex; align-items:center; gap:8px}
+  .pm-mkt{font-size:11px; font-weight:700; letter-spacing:.18em; text-transform:uppercase; color:var(--gold-hi)}
+  .pm-live{margin-left:auto; display:inline-flex; align-items:center; gap:6px; font-size:10.5px; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:#9FE8B4;
+    border:1px solid rgba(120,220,150,.35); background:rgba(38,120,66,.25); padding:4px 9px; border-radius:999px; white-space:nowrap}
+  .pm-live i{width:6px; height:6px; border-radius:50%; background:#7CE79B; box-shadow:0 0 8px #7CE79B}
+  .pm-done{margin-left:auto; font-size:10.5px; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:var(--gold-hi);
+    border:1px solid rgba(232,196,118,.4); background:rgba(8,26,18,.4); padding:4px 9px; border-radius:999px; white-space:nowrap}
+  .pm-q{font-family:"Cinzel",serif; font-weight:700; font-size:21.5px; line-height:1.28; color:var(--cream); margin-top:12px}
+  .pm-load{margin-top:12px; font-size:15px; color:var(--cream-dim); font-style:italic}
+  .pm-btns{display:flex; gap:10px; margin-top:16px}
+  .pm-btns button{flex:1 1 0; padding:15px 0 13px; border-radius:15px; cursor:pointer; font-family:"Jost",sans-serif;
+    font-size:16.5px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; -webkit-tap-highlight-color:transparent}
+  .pm-yes{border:none; color:#23180A; background:linear-gradient(180deg, var(--gold-hi), var(--gold) 55%, var(--gold-deep));
+    box-shadow:0 12px 22px -10px rgba(185,138,47,.6), inset 0 1px 0 #FFF9E3}
+  .pm-no{background:rgba(168,78,36,.14); color:#F2A97E; border:1px solid rgba(217,123,74,.55)}
+  .pm-btns button:active{transform:translateY(1px)}
+  .pm-foot{display:flex; align-items:center; margin-top:13px}
+  .pm-dots{display:inline-flex; gap:2px}
+  .pmdot{width:22px; height:22px; border:none; background:none; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; padding:0; -webkit-tap-highlight-color:transparent}
+  .pmdot i{width:7px; height:7px; border-radius:50%; background:rgba(247,239,218,.25); display:block}
+  .pmdot.done i{background:rgba(232,196,118,.55)}
+  .pmdot.on i{background:var(--gold); box-shadow:0 0 7px rgba(232,196,118,.8)}
+  .pm-board{margin-left:auto; border:none; background:none; cursor:pointer; font-family:"Jost",sans-serif; font-size:13px; font-weight:600;
+    letter-spacing:.1em; text-transform:uppercase; color:var(--gold-hi); padding:6px 0 6px 10px}
+  .pm-board span{opacity:.7}
+  .pm-call{display:inline-flex; align-items:center; gap:7px; margin-top:13px; padding:6px 12px; border-radius:999px;
+    font-size:12.5px; font-weight:700; letter-spacing:.1em; text-transform:uppercase}
+  .pm-call.yes{color:#23180A; background:linear-gradient(180deg, var(--gold-hi), var(--gold))}
+  .pm-call.no{color:#F2A97E; border:1px solid rgba(217,123,74,.55); background:rgba(168,78,36,.16)}
+  .pm-split{display:flex; align-items:flex-end; gap:10px; margin-top:13px}
+  .pm-pct{font-family:"Cinzel",serif; font-weight:900; font-size:40px; line-height:1; color:var(--gold-hi)}
+  .pm-pct small{display:block; font-family:"Jost",sans-serif; font-weight:600; font-size:10.5px; letter-spacing:.18em; text-transform:uppercase; color:var(--cream-dim); margin-top:5px}
+  .pm-versus{margin-left:auto; text-align:right; font-size:13px; color:var(--cream-dim); line-height:1.5; padding-bottom:2px}
+  .pm-versus b{color:var(--cream); font-weight:600}
+  .pm-bar{display:flex; height:10px; border-radius:99px; overflow:hidden; margin-top:12px; background:rgba(168,78,36,.55)}
+  .pm-bar i{display:block; background:linear-gradient(90deg, var(--gold-deep), var(--gold) 60%, var(--gold-hi))}
+  .pm-prices{display:flex; align-items:center; gap:8px; margin-top:11px}
+  .price{font-size:12.5px; font-weight:700; letter-spacing:.05em; padding:5px 11px; border-radius:999px; white-space:nowrap}
+  .price.y{color:#23180A; background:linear-gradient(180deg, var(--gold-hi), var(--gold))}
+  .price.n{color:#F2A97E; border:1px solid rgba(217,123,74,.55); background:rgba(168,78,36,.14)}
+  .pm-delta{margin-left:auto; font-size:12.5px; font-weight:600; color:#9FE8B4; white-space:nowrap}
+  .pm-delta.down{color:#F2A97E}
+  .pm-voters{display:flex; flex-wrap:wrap; gap:6px; margin-top:13px}
+  .pmvchip{font-size:12px; padding:5px 10px; border-radius:999px; border:1px solid rgba(232,196,118,.25); background:rgba(8,26,18,.45); color:var(--cream-dim)}
+  .pmvchip b{color:var(--cream); font-weight:600}
+  .pmvchip .vy{color:var(--gold-hi); font-weight:700}
+  .pmvchip .vn{color:#F2A97E; font-weight:700}
+  .pm-change{display:flex; align-items:center; gap:8px; margin-top:15px}
+  .pm-change span{font-size:11px; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:var(--cream-faint)}
+  .pm-change button{border-radius:999px; padding:7px 16px; cursor:pointer; font-family:"Jost",sans-serif; font-size:13px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; -webkit-tap-highlight-color:transparent}
+  .pm-change .cy{background:rgba(8,26,18,.4); color:var(--gold-hi); border:1px solid rgba(232,196,118,.4)}
+  .pm-change .cy.on{color:#23180A; background:linear-gradient(180deg, var(--gold-hi), var(--gold)); border-color:transparent}
+  .pm-change .cn{background:rgba(8,26,18,.4); color:#F2A97E; border:1px solid rgba(217,123,74,.45)}
+  .pm-change .cn.on{color:#2A1408; background:linear-gradient(180deg, #F2A97E, #D97B4A); border-color:transparent}
+  .pm-next{display:block; width:100%; margin-top:16px; padding:14px; border:none; border-radius:14px; cursor:pointer;
+    font-family:"Jost",sans-serif; font-weight:700; font-size:15px; letter-spacing:.1em; text-transform:uppercase; color:#23180A;
+    background:linear-gradient(180deg, var(--gold-hi), var(--gold) 55%, var(--gold-deep)); box-shadow:inset 0 1px 0 #FFF9E3; -webkit-tap-highlight-color:transparent}
+  .pm-next.ghost{background:none; border:1px solid rgba(232,196,118,.45); color:var(--gold-hi); box-shadow:none}
+  .pm-next:active{transform:translateY(1px)}
+  .pm-sumrow{display:flex; align-items:center; gap:10px; width:100%; text-align:left; margin-top:10px; padding:12px 13px; border-radius:14px; cursor:pointer;
+    background:rgba(8,26,18,.4); border:1px solid rgba(232,196,118,.22); font-family:"Jost",sans-serif; -webkit-tap-highlight-color:transparent}
+  .pm-sumq{flex:1 1 auto; font-size:14px; line-height:1.35; color:var(--cream)}
+  .pm-sumpct{flex:0 0 auto; font-family:"Cinzel",serif; font-weight:700; font-size:15px; color:var(--gold-hi); white-space:nowrap}
+  .pm-sumpct small{display:block; font-family:"Jost",sans-serif; font-weight:600; font-size:9px; letter-spacing:.14em; text-transform:uppercase; color:var(--cream-dim); text-align:right}
+  #marketSheet .sheethead-c{text-align:center; margin:2px 10px 4px}
+  #marketSheet .sheethead-c h3{font-family:"Cinzel",serif; font-weight:700; font-size:19px; letter-spacing:.12em; text-transform:uppercase;
+    background:linear-gradient(100deg, var(--gold-deep) 0%, var(--gold) 32%, #FFF3C4 50%, var(--gold) 68%, var(--gold-deep) 100%);
+    -webkit-background-clip:text; background-clip:text; color:transparent}
+  #marketSheet .sheethead-c .sheetsub{text-align:center}
+  .mk{margin-top:14px; border-radius:20px; padding:15px 15px 13px; background:linear-gradient(160deg, rgba(255,255,255,.09), rgba(255,255,255,.035));
+    border:1px solid rgba(232,196,118,.24)}
+  .mk-q{font-family:"Cinzel",serif; font-weight:700; font-size:16.5px; line-height:1.35; color:var(--cream)}
+  .mk-main{display:flex; align-items:center; gap:12px; margin-top:10px}
+  .mk-pct b{display:block; font-family:"Cinzel",serif; font-weight:900; font-size:31px; line-height:1; color:var(--gold-hi)}
+  .mk-pct span{display:block; margin-top:3px; font-size:9.5px; font-weight:600; letter-spacing:.16em; text-transform:uppercase; color:var(--cream-dim)}
+  .mk-chart{margin-left:auto; flex:0 0 auto}
+  .mk-bar{display:flex; height:8px; border-radius:99px; overflow:hidden; margin-top:11px; background:rgba(168,78,36,.55)}
+  .mk-bar i{display:block; background:linear-gradient(90deg, var(--gold-deep), var(--gold) 60%, var(--gold-hi))}
+  .mk-meta{display:flex; align-items:center; gap:8px; margin-top:10px}
+  .mk-meta .pm-delta{margin-left:auto}
+  .mk-ghost{filter:blur(5px); opacity:.5; pointer-events:none}
+  .mk-lock{display:flex; align-items:center; gap:12px; width:100%; text-align:left; margin-top:11px; padding:12px 13px; border-radius:14px; cursor:pointer;
+    background:rgba(5,16,10,.55); border:1px dashed rgba(232,196,118,.35); font-family:"Jost",sans-serif; -webkit-tap-highlight-color:transparent}
+  .mk-lock .lk{font-size:19px; flex:0 0 auto}
+  .mk-lock p{font-size:13.5px; line-height:1.45; color:var(--cream-dim)}
+  .mk-lock p b{color:var(--gold-hi); font-weight:600}
+  .pm-sfoot{margin-top:16px; text-align:center; font-size:12.5px; color:var(--cream-faint); font-style:italic; line-height:1.55}
   .ashows{display:inline-block; margin-top:9px; padding:6px 11px; border-radius:999px; font-size:12.5px; font-weight:600; letter-spacing:.02em;
     color:var(--gold-hi); border:1px solid rgba(232,196,118,.35); background:rgba(8,26,18,.4)}
   .ashows.tba{color:var(--cream-dim); font-weight:500}
@@ -438,8 +538,9 @@
 
     <div class="summary" id="summaryRow"></div>
 
-    <div class="secttl"><h3>Tonight's Itinerary</h3><div class="rule"></div></div>
-    <p class="sectsub">Everything the fam starred, in the order you'll hit it. Starred shows get a penciled-in time that keeps them from overlapping until someone picks one. Stops with a time line up by time; the rest slot in between by the fam's stars, most-wanted first, so the night flows like one itinerary. Tap any card for the full story, its spot on the map, and a suggested time — it's all shared, so the night stays in sync for everyone.</p>
+    <div class="secttl"><h3>Prediction Markets</h3><div class="rule"></div></div>
+    <p class="sectsub">Three burning questions, one fam, zero real dollars. Call each market, then open the board to see how the fam is leaning.</p>
+    <div id="pmCard"></div>
     <div id="planList"></div>
   </section>
 
@@ -568,6 +669,17 @@
     <div class="sheetgrab" aria-hidden="true"></div>
     <button class="dclose" data-detailclose type="button" aria-label="Close details"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg></button>
     <div id="detailBody"></div>
+  </div>
+</div>
+
+<div id="marketSheet" hidden>
+  <div class="sheetback" data-pmclose></div>
+  <div class="sheet" role="dialog" aria-label="Prediction markets">
+    <div class="sheetgrab" aria-hidden="true"></div>
+    <button class="dclose" data-pmclose type="button" aria-label="Close markets"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg></button>
+    <div class="sheethead-c"><h3>Prediction Markets</h3><div class="sheetsub">The Jollywood Exchange · 3 traders · settles at park close</div></div>
+    <div id="marketList"></div>
+    <p class="pm-sfoot">Markets settle when the party ends, Nov 28. Winner gets bragging rights and first pick of the hot cocoa.</p>
   </div>
 </div>
 
@@ -1272,6 +1384,7 @@ function makeSwipeable(sheetEl, backdropEl, onClose) {
 }
 makeSwipeable($("#mapSheet .sheet"), $("#mapSheet .sheetback"), closeMap);
 makeSwipeable($("#detailSheet .sheet"), $("#detailSheet .sheetback"), closeDetail);
+makeSwipeable($("#marketSheet .sheet"), $("#marketSheet .sheetback"), closeMarkets);
 
 document.addEventListener("click", (e) => {
   const card = e.target.closest("[data-detail]");
@@ -1315,6 +1428,158 @@ function tickCountdown() {
   mEl.textContent = String(m).padStart(2, "0"); sEl.textContent = String(s).padStart(2, "0");
 }
 
+
+/* ---------- prediction markets ---------- */
+const MARKETS = [
+  { id: "maingate-passes", q: "Will Andrés remember his maingate guest passes?" },
+  { id: "early-festival-items", q: "Will anybody let us purchase festival items before 7:30pm?" },
+  { id: "rain-this-year", q: "Will rain pour down on us this year?" },
+];
+const predictions = new Map();
+let pmLoaded = false;
+let pmIndex = 0;
+let pmReveal = false;
+
+function marketVotes(id) { return predictions.get(id) || []; }
+function myCall(id) { const v = marketVotes(id).find((x) => x.mine); return v ? v.choice : null; }
+function yesPct(id) {
+  const vs = marketVotes(id);
+  if (!vs.length) return null;
+  return Math.round((vs.filter((x) => x.choice === "yes").length / vs.length) * 100);
+}
+function deltaHtml(id) {
+  const d = (yesPct(id) ?? 50) - 50;
+  if (d > 0) return `<span class="pm-delta">▲ ${d} from open</span>`;
+  if (d < 0) return `<span class="pm-delta down">▼ ${-d} from open</span>`;
+  return `<span class="pm-delta">— even from open</span>`;
+}
+function sparkSvg(id) {
+  const vs = marketVotes(id);
+  const pts = [50];
+  let yes = 0;
+  vs.forEach((v, i) => { if (v.choice === "yes") yes++; pts.push(Math.round((yes / (i + 1)) * 100)); });
+  const X = (i) => 2 + (124 * i) / Math.max(1, pts.length - 1);
+  const Y = (p) => 42 - p * 0.38;
+  const line = pts.map((p, i) => `${X(i).toFixed(1)},${Y(p).toFixed(1)}`).join(" ");
+  const area = "M" + line.replaceAll(" ", " L") + " L126,48 L2,48 Z";
+  return `<svg class="mk-chart" width="128" height="48" viewBox="0 0 128 48" aria-hidden="true"><line x1="2" y1="${Y(50).toFixed(1)}" x2="126" y2="${Y(50).toFixed(1)}" stroke="rgba(247,239,218,.22)" stroke-width="1" stroke-dasharray="3 4"/><path d="${area}" fill="rgba(232,196,118,.07)"/><polyline points="${line}" fill="none" stroke="#E8C476" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/><circle cx="${X(pts.length - 1).toFixed(1)}" cy="${Y(pts[pts.length - 1]).toFixed(1)}" r="3.4" fill="#F6DE9C" stroke="#0A2318" stroke-width="1.6"/></svg>`;
+}
+function voterChips(id) {
+  return marketVotes(id).map((v) => `<span class="pmvchip"><b>${v.mine ? "You" : esc(v.by)}</b> · <span class="${v.choice === "yes" ? "vy" : "vn"}">${v.choice === "yes" ? "Yes" : "No"}</span></span>`).join("");
+}
+function pmDots() {
+  return MARKETS.map((m, i) => `<button class="pmdot${i === pmIndex ? " on" : ""}${myCall(m.id) ? " done" : ""}" data-pmdot="${i}" type="button" aria-label="Market ${i + 1}"><i></i></button>`).join("");
+}
+function pmFoot() {
+  return `<div class="pm-foot"><span class="pm-dots">${pmDots()}</span><button class="pm-board" data-pmboard type="button">View the markets <span>↑</span></button></div>`;
+}
+function renderPM() {
+  const host = $("#pmCard");
+  if (!host) return;
+  const total = MARKETS.length;
+  if (!pmLoaded) {
+    host.innerHTML = `<div class="pmcard"><div class="pm-top"><span class="pm-mkt">Prediction Markets</span></div><p class="pm-load">Opening the exchange…</p></div>`;
+    return;
+  }
+  const answered = MARKETS.filter((m) => myCall(m.id)).length;
+  if (answered === total && !pmReveal) {
+    host.innerHTML = `<div class="pmcard">
+      <div class="pm-top"><span class="pm-mkt">Prediction Markets</span><span class="pm-done">✓ All markets called</span></div>
+      ${MARKETS.map((m, i) => `<button class="pm-sumrow" data-pmgo="${i}" type="button"><span class="pm-sumq">${esc(m.q)}</span><span class="pm-sumpct">${yesPct(m.id)}%<small>chance yes</small></span></button>`).join("")}
+      <button class="pm-next" data-pmboard type="button">View the markets</button>
+    </div>`;
+    return;
+  }
+  const m = MARKETS[pmIndex];
+  const mine = myCall(m.id);
+  if (!mine || !pmReveal) {
+    host.innerHTML = `<div class="pmcard">
+      <div class="pm-top"><span class="pm-mkt">Market ${pmIndex + 1} of ${total}</span><span class="pm-live"><i></i>Now trading</span></div>
+      <h4 class="pm-q">${esc(m.q)}</h4>
+      <div class="pm-btns"><button class="pm-yes" data-pmvote="yes" type="button">Yes</button><button class="pm-no" data-pmvote="no" type="button">No</button></div>
+      ${pmFoot()}
+    </div>`;
+    return;
+  }
+  const pct = yesPct(m.id);
+  const vs = marketVotes(m.id);
+  const lean = pct > 50 ? `The market leans <b>Yes</b>` : pct < 50 ? `The market leans <b>No</b>` : `The market is <b>dead even</b>`;
+  const traders = vs.length >= 3 ? `All ${vs.length} traders are in` : `${vs.length} trader${vs.length === 1 ? "" : "s"} in so far`;
+  const nextOpen = MARKETS.findIndex((mm, i) => i !== pmIndex && !myCall(mm.id));
+  host.innerHTML = `<div class="pmcard">
+    <div class="pm-top"><span class="pm-mkt">Market ${pmIndex + 1} of ${total}</span><span class="pm-done">✓ Your call is in</span></div>
+    <h4 class="pm-q">${esc(m.q)}</h4>
+    <span class="pm-call ${mine}">Your call · ${mine === "yes" ? "Yes" : "No"}</span>
+    <div class="pm-split"><div class="pm-pct">${pct}%<small>Chance yes</small></div><div class="pm-versus">${lean}<br>${traders}</div></div>
+    <div class="pm-bar"><i style="width:${pct}%"></i></div>
+    <div class="pm-prices"><span class="price y">Yes ${pct}¢</span><span class="price n">No ${100 - pct}¢</span>${deltaHtml(m.id)}</div>
+    <div class="pm-voters">${voterChips(m.id)}</div>
+    <div class="pm-change"><span>Change your call</span><button class="cy${mine === "yes" ? " on" : ""}" data-pmflip="yes" type="button">Yes</button><button class="cn${mine === "no" ? " on" : ""}" data-pmflip="no" type="button">No</button></div>
+    ${nextOpen >= 0
+      ? `<button class="pm-next" data-pmnext="${nextOpen}" type="button">Next market →</button>`
+      : `<button class="pm-next ghost" data-pmboard type="button">See the board</button>`}
+    ${pmFoot()}
+  </div>`;
+}
+function renderMarkets() {
+  const host = $("#marketList");
+  if (!host) return;
+  host.innerHTML = MARKETS.map((m, i) => {
+    const mine = myCall(m.id);
+    if (!mine) {
+      return `<div class="mk">
+        <div class="mk-q">${esc(m.q)}</div>
+        <div class="mk-ghost"><div class="mk-main"><div class="mk-pct"><b>??%</b><span>Chance yes</span></div><svg class="mk-chart" width="128" height="48" viewBox="0 0 128 48" aria-hidden="true"><polyline points="2,24 44,14 84,32 126,20" fill="none" stroke="#E8C476" stroke-width="2.4"/></svg></div><div class="mk-bar"><i style="width:50%"></i></div></div>
+        <button class="mk-lock" data-pmgotovote="${i}" type="button"><span class="lk">🔒</span><p><b>Market locked.</b> Cast your call on this one to reveal the odds, the graph, and how the fam voted.</p></button>
+      </div>`;
+    }
+    const pct = yesPct(m.id);
+    return `<div class="mk">
+      <div class="mk-q">${esc(m.q)}</div>
+      <div class="mk-main"><div class="mk-pct"><b>${pct}%</b><span>Chance yes</span></div>${sparkSvg(m.id)}</div>
+      <div class="pm-bar" style="height:8px"><i style="width:${pct}%"></i></div>
+      <div class="mk-meta"><span class="price y">Yes ${pct}¢</span><span class="price n">No ${100 - pct}¢</span>${deltaHtml(m.id)}</div>
+      <div class="pm-voters">${voterChips(m.id)}</div>
+    </div>`;
+  }).join("");
+}
+function openMarkets() { renderMarkets(); $("#marketSheet").hidden = false; document.body.style.overflow = "hidden"; }
+function closeMarkets() { $("#marketSheet").hidden = true; document.body.style.overflow = ""; }
+async function castCall(marketId, choice) {
+  const prevArr = marketVotes(marketId).map((v) => ({ ...v }));
+  const vs = marketVotes(marketId).slice();
+  const ex = vs.find((v) => v.mine);
+  if (ex) ex.choice = choice;
+  else { vs.push({ by: me || "You", mine: true, choice, at: new Date().toISOString() }); vs.sort((a, b) => (a.at < b.at ? -1 : 1)); }
+  predictions.set(marketId, vs);
+  pmReveal = true;
+  renderPM();
+  if (!$("#marketSheet").hidden) renderMarkets();
+  try { await api("POST", "/api/jollywood/predictions", { marketId, choice }); }
+  catch (e) {
+    predictions.set(marketId, prevArr);
+    renderPM();
+    if (!$("#marketSheet").hidden) renderMarkets();
+    toast("That call didn't save — try again.");
+  }
+}
+document.addEventListener("click", (e) => {
+  const vote = e.target.closest("[data-pmvote]");
+  if (vote) { castCall(MARKETS[pmIndex].id, vote.dataset.pmvote); return; }
+  const flip = e.target.closest("[data-pmflip]");
+  if (flip) { if (flip.dataset.pmflip !== myCall(MARKETS[pmIndex].id)) castCall(MARKETS[pmIndex].id, flip.dataset.pmflip); return; }
+  const dot = e.target.closest("[data-pmdot]");
+  if (dot) { pmIndex = Number(dot.dataset.pmdot); pmReveal = !!myCall(MARKETS[pmIndex].id); renderPM(); return; }
+  const go = e.target.closest("[data-pmgo]");
+  if (go) { pmIndex = Number(go.dataset.pmgo); pmReveal = true; renderPM(); $("#pmCard").scrollIntoView({ block: "center", behavior: "smooth" }); return; }
+  const next = e.target.closest("[data-pmnext]");
+  if (next) { pmIndex = Number(next.dataset.pmnext); pmReveal = false; renderPM(); return; }
+  if (e.target.closest("[data-pmboard]")) { openMarkets(); return; }
+  const gv = e.target.closest("[data-pmgotovote]");
+  if (gv) { closeMarkets(); pmIndex = Number(gv.dataset.pmgotovote); pmReveal = false; renderPM(); setTimeout(() => $("#pmCard").scrollIntoView({ block: "center", behavior: "smooth" }), 60); return; }
+  if (e.target.closest("[data-pmclose]")) closeMarkets();
+});
+
 /* ---------- tabs ---------- */
 $$(".tabbtn").forEach((b) => b.addEventListener("click", () => {
   const tab = b.dataset.tab;
@@ -1328,13 +1593,21 @@ async function loadApp() {
   $("#gate").hidden = true;
   $("#app").hidden = false; $("#tabbar").hidden = false;
   $("#planList").innerHTML = `<div class="loading">Raising the curtain…</div>`;
-  const [g, v, p] = await Promise.all([
+  const [g, v, p, pr] = await Promise.all([
     api("GET", "/api/jollywood/items"),
     api("GET", "/api/jollywood/votes"),
     api("GET", "/api/jollywood/plan"),
+    api("GET", "/api/jollywood/predictions").catch(() => ({ predictions: [] })),
   ]);
   guide = g; me = v.me || null; orderIds = Array.isArray(p.order) ? p.order : [];
   times = p.times || {}; timeMeta = p.timeMeta || {};
+  predictions.clear();
+  for (const row of pr.predictions || []) {
+    if (!predictions.has(row.marketId)) predictions.set(row.marketId, []);
+    predictions.get(row.marketId).push({ by: row.by, mine: row.mine, choice: row.choice, at: row.at });
+  }
+  pmLoaded = true;
+  { const firstOpen = MARKETS.findIndex((m) => !myCall(m.id)); pmIndex = firstOpen === -1 ? 0 : firstOpen; pmReveal = false; }
   votes.clear();
   for (const row of v.votes || []) {
     if (!votes.has(row.itemId)) votes.set(row.itemId, []);
@@ -1355,7 +1628,7 @@ async function loadApp() {
     $("#meText").innerHTML = `You're signed in as <b>${esc(me)}</b> — your stars show in gold, and the fam's gameplan is built from everyone's picks together.`;
   }
   $("#mapFab").hidden = false;
-  renderFood(); renderDrinks(); renderActivities(); renderGameplan();
+  renderFood(); renderDrinks(); renderActivities(); renderGameplan(); renderPM();
   tickCountdown(); setInterval(tickCountdown, 1000);
   maybeShowHsToast();
 }
