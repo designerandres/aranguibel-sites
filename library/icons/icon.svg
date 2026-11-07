@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="30%" r="90%">
+      <stop offset="0%" stop-color="#2a5f45"/>
+      <stop offset="55%" stop-color="#1d4a36"/>
+      <stop offset="100%" stop-color="#0d271e"/>
+    </radialGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8e5a6"/>
+      <stop offset="30%" stop-color="#f0d488"/>
+      <stop offset="55%" stop-color="#d9b45e"/>
+      <stop offset="82%" stop-color="#b8892f"/>
+      <stop offset="100%" stop-color="#96702a"/>
+    </linearGradient>
+    <linearGradient id="page" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f6ecd2"/>
+      <stop offset="100%" stop-color="#ede3cb"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <rect x="14" y="14" width="484" height="484" rx="100" fill="none" stroke="#c9a227" stroke-opacity="0.4" stroke-width="3"/>
+  <g fill="#eec25c">
+    <circle cx="96" cy="104" r="5"/>
+    <circle cx="416" cy="96" r="4"/>
+    <circle cx="392" cy="408" r="5"/>
+    <circle cx="112" cy="392" r="4"/>
+    <circle cx="256" cy="66" r="4"/>
+  </g>
+  <!-- standing book, spine facing out -->
+  <g>
+    <rect x="176" y="96" width="160" height="320" rx="14" fill="url(#gold)" stroke="#8a5a16" stroke-width="4"/>
+    <rect x="192" y="112" width="128" height="288" rx="9" fill="none" stroke="#7a4d12" stroke-width="3" opacity="0.65"/>
+    <!-- open book cut into the cover -->
+    <path d="M256 178 C236 160 208 154 186 160 L186 306 C208 300 236 306 256 322 C276 306 304 300 326 306 L326 160 C304 154 276 160 256 178 Z"
+      fill="url(#page)" stroke="#8a5a16" stroke-width="5" stroke-linejoin="round"/>
+    <path d="M256 178 L256 322" stroke="#b3a58c" stroke-width="4"/>
+    <g stroke="#b3a58c" stroke-width="4" stroke-linecap="round" opacity="0.8">
+      <path d="M204 196 C218 192 234 194 246 200"/>
+      <path d="M204 228 C218 224 234 226 246 232"/>
+      <path d="M204 260 C218 256 234 258 246 264"/>
+      <path d="M266 200 C278 194 294 192 308 196"/>
+      <path d="M266 232 C278 226 294 224 308 228"/>
+      <path d="M266 264 C278 258 294 256 308 260"/>
+    </g>
+    <!-- spine bands -->
+    <rect x="176" y="128" width="160" height="7" fill="#8a5a16" opacity="0.55"/>
+    <rect x="176" y="377" width="160" height="7" fill="#8a5a16" opacity="0.55"/>
+    <!-- ribbon bookmark -->
+    <path d="M292 96 L292 168 L306 152 L320 168 L320 96 Z" fill="#7e2438"/>
+  </g>
+</svg>

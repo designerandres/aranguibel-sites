@@ -25,7 +25,7 @@ const INVITE_DAYS = 7;
 // Invitable apps, by slug. An account's scope is either null (a full
 // account — the household default) or a list of these slugs: guest accounts
 // created from a scoped invite only get into the apps they were invited to.
-export const APP_SLUGS = ["jollywood-fam-2026", "poppy-picks", "cycles", "max-pocket-agenda", "lodge-boys-2026", "wish-day-guide"];
+export const APP_SLUGS = ["jollywood-fam-2026", "poppy-picks", "cycles", "max-pocket-agenda", "lodge-boys-2026", "wish-day-guide", "library"];
 export function parseScope(raw) {
   if (!raw) return null;
   try {

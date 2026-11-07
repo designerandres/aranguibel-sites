@@ -1,0 +1,1104 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap');
+@import "tailwindcss";
+@import "tailwindcss-safe-area";
+
+@theme {
+  --text-xs: 12px;
+  --text-xs--line-height: 16px;
+  --text-sm: 14px;
+  --text-sm--line-height: 20px;
+  --text-base: 16px;
+  --text-base--line-height: 24px;
+  --text-lg: 18px;
+  --text-lg--line-height: 28px;
+  --text-xl: 20px;
+  --text-xl--line-height: 28px;
+  --text-2xl: 24px;
+  --text-2xl--line-height: 32px;
+  --text-3xl: 30px;
+  --text-3xl--line-height: 36px;
+  --text-4xl: 36px;
+  --text-4xl--line-height: 40px;
+  --text-5xl: 48px;
+  --text-5xl--line-height: 52px;
+  --font-display: "Cormorant Garamond", "EB Garamond", Georgia, serif;
+  --font-body: "EB Garamond", Georgia, serif;
+}
+
+:root {
+  color-scheme: dark;
+  --bg: #1d1209;
+  --surface: #2e2117;
+  --text: #ede3cb;
+  --dim: #b3a58c;
+  --border: rgba(237, 227, 203, 0.16);
+  --accent: #c9a227;
+  --radius: 14px;
+  --space-surface: var(--surface);
+  --space-surface-alt: #241708;
+  --space-muted: var(--dim);
+  --space-border: var(--border);
+  --space-accent: var(--accent);
+  --velvet: #1d4a36;
+  --velvet-deep: #143325;
+  --velvet-light: #2a5f45;
+  --wood: #4a3423;
+  --wood-light: #6b4a2c;
+  --walnut: #2e2117;
+  --parchment: #ede3cb;
+  --brass: #c9a227;
+  --sage: #8fae9b;
+}
+
+html {
+  background: #120a05;
+  background-color: #120a05;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--parchment);
+  background: #120a05;
+  background-color: #120a05;
+  overflow-x: clip;
+}
+
+[data-generated-space-root],
+.hatch-space-root {
+  background: #120a05;
+}
+
+/* ---- atmosphere: lamplit wood, velvet green only as a whisper ---- */
+.library-bg {
+  background:
+    radial-gradient(1100px 520px at 50% -120px, rgba(255, 190, 92, 0.17), transparent 60%),
+    radial-gradient(820px 460px at 88% 26%, rgba(29, 74, 54, 0.22), transparent 65%),
+    radial-gradient(760px 540px at 6% 78%, rgba(107, 74, 44, 0.30), transparent 70%),
+    linear-gradient(180deg, #2b1a0e 0%, #1d1209 48%, #120a05 100%);
+  min-height: 100vh;
+  min-height: 100dvh;
+  background-color: #120a05;
+}
+
+/* dust motes suspended in lamplight — only a few, very small, very
+   slow. Two animations run independently: a long lazy drift, and a
+   slower "lit" cycle that fades each mote in and out more than once
+   per pass, so a mote can wink out entirely when it drifts out of
+   the lamplight and catch the light again further along. */
+.motes {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  /* Above the page scenes (the archives frame and the content below
+     it sit at z-2): dust hangs in the room's air, in front of the
+     shelves, not behind the photographs. Sheets and their backdrops
+     (z-30+) still ride above it. */
+  z-index: 3;
+}
+.mote {
+  position: absolute;
+  border-radius: 9999px;
+  /* a bright pinpoint core with a soft falloff, plus a halo of
+     box-shadow: at 3–5px on a phone, a mote whose whole face is a
+     gradient fading to transparent reads as nothing at all — the
+     core has to carry real light for the eye to catch it against
+     the shelf photograph */
+  background: radial-gradient(circle, rgba(255, 238, 186, 1) 0%, rgba(255, 216, 138, 0.55) 38%, rgba(255, 205, 110, 0) 68%);
+  box-shadow: 0 0 8px 2px rgba(255, 206, 120, 0.30);
+  opacity: 0;
+  animation:
+    mote-drift ease-in-out infinite alternate,
+    mote-glow ease-in-out infinite;
+}
+/* a long, lazy wander: about 150px of climb with a sideways sway
+   on the way, eased at both ends. The drift runs alternate so the
+   return leg is the same path breathed back — no snap when the
+   loop restarts — and at 22–38s a leg, a mote travels several
+   pixels a second: slow, but plainly moving if you watch it for a
+   few seconds. (The previous tuning — 2–3px dots at peak opacity
+   ~0.3 crawling 100px over up to 50s — was below the threshold of
+   perception on a phone screen; Sarah reported seeing nothing
+   move at all.) */
+@keyframes mote-drift {
+  0% { transform: translate3d(0, 10px, 0); }
+  30% { transform: translate3d(calc(var(--mote-x, 30px) * 0.3), -45px, 0); }
+  65% { transform: translate3d(calc(var(--mote-x, 30px) * 0.7), -98px, 0); }
+  100% { transform: translate3d(var(--mote-x, 30px), -150px, 0); }
+}
+@keyframes mote-glow {
+  0%, 100% { opacity: 0; }
+  16% { opacity: var(--mote-opacity, 0.3); }
+  33% { opacity: 0; }
+  57% { opacity: calc(var(--mote-opacity, 0.3) * 0.75); }
+  74% { opacity: 0; }
+  89% { opacity: calc(var(--mote-opacity, 0.3) * 0.45); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mote { animation: none; opacity: 0.15; }
+}
+
+/* ---- glassy academia surfaces ---- */
+.glass {
+  background: linear-gradient(155deg, rgba(237, 227, 203, 0.09), rgba(237, 227, 203, 0.03) 55%, rgba(0, 0, 0, 0.12));
+  border: 1px solid rgba(237, 227, 203, 0.18);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 244, 214, 0.22),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.12),
+    0 10px 28px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: var(--radius);
+}
+.glass-brass {
+  border-color: rgba(201, 162, 39, 0.45);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 232, 170, 0.35),
+    0 0 0 1px rgba(201, 162, 39, 0.12),
+    0 12px 32px rgba(0, 0, 0, 0.4),
+    0 0 42px rgba(255, 190, 92, 0.08);
+}
+/* On the book detail pages ONLY the thin glass rim goes gold — the
+   tile's dark glass fill stays exactly as it was. The gradient
+   lives on a ::before ring masked down to the border's 1px: a
+   background-layer trick can't do this, because the glass fill is
+   translucent and an opaque gradient layer under it would bleed
+   through the whole tile. The ring is palest where the picture
+   light catches the top edge and deepens to bronze at the foot.
+   Where mask compositing is unavailable the tile keeps a flat
+   gold-tinted border instead — thin and gold either way, never a
+   gold fill. */
+.detail-view .glass {
+  position: relative;
+  border-color: rgba(224, 172, 74, 0.5);
+}
+@supports ((-webkit-mask-composite: xor) or (mask-composite: exclude)) {
+  .detail-view .glass { border-color: transparent; }
+  .detail-view .glass::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(172deg, rgba(255, 238, 180, 0.95) 0%, rgba(238, 194, 92, 0.85) 24%, rgba(190, 138, 48, 0.8) 52%, rgba(122, 80, 22, 0.85) 80%, rgba(214, 164, 62, 0.7) 100%);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+}
+.glass-btn {
+  background: linear-gradient(160deg, rgba(237, 227, 203, 0.13), rgba(237, 227, 203, 0.04));
+  border: 1px solid rgba(237, 227, 203, 0.22);
+  box-shadow: inset 0 1px 0 rgba(255, 244, 214, 0.25), 0 4px 14px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+.glass-btn:active { transform: scale(0.97); }
+.glass-btn[aria-pressed="true"], .glass-btn.active {
+  border-color: rgba(143, 174, 155, 0.6);
+  background: linear-gradient(160deg, rgba(29, 74, 54, 0.75), rgba(20, 51, 37, 0.6));
+  color: #e9f2e2;
+}
+
+/* ---- golden gradient accents, glowing like the quill in the
+   curtain photograph: a lit-brass gradient face, a bright rim, and
+   a warm outer halo. Primary actions get the full gradient;
+   pills and secondary controls get the gold rim + halo over dark
+   wood glass. ---- */
+.gold-btn {
+  background: linear-gradient(165deg, #f8e28f 0%, #eec25c 32%, #cf9a35 60%, #a06c1e 88%, #8a5a16 100%);
+  border: 1px solid rgba(255, 230, 155, 0.9);
+  color: #2b1a05;
+  font-weight: 600;
+  text-shadow: 0 1px 0 rgba(255, 244, 205, 0.55);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 250, 224, 0.85),
+    inset 0 -2px 5px rgba(94, 58, 6, 0.4),
+    0 4px 14px rgba(0, 0, 0, 0.42),
+    0 0 16px rgba(255, 196, 92, 0.42),
+    0 0 44px rgba(255, 176, 66, 0.16);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+}
+.gold-btn:hover { filter: brightness(1.06); }
+.gold-btn:active { transform: scale(0.97); }
+.gold-btn:disabled {
+  opacity: 0.55;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 250, 224, 0.6),
+    0 2px 8px rgba(0, 0, 0, 0.35),
+    0 0 8px rgba(255, 196, 92, 0.2);
+}
+.gold-pill {
+  background: linear-gradient(160deg, rgba(74, 50, 14, 0.6), rgba(32, 21, 8, 0.62));
+  border: 1px solid rgba(224, 172, 74, 0.7);
+  color: #f2d68c;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 234, 175, 0.3),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.18),
+    0 3px 10px rgba(0, 0, 0, 0.32),
+    0 0 12px rgba(255, 196, 92, 0.26),
+    0 0 30px rgba(255, 176, 66, 0.1);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+.gold-pill:active { transform: scale(0.97); }
+.gold-pill[aria-pressed="true"] {
+  background: linear-gradient(165deg, #f8e28f 0%, #eec25c 32%, #cf9a35 60%, #a06c1e 88%, #8a5a16 100%);
+  border-color: rgba(255, 230, 155, 0.9);
+  color: #2b1a05;
+  font-weight: 600;
+  text-shadow: 0 1px 0 rgba(255, 244, 205, 0.55);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 250, 224, 0.85),
+    inset 0 -2px 5px rgba(94, 58, 6, 0.4),
+    0 4px 14px rgba(0, 0, 0, 0.42),
+    0 0 16px rgba(255, 196, 92, 0.45),
+    0 0 44px rgba(255, 176, 66, 0.18);
+}
+/* the sort dropdown, dressed exactly like the gold pills: lit-gold
+   gradient face over dark wood, gold rim, warm outer glow */
+.gold-select {
+  appearance: none;
+  -webkit-appearance: none;
+  background: linear-gradient(160deg, rgba(74, 50, 14, 0.6), rgba(32, 21, 8, 0.62));
+  border: 1px solid rgba(224, 172, 74, 0.7);
+  color: #f2d68c;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 234, 175, 0.3),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.18),
+    0 3px 10px rgba(0, 0, 0, 0.32),
+    0 0 12px rgba(255, 196, 92, 0.26),
+    0 0 30px rgba(255, 176, 66, 0.1);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  cursor: pointer;
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+.gold-select:focus {
+  outline: none;
+  border-color: rgba(238, 194, 92, 0.95);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 234, 175, 0.3),
+    0 0 0 2px rgba(201, 162, 39, 0.22),
+    0 0 18px rgba(255, 196, 92, 0.38),
+    0 0 36px rgba(255, 176, 66, 0.14);
+}
+.gold-select option { background: #2e2117; color: #ede3cb; }
+
+/* the search field, dressed like the gold select: dark wood face,
+   gold rim, warm outer glow — typed text in warm parchment so it
+   stays easy to read against the dark face. Deliberately NO
+   backdrop-filter on the input itself (see the caret note below):
+   the wood tones run a touch more opaque to make up for the lost
+   blur, and the look is unchanged. */
+.gold-input {
+  background: linear-gradient(160deg, rgba(74, 50, 14, 0.82), rgba(32, 21, 8, 0.85));
+  border: 1px solid rgba(224, 172, 74, 0.7);
+  color: #f6ecd2;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 234, 175, 0.3),
+    inset 0 0 0 1px rgba(0, 0, 0, 0.18),
+    0 3px 10px rgba(0, 0, 0, 0.32),
+    0 0 12px rgba(255, 196, 92, 0.26),
+    0 0 30px rgba(255, 176, 66, 0.1);
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+/* ---- the caret, for real this time ----
+   Three earlier rounds chased this with line-height tweaks and it
+   kept failing on Sarah's iPhone, because the offset was never
+   (only) a line-height problem. iOS WebKit paints the insertion
+   caret in its own layer, and three things stacked in this app
+   desync that layer from the glyphs:
+   1. font-size under 16px — iOS auto-zooms the page on focus, and
+      in a webview the caret layer does not follow the zoom/layout
+      shift, so the caret lands a line low. Every text field here is
+      now 16px, so focus never zooms.
+   2. an author line-height on the input — WebKit centers the glyph
+      line box but anchors the caret rect to the font's first
+      baseline; with EB Garamond's lopsided metrics (ascent 1007,
+      descent 298 per 1000 upem, measured from the served font) any
+      specified line-height splits the difference unevenly and the
+      caret rides low. line-height: normal removes the second line
+      box entirely: glyphs and caret share the font's own metrics.
+   3. backdrop-filter / native textfield appearance on the input
+      element itself — both force WebKit to composite the field
+      through paths where the caret layer's origin desyncs from the
+      text layer. The blur moved off the input (above) and the
+      fields render with appearance: none so the plain box model —
+      one line box, one caret — is all WebKit has to paint.
+   The caret itself stays brass. */
+.gold-input, input.field, textarea.field {
+  -webkit-appearance: none;
+  appearance: none;
+}
+.gold-input { line-height: normal; caret-color: #eec25c; }
+.gold-input::placeholder { color: rgba(242, 214, 140, 0.55); }
+.gold-input:focus {
+  outline: none;
+  border-color: rgba(238, 194, 92, 0.95);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 234, 175, 0.3),
+    0 0 0 2px rgba(201, 162, 39, 0.22),
+    0 0 18px rgba(255, 196, 92, 0.38),
+    0 0 36px rgba(255, 176, 66, 0.14);
+}
+
+.gold-field {
+  border-color: rgba(224, 172, 74, 0.55);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 244, 214, 0.1),
+    0 0 12px rgba(255, 196, 92, 0.2);
+}
+.gold-field:focus {
+  border-color: rgba(238, 194, 92, 0.9);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 244, 214, 0.1),
+    0 0 0 2px rgba(201, 162, 39, 0.22),
+    0 0 18px rgba(255, 196, 92, 0.32);
+}
+
+/* wooden shelf plank under each row of books */
+.shelf-plank {
+  height: 14px;
+  border-radius: 3px;
+  background:
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.10) 0 2px, transparent 2px 64px),
+    linear-gradient(180deg, #77572f 0%, #5d4128 30%, #4a3423 62%, #2c1c11 100%);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 220, 160, 0.35), inset 0 -2px 3px rgba(0, 0, 0, 0.45);
+}
+
+.book-cover {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+/* Shelf tiles skip layout and paint entirely until they scroll
+   near the viewport: a year page holds up to 41 covers, and
+   rendering every one up front was a real share of the scroll
+   jank and the memory the webview had to hold. The intrinsic
+   size keeps the page height (and scrollbar) honest for tiles
+   that are still skipped. */
+.book-tile-cv {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 240px;
+}
+.cloth-placeholder {
+  background:
+    radial-gradient(120% 90% at 50% 0%, rgba(255, 220, 160, 0.14), transparent 60%),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.025) 0 2px, transparent 2px 5px),
+    linear-gradient(165deg, #1d4a36, #123528 60%, #0d271e);
+}
+.cloth-frame {
+  border: 1px solid rgba(201, 162, 39, 0.55);
+  outline: 1px solid rgba(201, 162, 39, 0.25);
+  outline-offset: 3px;
+}
+
+.font-display { font-family: var(--font-display); }
+.smallcaps {
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+}
+
+input, textarea, select {
+  font-family: var(--font-body);
+}
+.field {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(237, 227, 203, 0.22);
+  border-radius: 10px;
+  color: var(--parchment);
+  box-shadow: inset 0 1px 0 rgba(255, 244, 214, 0.08);
+}
+.field:focus {
+  outline: none;
+  border-color: rgba(201, 162, 39, 0.7);
+  box-shadow: 0 0 0 2px rgba(201, 162, 39, 0.2);
+}
+.field::placeholder { color: rgba(167, 157, 132, 0.7); }
+select.field option { background: #2e2117; color: #ede3cb; }
+
+/* The caret rules live with .gold-input above: no author
+   line-height on any text field (line-height: normal, so glyphs
+   and caret share the font's own line box), 16px type everywhere
+   (no iOS focus zoom), appearance: none, and a brass caret. The
+   old 1.4/1.45 line-height overrides that used to sit here were
+   part of the problem on iOS, not the cure. */
+.field { caret-color: #eec25c; line-height: normal; }
+
+/* ---- the archives (home, after Sarah's design mock) ----
+   The header, shelf planks, and paneled base are full-width
+   photographic bands cropped from Sarah's reference mock itself, so
+   they run edge to edge with nothing inset or cut off. Only the
+   stack of year volumes between the planks is live markup. */
+/* The archives scene is a direct full-width child of the page root
+   (no 100vw breakout): 100vw includes the scrollbar width and was
+   clipping the scene's top, bottom, and right edge. */
+.archives-frame {
+  width: 100%;
+  background: #140b06;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.45);
+}
+.archives-frame img { user-select: none; }
+
+/* curtain header photograph, with invisible hit targets laid over
+   the magnifier (left) and quill (right) baked into the image —
+   their centers sit at 9.5% / 90.5% of the width, 22% of the height.
+   The box carries the photograph's own aspect ratio (1008×540) and
+   a near-black curtain tone, and the photograph fills it absolutely:
+   the box is at full height from the very first frame, before the
+   photograph's bytes arrive, so the vignette above it (sized as a
+   percentage of this box) is full-size from first paint on every
+   visit — it no longer waits on image-load timing, which is what
+   made it intermittent. Identical rendering once the photo lands:
+   same box, same crop (the ratio matches, so object-fit crops
+   nothing). */
+.archives-header {
+  position: relative;
+  aspect-ratio: 1008 / 540;
+  background: #10130c;
+}
+.archives-header > img:first-child {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* the paneled base photograph's box (1008×342), same treatment as
+   the header: full height from first paint so the bottom vignette
+   riding on it is never at the mercy of the image request */
+.archives-panel {
+  position: relative;
+  aspect-ratio: 1008 / 342;
+  background: #17100a;
+}
+.archives-panel > img:first-child {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ---- edge vignettes: the scene's photographs cannot bleed past
+   the shell's own chrome at the very top of the screen or past the
+   page's end at the bottom, so instead their hard horizontal cuts
+   dissolve into the page's deep brown (#120a05 — the tone the top
+   scrim and the page background already wear). The top fade starts
+   solid at the header photograph's first row and gives out a fifth
+   of the way down the curtain, clear of the lamp; the bottom fade
+   mirrors it across the panel photograph's lower third, below the
+   plaque, and lands on solid #120a05 at its last row so the wood
+   melts straight into the page background beneath. Both overlays
+   are click-through and sit under the header's search bar (z-4). */
+.frame-fade-top {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 21%;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(180deg,
+    #120a05 0%,
+    rgba(18, 10, 5, 0.78) 26%,
+    rgba(18, 10, 5, 0.42) 52%,
+    rgba(18, 10, 5, 0.14) 78%,
+    rgba(18, 10, 5, 0) 100%);
+}
+.frame-fade-bottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 36%;
+  pointer-events: none;
+  background: linear-gradient(0deg,
+    #120a05 0%,
+    rgba(18, 10, 5, 0.78) 30%,
+    rgba(18, 10, 5, 0.42) 58%,
+    rgba(18, 10, 5, 0.14) 82%,
+    rgba(18, 10, 5, 0) 100%);
+}
+.header-hit {
+  position: absolute;
+  top: 22%;
+  width: 15%;
+  aspect-ratio: 1;
+  max-width: 76px;
+  transform: translate(-50%, -50%);
+  border-radius: 999px;
+  cursor: pointer;
+}
+.header-hit-left { left: 9.5%; }
+.header-hit-right { left: 90.5%; }
+.header-hit:focus-visible {
+  outline: 2px solid rgba(240, 212, 138, 0.9);
+  outline-offset: 2px;
+}
+.header-hit:active { background: radial-gradient(circle, rgba(255, 214, 130, 0.22), transparent 70%); }
+
+/* the top search bar: a clean gold pill laid across the curtain
+   photograph, centered on the band where THE ARCHIVES title and
+   the magnifier sit (title at 11% of the header height, icons at
+   22%), so opening search replaces those two elements in place.
+   The bar is always mounted — closed it is only transparent and
+   click-through, never display:none — because the magnifier's tap
+   must be able to focus the field inside the same gesture for
+   iOS to raise the keyboard. */
+.header-search {
+  position: absolute;
+  left: 3.5%;
+  right: 3.5%;
+  top: 15%;
+  transform: translateY(-54%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+  z-index: 4;
+}
+.header-search-open {
+  transform: translateY(-50%);
+  opacity: 1;
+  pointer-events: auto;
+}
+@media (prefers-reduced-motion: reduce) {
+  .header-search { transition: none; }
+}
+.header-search-close {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #f2d68c;
+  background: radial-gradient(circle at 35% 30%, rgba(74, 52, 35, 0.9), rgba(36, 23, 8, 0.9) 70%);
+  border: 1px solid rgba(224, 172, 74, 0.55);
+  box-shadow: inset 0 1px 0 rgba(255, 234, 175, 0.25), 0 2px 8px rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+}
+.header-search-close:active { transform: translateY(-50%) scale(0.94); }
+.header-search-close:focus-visible {
+  outline: 2px solid rgba(240, 212, 138, 0.9);
+  outline-offset: 2px;
+}
+
+/* the recessed cubby between the two shelf planks, framed by the
+   bookcase's own walnut jambs (the mock's side wood, tiled behind
+   the cubby and visible in the 4.6% pillars on either side) */
+.stack-frame {
+  padding-inline: 4.6%;
+}
+.stack-cubby {
+  position: relative;
+  background: linear-gradient(180deg, #060302 0%, #0d0704 55%, #080403 100%);
+  box-shadow:
+    inset 26px 0 34px -18px rgba(0, 0, 0, 0.95),
+    inset -26px 0 34px -18px rgba(0, 0, 0, 0.95),
+    inset 0 44px 38px -16px rgba(0, 0, 0, 0.95);
+}
+/* the picture light's spill across the whole stack, laid over the
+   books the way real light falls: a warm pool at the top of the
+   cubby that decays down the volumes and a deepening shade pooling
+   at the stack's foot. Light sits above gilt and leather alike.
+   The first stop is a band of near-black: the cubby's mouth sits in
+   the top plank's underside shadow, so its top rows start as dark
+   as the plank photograph's own black bottom edge and only warm
+   into the lamplight a few dozen pixels down — no hard horizontal
+   cut where the plank photo ends and the live cubby begins. */
+.stack-cubby::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  background:
+    radial-gradient(95% 42% at 50% 3%, rgba(255, 198, 110, 0.12), rgba(255, 198, 110, 0) 70%),
+    linear-gradient(180deg, rgba(2, 1, 0, 0.94) 0, rgba(2, 1, 0, 0.62) 16px, rgba(2, 1, 0, 0.18) 38px, rgba(255, 196, 110, 0.05) 84px, rgba(255, 196, 110, 0) 30%, rgba(0, 0, 0, 0) 74%, rgba(0, 0, 0, 0.32) 100%);
+}
+.stack-list {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(2px, 0.45vw, 4px);
+  padding: clamp(14px, 3.2vw, 36px) 9.5% clamp(10px, 1.4vw, 18px);
+}
+.stack-book {
+  position: relative;
+  width: 100%;
+  height: clamp(42px, 10vw, 68px);
+  border-radius: 3px 6px 6px 3px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #f2e7c8;
+  /* the gilt rim each spine catches along its top edge, the warm
+     wash just under it, the deep seam shadow along the bottom, and
+     the ends curving away into the cubby dark */
+  box-shadow:
+    inset 0 1px 0 rgba(255, 232, 175, 0.62),
+    inset 0 3px 5px rgba(255, 205, 120, 0.16),
+    inset 0 -8px 13px rgba(0, 0, 0, 0.52),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.7),
+    inset 16px 0 20px -12px rgba(0, 0, 0, 0.66),
+    inset -16px 0 20px -12px rgba(0, 0, 0, 0.66),
+    0 8px 16px rgba(0, 0, 0, 0.55);
+  transition: transform 0.25s cubic-bezier(0.2, 0.9, 0.3, 1.3), box-shadow 0.25s ease;
+}
+.stack-book:hover, .stack-book:focus-visible {
+  transform: translateX(7px) scale(1.012);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 236, 190, 0.72),
+    inset 0 3px 5px rgba(255, 205, 120, 0.2),
+    inset 0 -6px 11px rgba(0, 0, 0, 0.45),
+    inset 16px 0 20px -12px rgba(0, 0, 0, 0.6),
+    inset -16px 0 20px -12px rgba(0, 0, 0, 0.6),
+    0 14px 26px rgba(0, 0, 0, 0.6),
+    0 0 24px rgba(255, 196, 100, 0.16);
+  outline: none;
+  z-index: 2;
+}
+.stack-book:active { transform: translateX(11px) scale(1.02); }
+/* the year, gilt like the mock's: a gold-leaf gradient running from
+   pale at the top of each glyph to deep bronze at the foot, with a
+   hard dark drop under it for the embossed stamp depth (drop-shadow
+   filters, not text-shadow, so the shadow stays behind the gradient
+   fill instead of showing through it) */
+.stack-year {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(22px, 5vw, 36px);
+  line-height: 1;
+  letter-spacing: 0.1em;
+  margin-left: 0.1em;
+  background: linear-gradient(180deg, #f8e5a6 0%, #f0d488 30%, #d9b45e 55%, #b8892f 82%, #96702a 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.8)) drop-shadow(0 0 13px rgba(255, 200, 100, 0.22));
+}
+/* raised band pairs, positioned as measured on the mock's spines:
+   centered at 21.8% and 76.9% of the spine width. In the mock they
+   are incised, not painted: a dark groove, a hairline of gilt where
+   the ridge catches the light, the ridge top between them, gilt and
+   groove again — all translucent, so the leather grain runs through
+   them, and melting into the rims at top and bottom. */
+.spine-bands {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  width: clamp(9px, 2.4vw, 12px);
+  transform: translateX(-50%);
+  opacity: 0.92;
+  background: linear-gradient(90deg,
+    rgba(24, 12, 4, 0.62) 0%, rgba(24, 12, 4, 0.62) 9%,
+    rgba(243, 205, 125, 0.66) 14%, rgba(243, 205, 125, 0.66) 24%,
+    rgba(24, 12, 4, 0.5) 30%, rgba(24, 12, 4, 0.18) 44%,
+    rgba(255, 232, 175, 0.16) 50%,
+    rgba(24, 12, 4, 0.18) 56%, rgba(24, 12, 4, 0.5) 70%,
+    rgba(243, 205, 125, 0.66) 76%, rgba(243, 205, 125, 0.66) 86%,
+    rgba(24, 12, 4, 0.62) 91%, rgba(24, 12, 4, 0.62) 100%);
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 14%, #000 86%, transparent 100%);
+  mask-image: linear-gradient(180deg, transparent 0, #000 14%, #000 86%, transparent 100%);
+}
+.spine-bands-left { left: 21.8%; }
+.spine-bands-right { left: 76.9%; }
+/* the mock's own gold filigree medallion, centered at 13.1% / 84.6%.
+   The ornament itself is ~52% of the spine height in the mock; the
+   extraction is tightly cropped, so the element height tracks it.
+   The dark drop under it is the stamp's incised depth. */
+.stack-filigree {
+  position: absolute;
+  top: 50%;
+  height: 56%;
+  width: auto;
+  transform: translate(-50%, -50%);
+  filter: brightness(1.1) drop-shadow(0 1px 1px rgba(0, 0, 0, 0.62)) drop-shadow(0 0 5px rgba(255, 196, 92, 0.18));
+  pointer-events: none;
+}
+.stack-filigree-left { left: 13.1%; }
+.stack-filigree-right { left: 84.6%; }
+
+/* how many books Sarah read that year, stamped in glowing gold
+   toward the spine's right edge, past the filigree */
+.stack-count {
+  position: absolute;
+  left: 88.6%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1;
+  pointer-events: none;
+}
+.stack-count-num {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(14px, 3vw, 20px);
+  background: linear-gradient(170deg, #fbe9a8 0%, #eec25c 45%, #c9932f 75%, #9c6b21 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.75)) drop-shadow(0 0 7px rgba(255, 196, 92, 0.45));
+}
+.stack-count-label {
+  margin-top: 3px;
+  font-size: 8.5px;
+  letter-spacing: 0.22em;
+  margin-right: -0.22em;
+  text-transform: uppercase;
+  color: rgba(242, 214, 140, 0.92);
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.8), 0 0 8px rgba(255, 196, 92, 0.35);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stack-book { transition: none; }
+  .stack-book:hover, .stack-book:active { transform: none; }
+}
+
+/* ---- the wishlist: a standing book beside the stack ----
+   The cubby's row holds the horizontal year stack on the left and
+   one upright volume on the right, standing on the same shelf. Its
+   spine is live markup like the year books: the mock's leather, a
+   curvature gradient across its width, incised band pairs running
+   horizontally near the head and foot, the filigree stamped under
+   the head bands, WISHLIST gilt vertically down the spine, and the
+   to-read count stamped above the foot bands. */
+.stack-row {
+  display: flex;
+  align-items: stretch;
+  gap: clamp(10px, 3vw, 30px);
+  padding: clamp(14px, 3.2vw, 36px) 9.5% clamp(10px, 1.4vw, 18px);
+}
+.stack-row .stack-list { flex: 1 1 auto; min-width: 0; padding: 0; }
+.wish-stand {
+  flex: 0 0 auto;
+  width: clamp(48px, 11.5%, 78px);
+  display: flex;
+  /* The book leans against the cubby's right wall: pivoted on its
+     foot, tipped a few degrees right so its head rests toward the
+     jamb. The lean lives on the wrapper so the spine's own
+     pull-out hover transform still runs clean. */
+  transform: rotate(4.5deg);
+  transform-origin: 25% 100%;
+}
+.wish-spine {
+  position: relative;
+  width: 100%;
+  /* Corners eased back a touch from the year books' 3px/6px —
+     Sarah asked for the rounding reduced very slightly. */
+  border-radius: 2px 4px 4px 2px;
+  cursor: pointer;
+  color: #f2e7c8;
+  overflow: hidden;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 232, 175, 0.62),
+    inset 0 3px 5px rgba(255, 205, 120, 0.16),
+    inset 0 -8px 13px rgba(0, 0, 0, 0.52),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.7),
+    inset 14px 0 18px -10px rgba(0, 0, 0, 0.66),
+    inset -14px 0 18px -10px rgba(0, 0, 0, 0.66),
+    0 8px 16px rgba(0, 0, 0, 0.55);
+  transition: transform 0.25s cubic-bezier(0.2, 0.9, 0.3, 1.3), box-shadow 0.25s ease;
+}
+.wish-spine:hover, .wish-spine:focus-visible {
+  transform: translateX(-5px) scale(1.012);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 236, 190, 0.72),
+    inset 0 3px 5px rgba(255, 205, 120, 0.2),
+    inset 0 -6px 11px rgba(0, 0, 0, 0.45),
+    inset 14px 0 18px -10px rgba(0, 0, 0, 0.6),
+    inset -14px 0 18px -10px rgba(0, 0, 0, 0.6),
+    0 14px 26px rgba(0, 0, 0, 0.6),
+    0 0 24px rgba(255, 196, 100, 0.16);
+  outline: none;
+  z-index: 2;
+}
+.wish-spine:active { transform: translateX(-8px) scale(1.02); }
+@media (prefers-reduced-motion: reduce) {
+  .wish-spine { transition: none; }
+  .wish-spine:hover, .wish-spine:active { transform: none; }
+}
+/* WISHLIST, gilt down the spine, reading bottom-to-top the way a
+   real standing book's spine title runs */
+.wish-spine-title {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(180deg);
+  writing-mode: vertical-rl;
+  /* All caps, stamped like a real spine title — caps read far
+     better at this size, sideways, than the old title case. */
+  text-transform: uppercase;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(19px, 4.6vw, 30px);
+  line-height: 1;
+  letter-spacing: 0.16em;
+  white-space: nowrap;
+  background: linear-gradient(180deg, #f8e5a6 0%, #f0d488 30%, #d9b45e 55%, #b8892f 82%, #96702a 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.8)) drop-shadow(0 0 13px rgba(255, 200, 100, 0.22));
+  pointer-events: none;
+}
+/* incised band pairs across a standing spine — the .spine-bands
+   ridge profile turned ninety degrees */
+.spine-bands-h {
+  position: absolute;
+  left: 5px;
+  right: 5px;
+  height: clamp(9px, 2.4vw, 12px);
+  opacity: 0.92;
+  background: linear-gradient(180deg,
+    rgba(24, 12, 4, 0.62) 0%, rgba(24, 12, 4, 0.62) 9%,
+    rgba(243, 205, 125, 0.66) 14%, rgba(243, 205, 125, 0.66) 24%,
+    rgba(24, 12, 4, 0.5) 30%, rgba(24, 12, 4, 0.18) 44%,
+    rgba(255, 232, 175, 0.16) 50%,
+    rgba(24, 12, 4, 0.18) 56%, rgba(24, 12, 4, 0.5) 70%,
+    rgba(243, 205, 125, 0.66) 76%, rgba(243, 205, 125, 0.66) 86%,
+    rgba(24, 12, 4, 0.62) 91%, rgba(24, 12, 4, 0.62) 100%);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 14%, #000 86%, transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0, #000 14%, #000 86%, transparent 100%);
+  pointer-events: none;
+}
+.spine-bands-h-top { top: 4.5%; }
+.spine-bands-h-bottom { bottom: 4.5%; }
+.wish-filigree {
+  position: absolute;
+  top: 9.5%;
+  left: 50%;
+  width: 62%;
+  height: auto;
+  transform: translateX(-50%);
+  filter: brightness(1.1) drop-shadow(0 1px 1px rgba(0, 0, 0, 0.62)) drop-shadow(0 0 5px rgba(255, 196, 92, 0.18));
+  pointer-events: none;
+}
+.wish-count {
+  position: absolute;
+  left: 50%;
+  bottom: 9.5%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1;
+  pointer-events: none;
+}
+
+/* "THE ARCHIVES" in the header photograph is a home link: an
+   invisible hit target laid over the title (centered, upper band) */
+.header-title-hit {
+  position: absolute;
+  left: 50%;
+  top: 11%;
+  transform: translate(-50%, -50%);
+  width: 56%;
+  height: 19%;
+  cursor: pointer;
+  border-radius: 8px;
+}
+.header-title-hit:focus-visible {
+  outline: 2px solid rgba(240, 212, 138, 0.9);
+  outline-offset: 2px;
+}
+
+/* when a year page is open, the magnifier spot becomes a back
+   button: a dark walnut medallion with a glowing gold arrow laid
+   over the baked-in icon, at the same measured center */
+.header-back-badge {
+  position: absolute;
+  left: 9.5%;
+  top: 22%;
+  transform: translate(-50%, -50%);
+  width: clamp(40px, 11vw, 54px);
+  aspect-ratio: 1;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at 35% 30%, #4a3423, #241708 70%);
+  border: 1px solid rgba(224, 172, 74, 0.75);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 234, 175, 0.3),
+    0 3px 10px rgba(0, 0, 0, 0.5),
+    0 0 14px rgba(255, 196, 92, 0.35);
+  color: #f2d68c;
+  pointer-events: none;
+}
+
+/* ---- currently reading: golden circle button + bottom sheet ---- */
+.reading-fab {
+  position: fixed;
+  right: 18px;
+  bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+  z-index: 15;
+  width: 60px;
+  height: 60px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  background: rgba(8, 4, 2, 0.62);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  animation: sheet-fade 0.2s ease;
+}
+.bottom-sheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 31;
+  max-height: 78dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 20px 20px 0 0;
+  border-top: 1px solid rgba(224, 172, 74, 0.5);
+  box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.55), 0 0 32px rgba(255, 196, 92, 0.1);
+  animation: sheet-rise 0.26s cubic-bezier(0.2, 0.9, 0.3, 1.1);
+  transition: bottom 0.18s ease, max-height 0.18s ease;
+}
+/* the sheet's own scroll area — the sheet shell stays pinned above
+   the keyboard (its bottom offset is set from the visual viewport
+   in JS) while this inner region scrolls the focused field into
+   view. Bottom padding clears the black fade overlay. */
+.sheet-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  scroll-padding-bottom: 96px;
+  padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+}
+/* black shadow fading gradient at the sheet's bottom edge —
+   content melts into black as it scrolls under, never white */
+.sheet-bottom-fade {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 76px;
+  z-index: 3;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.55) 46%, rgba(0, 0, 0, 0.92) 82%, #000 100%);
+}
+@keyframes sheet-rise {
+  from { transform: translateY(48px); opacity: 0.4; }
+  to { transform: translateY(0); opacity: 1; }
+}
+@keyframes sheet-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bottom-sheet, .sheet-backdrop { animation: none; }
+}
+
+/* ---- home screen: the whole archives scene fits one viewport ----
+   At natural size the scene (curtain header at its photograph's
+   aspect, both planks, the seven-volume stack, the paneled base)
+   runs a little taller than a phone's visible viewport, so the
+   panel's bottom vignette sat below the fold and the page scrolled.
+   On the home view only, the page root locks to exactly the
+   viewport height with overflow hidden — no vertical scroll at
+   all — and the frame becomes a flex column whose bands take
+   viewport-proportioned heights while the stack cubby absorbs
+   whatever room remains: the year volumes flex to fill it, growing
+   or shrinking a few pixels each instead of pushing the panel (and
+   its fade-to-#120a05 vignette) off the bottom of the screen. The
+   header and panel photographs cover-crop inside their bands with
+   the crop anchored so the title, icons, lamp, and plaque stay in
+   frame; the vignette overlays are percentages of those same boxes,
+   so both fades always land inside the viewport. Off the home view
+   (year pages, search results) nothing here applies and the page
+   scrolls as before. */
+.home-fit {
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.archives-frame-home {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.archives-frame-home .archives-header {
+  flex: none;
+  height: 26.5dvh;
+  min-height: 0;
+}
+.archives-frame-home .archives-header > img:first-child {
+  object-position: 50% 22%;
+}
+.archives-frame-home > img {
+  flex: none;
+  width: 100%;
+  object-fit: cover;
+}
+.archives-frame-home > img:first-of-type { height: 4.2dvh; }
+.archives-frame-home > img:last-of-type { height: 5.2dvh; }
+.archives-frame-home .stack-frame {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+}
+.archives-frame-home .stack-cubby {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+}
+.archives-frame-home .stack-row {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding-top: clamp(8px, 1.6dvh, 36px);
+  padding-bottom: clamp(6px, 1.1dvh, 18px);
+}
+.archives-frame-home .stack-list { height: 100%; }
+.archives-frame-home .stack-book {
+  flex: 1 1 0;
+  height: auto;
+  min-height: 0;
+}
+.archives-frame-home .archives-panel {
+  flex: none;
+  height: 15.5dvh;
+  min-height: 0;
+}
+.archives-frame-home .archives-panel > img:first-child {
+  /* The plaque sits near the TOP of the panel photograph
+     (measured: ≈13–38% of its height). On the phone the band is
+     nearly the photograph's natural height, so the anchor barely
+     matters; at wide/short aspects the cover crop is deep, and
+     the anchor has to sit up at the plaque (≈15%) or the crop
+     window slides below it and the plaque leaves the frame. */
+  object-position: 50% 15%;
+}
+/* Wide, short viewports crop both photographs hardest; give the
+   bands a little more of the viewport there so the lamp and the
+   plaque keep breathing room inside their crops. */
+@media (min-width: 768px) {
+  .archives-frame-home .archives-header { height: 29dvh; }
+  .archives-frame-home .archives-panel { height: 19dvh; }
+}

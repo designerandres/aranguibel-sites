@@ -466,6 +466,25 @@
       fig: "the arrowhead\nthat marks the territory"
     },
     {
+      path: "library/",
+      title: "The Archives",
+      description: "Sarah's reading library — 169 books shelved by year, her star ratings and journal notes, the wishlist, and what she's currently reading.",
+      icon: "library/icons/icon.svg",
+      monogram: "A",
+      tab: "family",
+      section: "The Reading Room",
+      territory: "the Lamplit Shelves of the Archives",
+      teaser: "Seven leather-bound years of reading, catalogued by lamplight — ratings, notes and a wishlist in emerald.",
+      story: "Behind a green velvet curtain and a brass picture light lie seven leather-bound volumes — every year of Sarah\u2019s reading since 2020, one hundred and sixty-nine books in all, each with her stars, her journal notes and its kindred titles shelved alongside. An emerald Wishlist leans against the wall, and a golden button keeps watch over whatever is open on the nightstand.",
+      marginalia: "mind the dust motes — est. 2020",
+      marginaliaClass: "",
+      stamp: "Catalogued by Lamplight",
+      stampClass: "green",
+      waters: "The Quiet Reading Room",
+      bearings: "2020\u20132026 \u00B7 169 volumes",
+      fig: "the gold book\nthat marks the shelves"
+    },
+    {
       path: "jollywood-fam-2026/",
       title: "Jollywood Fam 2026",
       description: "Our Jollywood Nights gameplan — the foodie-guide ballot, our picks as a timed itinerary, and a countdown to premiere night, Saturday Nov 28.",
@@ -610,7 +629,7 @@
   try { const t = sessionStorage.getItem("skipperslog.tab"); if (TABS.includes(t)) activeTab = t; } catch (e) {}
   const openByTab = { family: null, personal: null }; // path of the expanded entry per tab
   let crewAdmin = false; // Invite Crew is the skipper's alone: set from /api/auth/me
-  const INVITABLE_SLUGS = ["jollywood-fam-2026", "poppy-picks", "cycles", "max-pocket-agenda", "lodge-boys-2026", "wish-day-guide", "hatchs-countdown", "nov-visit", "yellowstone-2027"];
+  const INVITABLE_SLUGS = ["jollywood-fam-2026", "poppy-picks", "cycles", "max-pocket-agenda", "lodge-boys-2026", "wish-day-guide", "hatchs-countdown", "nov-visit", "yellowstone-2027", "library"];
 
   function applyOrder(order) {
     if (!Array.isArray(order)) return;
