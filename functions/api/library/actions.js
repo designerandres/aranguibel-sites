@@ -3,15 +3,27 @@
 // POST /api/library/actions  { action, args }  →  { ok: true, data }
 //                                                  { ok: false, error }
 //
-// Implements ONLY the 14 "Required for editable use" actions from
-// books-migration/inspect/functions-spec.md. The background/AI generation
-// actions (prepareBookDetail, preload*, populate*, enrichCovers,
-// optimizeCovers, loadEverything, importLibrary) are intentionally NOT
-// implemented: the cached export data covers the existing library, and any
-// unknown action (including those) gets a 400.
+// AUDITED 2026-11-07 against Sarah's REAL server code
+// (books-library-export/source/server/src/actions.ts) and the real client
+// (client/src/App.tsx). Every action below mirrors the real action's
+// argument names and its exact response shape (field names, casing,
+// nesting, null vs missing). The {ok,data} envelope and the platform auth
+// pattern (requireIdentity + appAllowed) are the hosting layer's and are
+// unchanged.
 //
-// Auth first, platform pattern: requireIdentity → 401, then the scoped-
-// account check appAllowed(identity, "library") → 403.
+// Background/AI actions (importLibrary, prepareBookDetail, enrichCovers,
+// optimizeCovers, preloadDetails, preloadRecommendations, preloadSeries)
+// are SAFE NO-OP STUBS: the hosted D1 is the master copy and all
+// generation was already done before export, so each stub returns the
+// real action's response shape with zero progress (processed: 0 /
+// ready: 0, remaining: the real pending count). The client's auto-load
+// loops break immediately on processed===0 / ready===0, so they
+// terminate silently on the first batch. importLibrary imports nothing.
+// prepareBookDetail returns the book's stored detail (the real action
+// returns the fresh DetailResponse; with nothing to generate, the stored
+// response IS the fresh one). The long-running populate*/loadEverything
+// passes and the export* actions are not part of the client app and stay
+// unimplemented (400).
 
 import { appAllowed, json, requireIdentity } from "../../_lib/auth.js";
 import {
@@ -19,18 +31,24 @@ import {
   DISMISSED_TABLE,
   SERIES_TABLE,
   WISHLIST_TABLE,
+  authorFuzzyMatch,
+  baseTitle,
+  buildDetailResponse,
   coverUrl,
+  emptyDetailResponse,
   ensureLibrarySchema,
-  normalizeTitle,
+  isJunkRec,
+  isLatinTitle,
   normalizeWorkKey,
-  parseJsonField,
-  parseRecommendations,
-  shapeBookDetail,
-  shapeBookListItem,
-  shapeRecommendationPick,
+  parseSeriesEntries,
+  parseStoredRecs,
+  pendingCounts,
+  recCacheComplete,
+  seriesKey,
+  shapeBookSummary,
+  shapeRecommendationOut,
   shapeWishlistItem,
-  toJsonText,
-  workKeyId,
+  wishlistCoverBlobKey,
 } from "../../_lib/library.js";
 
 const APP_SLUG = "library";
@@ -53,24 +71,38 @@ function requireBookId(args, key = "id") {
   return id;
 }
 
-async function getBookRow(db, id) {
-  const row = await db.prepare(`SELECT * FROM ${BOOKS_TABLE} WHERE id = ?1`).bind(id).first();
-  if (!row) fail(404, "book not found");
-  return row;
-}
-
 async function allBookRows(db) {
-  const { results } = await db
-    .prepare(`SELECT * FROM ${BOOKS_TABLE} ORDER BY position ASC, id ASC`)
-    .all();
+  const { results } = await db.prepare(`SELECT * FROM ${BOOKS_TABLE}`).all();
   return results || [];
 }
 
-async function nextPosition(db, table) {
-  const row = await db
-    .prepare(`SELECT COALESCE(MAX(position), -1) AS m FROM ${table}`)
-    .first();
-  return (row && typeof row.m === "number" ? row.m : -1) + 1;
+async function allWishlistRows(db) {
+  const { results } = await db.prepare(`SELECT * FROM ${WISHLIST_TABLE}`).all();
+  return results || [];
+}
+
+async function findBookRow(db, id) {
+  return db.prepare(`SELECT * FROM ${BOOKS_TABLE} WHERE id = ?1`).bind(id).first();
+}
+
+async function findWishlistRow(db, id) {
+  return db.prepare(`SELECT * FROM ${WISHLIST_TABLE} WHERE id = ?1`).bind(id).first();
+}
+
+// Real listBooks ordering: yearRead ASC (NULLs first), position ASC, id ASC.
+function byYearPositionId(a, b) {
+  const ya = a.year_read ?? null;
+  const yb = b.year_read ?? null;
+  if (ya === null && yb !== null) return -1;
+  if (ya !== null && yb === null) return 1;
+  if (ya !== null && yb !== null && ya !== yb) return ya - yb;
+  if ((a.position ?? 0) !== (b.position ?? 0)) return (a.position ?? 0) - (b.position ?? 0);
+  return a.id - b.id;
+}
+
+function byPositionId(a, b) {
+  if ((a.position ?? 0) !== (b.position ?? 0)) return (a.position ?? 0) - (b.position ?? 0);
+  return a.id - b.id;
 }
 
 /* ---------- Open Library (plain fetch; failures are never fatal) ---------- */
@@ -84,86 +116,67 @@ async function fetchJson(url) {
   return res.json();
 }
 
-// OL descriptions arrive as a plain string or as { type, value }.
-function olDescriptionText(desc) {
-  if (!desc) return null;
-  if (typeof desc === "string") return desc;
-  if (typeof desc === "object" && typeof desc.value === "string") return desc.value;
-  return null;
+function isProbablyEnglish(text) {
+  const sample = text.slice(0, 400).toLowerCase();
+  const hits = [" the ", " and ", " is ", " of ", " to ", " a ", " in "].filter((w) =>
+    sample.includes(w),
+  ).length;
+  return hits >= 2;
 }
 
-function yearFromDateText(text) {
-  if (!text || typeof text !== "string") return null;
-  const m = text.match(/\b(1[0-9]{3}|20[0-9]{2})\b/);
-  return m ? Number(m[1]) : null;
-}
-
-async function fetchAuthorName(authorKey) {
-  if (!authorKey || typeof authorKey !== "string") return null;
-  try {
-    const data = await fetchJson(`https://openlibrary.org${authorKey}.json`);
-    return typeof data.name === "string" && data.name ? data.name : null;
-  } catch {
-    return null;
-  }
-}
-
-// Live work lookup shared by getRecommendationDetail / getWishlistItemDetail
-// / addBook / addWishlistItem. Returns a plain detail object; pageCount comes
-// from a single cheap editions lookup (first entry carrying
-// number_of_pages) and stays null when that is unavailable.
-async function fetchWorkDetail(workKey) {
-  const key = normalizeWorkKey(workKey);
-  if (!key) fail(400, "a valid Open Library work key is required");
-  let work;
-  try {
-    work = await fetchJson(`https://openlibrary.org${key}.json`);
-  } catch {
-    fail(502, "Open Library lookup failed");
-  }
-  let author = null;
-  const authors = Array.isArray(work.authors) ? work.authors : [];
-  if (authors.length && authors[0].author && authors[0].author.key) {
-    author = await fetchAuthorName(authors[0].author.key);
-  }
+// The real fetchWorkPreview(): display details for any book identified
+// only by its Open Library work key — English description (>= 40 chars)
+// as synopsis, subjects (max 12), the MEDIAN edition page count, and the
+// EARLIEST edition year. Missing data stays null, never guessed.
+async function fetchWorkPreview(workKey) {
+  let synopsis = null;
   let pageCount = null;
-  let editionYear = null;
+  let publishYear = null;
+  let subjects = [];
   try {
-    const editions = await fetchJson(
-      `https://openlibrary.org${key}/editions.json?limit=5`
-    );
-    const entries = Array.isArray(editions.entries) ? editions.entries : [];
-    for (const e of entries) {
-      if (pageCount === null && Number.isInteger(e.number_of_pages)) {
-        pageCount = e.number_of_pages;
+    const work = await fetchJson(`https://openlibrary.org${workKey}.json`);
+    const raw =
+      typeof work.description === "string" ? work.description : work.description?.value;
+    if (typeof raw === "string" && raw) {
+      const cleaned = raw.replace(/\r\n/g, "\n").trim();
+      if (cleaned.length >= 40 && isProbablyEnglish(cleaned)) {
+        synopsis = cleaned.slice(0, 4000);
       }
-      if (editionYear === null) editionYear = yearFromDateText(e.publish_date);
-      if (pageCount !== null && editionYear !== null) break;
+    }
+    if (Array.isArray(work.subjects) && work.subjects.length > 0) {
+      subjects = work.subjects.filter((s) => typeof s === "string").slice(0, 12);
     }
   } catch {
-    /* page count is best-effort only */
+    /* the editions pass may still land */
   }
-  const synopsis = olDescriptionText(work.description);
-  const firstPublishDate =
-    typeof work.first_publish_date === "string" ? work.first_publish_date : null;
-  return {
-    olWorkKey: key,
-    title: typeof work.title === "string" ? work.title : null,
-    author,
-    synopsis,
-    description: synopsis,
-    subjects: Array.isArray(work.subjects) ? work.subjects : [],
-    pageCount,
-    firstPublishDate,
-    firstPublishedYear: yearFromDateText(firstPublishDate) ?? editionYear,
-  };
+  try {
+    const ed = await fetchJson(`https://openlibrary.org${workKey}/editions.json?limit=50`);
+    const entries = Array.isArray(ed.entries) ? ed.entries : [];
+    const pages = entries
+      .map((e) => e.number_of_pages)
+      .filter((n) => typeof n === "number" && n > 0)
+      .sort((a, b) => a - b);
+    if (pages.length > 0) pageCount = pages[Math.floor(pages.length / 2)] ?? null;
+    const years = entries
+      .map((e) => {
+        const m = String(e.publish_date ?? "").match(/\d{4}/);
+        return m ? Number(m[0]) : null;
+      })
+      .filter((y) => y !== null && y >= 1450 && y <= 2030);
+    if (years.length > 0) publishYear = Math.min(...years);
+  } catch {
+    /* length/year stay unknown rather than guessed */
+  }
+  return { synopsis, pageCount, publishYear, subjects };
 }
 
-// Search fallback for addBook/addWishlistItem when no work key is given.
+// Best-effort single-doc Open Library search (metadata enrichment for
+// addBook / typed wishlist adds). Returns null on any failure — callers
+// always shelve the caller's own title/author regardless.
 async function searchOpenLibrary(title, author) {
   const q = author ? `${title} ${author}` : title;
   const url = `https://openlibrary.org/search.json?title=${encodeURIComponent(
-    title
+    title,
   )}&q=${encodeURIComponent(q)}&limit=1`;
   try {
     const data = await fetchJson(url);
@@ -179,6 +192,7 @@ async function searchOpenLibrary(title, author) {
       publishYear: Number.isInteger(doc.first_publish_year)
         ? doc.first_publish_year
         : null,
+      subjects: Array.isArray(doc.subject) ? doc.subject.slice(0, 12) : [],
     };
   } catch {
     return null;
@@ -187,617 +201,647 @@ async function searchOpenLibrary(title, author) {
 
 /* ================================ READS ================================ */
 
+// Real: { books: BookSummary[], coversPending, coversMissing,
+//         coversUnoptimized, detailsPending, recsPending, seriesPending }
+// — flat top-level counts (the client reads list.data.coversPending etc.),
+// books ordered by yearRead/position/id.
 async function listBooks(db) {
   const rows = await allBookRows(db);
-  let coversMissing = 0;
-  let detailsPending = 0;
-  let recsPending = 0;
-  let seriesPending = 0;
-  for (const row of rows) {
-    if (!row.cover_blob_key) coversMissing++;
-    if (row.detail_status !== "ready") detailsPending++;
-    if (parseRecommendations(row).length === 0) recsPending++;
-    if (!row.series_checked) seriesPending++;
-  }
+  const counts = pendingCounts(rows);
   return {
-    books: rows.map(shapeBookListItem),
-    pending: {
-      coversMissing,
-      detailsPending,
-      recommendationsPending: recsPending,
-      recsPending,
-      seriesPending,
-    },
+    books: rows.slice().sort(byYearPositionId).map(shapeBookSummary),
+    ...counts,
   };
 }
 
+// Real: DetailResponse for the stored row; a missing book returns the
+// ok:false empty detail payload (never a throw). force=true is the
+// explicit regenerate path in the real action; generation does not exist
+// on this host, so force returns the same stored response (documented
+// no-op — the client's regenerate control simply re-renders stored data).
 async function getBookDetail(db, args) {
   const id = requireBookId(args, "id");
-  const row = await getBookRow(db, id);
-  return shapeBookDetail(row);
+  const row = await findBookRow(db, id);
+  if (!row) return emptyDetailResponse();
+  return buildDetailResponse(row);
 }
 
+// Real series response: { found, name, author, description, totalBooks,
+// readCount, entries: [{ title, position, author, coverUrl, olWorkKey,
+// bookId, inLibrary, bookStatus, rating, yearRead }] }.
 async function getSeries(db, args) {
-  // Takes {bookId} — NOT {id}.
   const bookId = requireBookId(args, "bookId");
-  const book = await getBookRow(db, bookId);
-  if (!book.series_name) {
-    // series_checked = 0 → membership unknown; a checked book with no
-    // series_name simply has no series page. Either way: no entries, and
-    // the book is never labeled standalone.
-    return {
-      found: false,
-      bookId,
-      name: null,
-      seriesName: null,
-      author: null,
-      description: null,
-      status: null,
-      entries: [],
-    };
-  }
-  const seriesName = book.series_name;
-  let info = await db
-    .prepare(`SELECT * FROM ${SERIES_TABLE} WHERE name = ?1`)
-    .bind(seriesName)
-    .first();
-  if (!info) {
-    const { results } = await db
-      .prepare(`SELECT * FROM ${SERIES_TABLE}`)
-      .all();
-    info =
-      (results || []).find(
-        (r) => normalizeTitle(r.name) === normalizeTitle(seriesName)
-      ) || null;
-  }
-  const books = await allBookRows(db);
-  const ownedFor = (entry) => {
-    const entryKey = entry.olWorkKey || entry.ol_work_key || null;
-    const entryTitle = normalizeTitle(entry.title);
-    return (
-      books.find((b) => entryKey && b.ol_work_key === entryKey) ||
-      books.find((b) => entry.bookId != null && b.id === entry.bookId) ||
-      books.find((b) => entryTitle && normalizeTitle(b.title) === entryTitle) ||
-      null
-    );
+  const empty = {
+    found: false,
+    name: null,
+    author: null,
+    description: null,
+    totalBooks: 0,
+    readCount: 0,
+    entries: [],
   };
-  let rawEntries = info ? parseJsonField(info.entries, []) : null;
-  if (!Array.isArray(rawEntries)) rawEntries = [];
-  let entries;
-  if (info && rawEntries.length) {
-    entries = rawEntries
-      .slice()
-      .sort((a, b) => (a.position ?? 0) - (b.position ?? 0))
-      .map((entry) => {
-        const owned = ownedFor(entry);
-        const blobKey = entry.coverBlobKey || entry.cover_blob_key || null;
-        return {
-          title: entry.title ?? null,
-          author: entry.author ?? null,
-          position: entry.position ?? null,
-          olWorkKey: entry.olWorkKey || entry.ol_work_key || null,
-          coverBlobKey: blobKey,
-          coverUrl: coverUrl(blobKey),
-          bookId: owned ? owned.id : entry.bookId ?? null,
-          owned: !!owned,
-          rating: owned ? owned.rating ?? null : null,
-          year_read: owned ? owned.year_read ?? null : null,
-          yearRead: owned ? owned.year_read ?? null : null,
-        };
-      });
-  } else {
-    // No series_info row (or no entries): fall back to the library books
-    // that share this series_name, in series order.
-    entries = books
-      .filter((b) => b.series_name === seriesName)
-      .sort((a, b) => (a.series_position ?? 0) - (b.series_position ?? 0))
-      .map((b) => ({
-        title: b.title,
-        author: b.author,
-        position: b.series_position ?? null,
-        olWorkKey: b.ol_work_key ?? null,
-        coverBlobKey: b.cover_blob_key ?? null,
-        coverUrl: coverUrl(b.cover_blob_key),
-        bookId: b.id,
-        owned: true,
-        rating: b.rating ?? null,
-        year_read: b.year_read ?? null,
-        yearRead: b.year_read ?? null,
-      }));
+  const book = await findBookRow(db, bookId);
+  if (!book) return empty;
+
+  const { results: seriesRows } = await db.prepare(`SELECT * FROM ${SERIES_TABLE}`).all();
+  const records = seriesRows || [];
+  const readyRecords = records.filter((r) => r.status === "ready");
+
+  // Stored-data equivalent of the real ensureSeriesInfo step (1): a
+  // ready series record whose entries name this title settles membership
+  // with no lookup. (The real action's further steps generate; the
+  // hosted copy uses only what is stored.)
+  let seriesName = book.series_name ?? null;
+  if (!seriesName) {
+    const author = book.author ?? book.author_hint;
+    const myBase = baseTitle(book.title);
+    for (const rec of readyRecords) {
+      if (!authorFuzzyMatch(rec.author, author)) continue;
+      const hit = parseSeriesEntries(rec.entries).find(
+        (e) => baseTitle(e.title) === myBase,
+      );
+      if (hit) {
+        seriesName = rec.name;
+        break;
+      }
+    }
   }
+  if (!seriesName) return { ...empty, author: book.author ?? null };
+
+  // Record lookup by the real series key first, then by normalised name
+  // (seeded keys are seriesKey(name, author) already).
+  const key = seriesKey(seriesName, book.author ?? null);
+  let record =
+    records.find((r) => r.key === key) ||
+    records.find((r) => baseTitle(r.name) === baseTitle(seriesName)) ||
+    null;
+  if (!record || record.status !== "ready") {
+    // The real action returns found:true with the name/author while the
+    // series page is still being gathered.
+    return { ...empty, found: true, name: seriesName, author: book.author ?? null };
+  }
+
+  const books = await allBookRows(db);
+  const byId = new Map(books.map((b) => [b.id, b]));
+  const stored = parseSeriesEntries(record.entries);
+  const sorted = stored.slice().sort((a, b) => {
+    if (a.position !== null && b.position !== null) return a.position - b.position;
+    if (a.position !== null) return -1;
+    if (b.position !== null) return 1;
+    return a.title.localeCompare(b.title);
+  });
+  let readCount = 0;
+  const entries = sorted.map((e) => {
+    // Live re-match, as the real buildSeriesResponse does.
+    let owned = e.bookId !== null ? byId.get(e.bookId) : undefined;
+    if (!owned) {
+      owned = books.find(
+        (r) =>
+          baseTitle(r.title) === baseTitle(e.title) &&
+          (record.author === null ||
+            r.author === null ||
+            authorFuzzyMatch(r.author, record.author)),
+      );
+    }
+    if (owned) {
+      if (owned.status === "read") readCount += 1;
+      return {
+        title: owned.title,
+        position: e.position,
+        author: owned.author ?? null,
+        coverUrl: coverUrl(owned.cover_blob_key),
+        olWorkKey: e.olWorkKey,
+        bookId: owned.id,
+        inLibrary: true,
+        bookStatus: owned.status,
+        rating: owned.rating ?? null,
+        yearRead: owned.year_read ?? null,
+      };
+    }
+    return {
+      title: e.title,
+      position: e.position,
+      author: e.author,
+      coverUrl: coverUrl(e.coverBlobKey),
+      olWorkKey: e.olWorkKey,
+      bookId: null,
+      inLibrary: false,
+      bookStatus: null,
+      rating: null,
+      yearRead: null,
+    };
+  });
   return {
     found: true,
-    bookId,
-    name: seriesName,
-    seriesName,
-    author: info ? info.author ?? null : book.author,
-    description: info ? info.description ?? null : null,
-    status: info ? info.status ?? null : null,
-    key: info ? info.key ?? null : null,
+    name: record.name,
+    author: record.author ?? null,
+    description: record.description ?? null,
+    totalBooks: entries.length,
+    readCount,
     entries,
   };
 }
 
+// Real: { recommendations: Recommendation[] } — the book's cached set;
+// a missing book returns an empty list (never a throw).
 async function getRecommendations(db, args) {
   const id = requireBookId(args, "id");
-  const row = await getBookRow(db, id);
-  // Cached set only — an empty/missing cache returns an empty list and is
-  // never regenerated here (generation actions are out of scope).
-  return { bookId: id, recommendations: parseRecommendations(row) };
+  const row = await findBookRow(db, id);
+  if (!row) return { recommendations: [] };
+  return {
+    recommendations: parseStoredRecs(row.recommendations).map(shapeRecommendationOut),
+  };
 }
 
+// Real: PreviewDetailResponse { ok, synopsis, pageCount, publishYear,
+// subjects }, fetched live by { olWorkKey }. An unusable key returns
+// ok:false with nulls (the real fetchWorkPreview contract).
 async function getRecommendationDetail(db, args) {
-  const workKey =
-    (args && (args.olWorkKey || args.workKey || args.ol_work_key || args.key)) ||
-    (args && typeof args.id === "string" ? args.id : null);
-  if (!workKey) fail(400, "olWorkKey required");
-  // Fetched live from Open Library per request; no server-side caching
-  // beyond the request (kept simple, per spec).
-  const detail = await fetchWorkDetail(workKey);
-  return detail;
+  const rawKey = args && typeof args.olWorkKey === "string" ? args.olWorkKey : "";
+  if (!rawKey) fail(400, "olWorkKey required");
+  const key = normalizeWorkKey(rawKey);
+  if (!key) {
+    return { ok: false, synopsis: null, pageCount: null, publishYear: null, subjects: [] };
+  }
+  const preview = await fetchWorkPreview(key);
+  return { ok: true, ...preview };
 }
 
+// Real: WishlistDetailResponse { ok, title, author, coverUrl, synopsis,
+// pageCount, publishYear, subjects }. A missing item returns ok:false
+// with an empty title (never a throw). Details are fetched once from
+// Open Library and cached on the row (detail_fetched), exactly like the
+// real fetchWishlistDetail.
 async function getWishlistItemDetail(db, args) {
-  let row = null;
-  if (args && (Number.isInteger(Number(args.id)) || typeof args.id === "number")) {
-    const id = requireBookId(args, "id");
-    row = await db
-      .prepare(`SELECT * FROM ${WISHLIST_TABLE} WHERE id = ?1`)
-      .bind(id)
-      .first();
-    if (!row) fail(404, "wishlist item not found");
-  } else if (args && (args.olWorkKey || args.ol_work_key)) {
-    const key = normalizeWorkKey(args.olWorkKey || args.ol_work_key);
-    row = await db
-      .prepare(`SELECT * FROM ${WISHLIST_TABLE} WHERE ol_work_key = ?1`)
-      .bind(key)
-      .first();
-    if (!row) fail(404, "wishlist item not found");
-  } else {
-    fail(400, "id (or olWorkKey) required");
-  }
-  const cachedSubjects = parseJsonField(row.subjects, null);
-  if (
-    row.detail_fetched &&
-    (row.synopsis || cachedSubjects || row.page_count !== null)
-  ) {
+  const id = requireBookId(args, "id");
+  const row = await findWishlistRow(db, id);
+  if (!row) {
     return {
-      id: row.id,
-      olWorkKey: row.ol_work_key ?? null,
-      title: row.title,
-      author: row.author ?? null,
-      synopsis: row.synopsis ?? null,
-      description: row.synopsis ?? null,
-      subjects: cachedSubjects || [],
-      pageCount: row.page_count ?? null,
-      publishYear: row.publish_year ?? null,
-      firstPublishedYear: row.publish_year ?? null,
-      firstPublishDate: null,
-      fromCache: true,
+      ok: false,
+      title: "",
+      author: null,
+      coverUrl: null,
+      synopsis: null,
+      pageCount: null,
+      publishYear: null,
+      subjects: [],
     };
   }
-  if (!row.ol_work_key) {
-    return {
-      id: row.id,
-      olWorkKey: null,
-      title: row.title,
-      author: row.author ?? null,
-      synopsis: row.synopsis ?? null,
-      description: row.synopsis ?? null,
-      subjects: cachedSubjects || [],
-      pageCount: row.page_count ?? null,
-      publishYear: row.publish_year ?? null,
-      firstPublishedYear: row.publish_year ?? null,
-      firstPublishDate: null,
-      fromCache: !!row.detail_fetched,
-    };
+  let full = row;
+  if (!row.detail_fetched) {
+    full = await fetchAndCacheWishlistDetail(db, row);
   }
-  const detail = await fetchWorkDetail(row.ol_work_key);
-  // Cache the first fetch on the wishlist row, as the original did.
-  try {
-    await db
-      .prepare(
-        `UPDATE ${WISHLIST_TABLE} SET synopsis = ?1, subjects = ?2, page_count = ?3, publish_year = ?4, detail_fetched = 1 WHERE id = ?5`
-      )
-      .bind(
-        detail.synopsis ?? row.synopsis ?? null,
-        detail.subjects && detail.subjects.length
-          ? JSON.stringify(detail.subjects)
-          : row.subjects ?? null,
-        detail.pageCount ?? row.page_count ?? null,
-        detail.firstPublishedYear ?? row.publish_year ?? null,
-        row.id
-      )
-      .run();
-  } catch {
-    /* caching is best-effort; the fetched detail is still returned */
-  }
-  return { id: row.id, ...detail, fromCache: false };
+  return {
+    ok: true,
+    title: full.title,
+    author: full.author ?? null,
+    coverUrl: coverUrl(wishlistCoverBlobKey(full)),
+    synopsis: full.synopsis ?? null,
+    pageCount: full.page_count ?? null,
+    publishYear: full.publish_year ?? null,
+    subjects: parseSubjects(full.subjects),
+  };
 }
 
+function parseSubjects(raw) {
+  if (!raw) return [];
+  try {
+    const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
+    if (Array.isArray(parsed)) return parsed.filter((s) => typeof s === "string");
+  } catch {
+    /* fall through */
+  }
+  return [];
+}
+
+// The real fetchWishlistDetail, minus cover resolution: resolve a
+// missing work key by search, then cache the preview fields on the row
+// and mark detail_fetched. Patch semantics match the real action: the
+// synopsis is only overwritten when a usable one was fetched, subjects
+// only when non-empty; page count / year only when editions yielded
+// them.
+async function fetchAndCacheWishlistDetail(db, row) {
+  let r = row;
+  if (!r.ol_work_key) {
+    const found = await searchOpenLibrary(r.title, r.author || undefined);
+    if (found && found.olWorkKey) {
+      await db
+        .prepare(`UPDATE ${WISHLIST_TABLE} SET ol_work_key = ?1 WHERE id = ?2`)
+        .bind(found.olWorkKey, r.id)
+        .run();
+      r = { ...r, ol_work_key: found.olWorkKey };
+    }
+  }
+  const patch = { detail_fetched: 1 };
+  if (r.ol_work_key) {
+    const preview = await fetchWorkPreview(r.ol_work_key);
+    if (preview.synopsis !== null) patch.synopsis = preview.synopsis;
+    if (preview.subjects.length > 0) patch.subjects = JSON.stringify(preview.subjects);
+    if (preview.pageCount !== null) patch.page_count = preview.pageCount;
+    if (preview.publishYear !== null) patch.publish_year = preview.publishYear;
+  }
+  const cols = Object.keys(patch);
+  const sql = `UPDATE ${WISHLIST_TABLE} SET ${cols
+    .map((c, i) => `${c} = ?${i + 1}`)
+    .join(", ")} WHERE id = ?${cols.length + 1}`;
+  await db.prepare(sql).bind(...cols.map((c) => patch[c]), r.id).run();
+  const fresh = await findWishlistRow(db, r.id);
+  return fresh || { ...r, ...patch };
+}
+
+// Real wishlistRecPool(): the cached "more like this" sets of books
+// rated 4+ (read shelf, highest rated first, then most recent year),
+// screened again here — dismissed keys, wishlist keys, non-Latin or
+// "--" titles, junk, and base-title duplicates against the library and
+// the wishlist are all excluded; capped at twelve. The real pool tops
+// up by generating missing sets; here the stored caches of
+// not-yet-complete books are the fallback (already screened the same
+// way), since there is no generation on this host.
 async function getWishlistRecommendations(db) {
-  const { results: sourceRows } = await db
-    .prepare(
-      `SELECT * FROM ${BOOKS_TABLE} WHERE rating >= 4 ORDER BY rating DESC, position ASC, id ASC`
-    )
-    .all();
   const books = await allBookRows(db);
-  const { results: wishlistRows } = await db
-    .prepare(`SELECT * FROM ${WISHLIST_TABLE}`)
-    .all();
+  const wishlist = await allWishlistRows(db);
   const { results: dismissedRows } = await db
     .prepare(`SELECT * FROM ${DISMISSED_TABLE}`)
     .all();
-  const blockedKeys = new Set();
-  const blockedTitles = new Set();
-  const block = (key, title) => {
-    const nk = normalizeWorkKey(key);
-    if (nk) blockedKeys.add(nk);
-    const nt = normalizeTitle(title);
-    if (nt) blockedTitles.add(nt);
+  const dismissedKeys = new Set((dismissedRows || []).map((d) => d.ol_work_key));
+  const wishKeys = new Set(
+    wishlist.map((w) => w.ol_work_key).filter((k) => typeof k === "string"),
+  );
+  const libraryBase = new Set(books.map((r) => baseTitle(r.title)));
+  const wishBase = new Set(wishlist.map((w) => baseTitle(w.title)));
+  const sources = books
+    .filter((r) => r.status === "read" && (r.rating ?? 0) >= 4)
+    .sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0) || (b.year_read ?? 0) - (a.year_read ?? 0));
+
+  const pool = [];
+  const seenBase = new Set();
+  const considerRec = (rec) => {
+    if (dismissedKeys.has(rec.olWorkKey) || wishKeys.has(rec.olWorkKey)) return;
+    if (!isLatinTitle(rec.title) || rec.title.includes("--")) return;
+    if (isJunkRec({ title: rec.title, author: rec.author })) return;
+    const bt = baseTitle(rec.title);
+    if (!bt || seenBase.has(bt) || libraryBase.has(bt) || wishBase.has(bt)) return;
+    seenBase.add(bt);
+    pool.push(rec);
   };
-  for (const b of books) block(b.ol_work_key, b.title);
-  for (const w of wishlistRows || []) block(w.ol_work_key, w.title);
-  for (const d of dismissedRows || []) block(d.ol_work_key, d.title);
-  const seen = new Set();
-  const out = [];
-  for (const row of sourceRows || []) {
-    for (const pick of parseRecommendations(row)) {
-      const nk = normalizeWorkKey(pick.olWorkKey);
-      const nt = normalizeTitle(pick.title);
-      const dedupeKey = nk || `title:${nt}`;
-      if (!dedupeKey || seen.has(dedupeKey)) continue;
-      seen.add(dedupeKey);
-      if (nk && blockedKeys.has(nk)) continue;
-      if (nt && blockedTitles.has(nt)) continue;
-      out.push({
-        ...pick,
-        sourceBookId: row.id,
-        sourceBookTitle: row.title,
-      });
-      if (out.length >= 12) return { recommendations: out };
+  for (const src of sources) {
+    if (recCacheComplete(src)) {
+      for (const rec of parseStoredRecs(src.recommendations)) considerRec(rec);
     }
   }
-  return { recommendations: out };
+  for (const src of sources) {
+    if (pool.length >= 12) break;
+    if (recCacheComplete(src)) continue;
+    for (const rec of parseStoredRecs(src.recommendations)) considerRec(rec);
+  }
+  return {
+    recommendations: pool.slice(0, 12).map(shapeRecommendationOut),
+  };
 }
 
+// Real: { items: WishlistItem[] } in position order.
 async function listWishlist(db) {
-  const { results } = await db
-    .prepare(`SELECT * FROM ${WISHLIST_TABLE} ORDER BY position ASC, id ASC`)
-    .all();
-  return { items: (results || []).map(shapeWishlistItem) };
+  const rows = await allWishlistRows(db);
+  return { items: rows.slice().sort(byPositionId).map(shapeWishlistItem) };
 }
 
 /* ================================ WRITES ================================ */
 
-const ALLOWED_STATUSES = new Set(["read", "currently_reading", "want_to_read"]);
-
-function pickField(args, camel, snake) {
-  if (args && camel in args) return { present: true, value: args[camel] };
-  if (args && snake in args) return { present: true, value: args[snake] };
-  return { present: false, value: undefined };
-}
-
+// Real updateBook: a pure patch of Sarah's own fields — no implicit
+// year/status side effects (the client composes e.g. the Abandon flow
+// itself: status 'read' + rating 0 + yearRead + statusNote). Response
+// is exactly { ok: true }; a missing book is still ok:true in the real
+// action (the update simply matches no row). reviewAnswers are cleaned
+// the real way: blank answers are dropped before storing.
 async function updateBook(db, args) {
   const id = requireBookId(args, "id");
-  const existing = await getBookRow(db, id);
-  const sets = {};
-  const currentYear = new Date().getFullYear();
-
-  const rating = pickField(args, "rating", "rating");
-  if (rating.present) {
-    if (rating.value === null) {
-      sets.rating = null; // back to unrated — NULL, never 0
-    } else {
-      const r = Number(rating.value);
-      if (
-        !Number.isFinite(r) ||
-        r < 0 ||
-        r > 5 ||
-        Math.abs(r * 2 - Math.round(r * 2)) > 1e-9
-      ) {
-        fail(400, "rating must be null or a half-step between 0 and 5");
+  const patch = {};
+  if (args.rating !== undefined) {
+    if (args.rating !== null) {
+      const r = Number(args.rating);
+      if (!Number.isFinite(r) || r < 0 || r > 5) {
+        fail(400, "rating must be null or a number between 0 and 5");
       }
-      sets.rating = r;
+      patch.rating = r;
+    } else {
+      patch.rating = null; // back to unrated — NULL, never 0
     }
   }
-  const notes = pickField(args, "personalNotes", "personal_notes");
-  if (notes.present) {
-    if (notes.value !== null && typeof notes.value !== "string") {
+  if (args.personalNotes !== undefined) {
+    if (args.personalNotes !== null && typeof args.personalNotes !== "string") {
       fail(400, "personalNotes must be a string");
     }
-    sets.personal_notes = notes.value ?? "";
+    patch.personal_notes = args.personalNotes ?? "";
   }
-  const answers = pickField(args, "reviewAnswers", "review_answers");
-  if (answers.present) {
-    sets.review_answers = toJsonText(answers.value);
-  }
-  const statusNote = pickField(args, "statusNote", "status_note");
-  if (statusNote.present) {
-    if (statusNote.value !== null && typeof statusNote.value !== "string") {
-      fail(400, "statusNote must be a string");
+  if (args.reviewAnswers !== undefined) {
+    if (
+      args.reviewAnswers !== null &&
+      (typeof args.reviewAnswers !== "object" || Array.isArray(args.reviewAnswers))
+    ) {
+      fail(400, "reviewAnswers must be an object");
     }
-    sets.status_note = statusNote.value;
+    const cleaned = {};
+    for (const [k, v] of Object.entries(args.reviewAnswers || {})) {
+      if (typeof v === "string" && v.trim()) cleaned[k] = v;
+    }
+    patch.review_answers = JSON.stringify(cleaned);
   }
-  const yearRead = pickField(args, "yearRead", "year_read");
-  if (yearRead.present) {
-    if (yearRead.value === null) sets.year_read = null;
-    else {
-      const y = Number(yearRead.value);
-      if (!Number.isInteger(y)) fail(400, "yearRead must be an integer or null");
-      sets.year_read = y;
+  if (args.status !== undefined) {
+    if (args.status !== "read" && args.status !== "currently_reading") {
+      fail(400, "status must be 'read' or 'currently_reading'");
+    }
+    patch.status = args.status;
+  }
+  if (args.yearRead !== undefined) {
+    if (args.yearRead !== null) {
+      const y = Number(args.yearRead);
+      if (!Number.isInteger(y) || y < 1990 || y > 2100) {
+        fail(400, "yearRead must be an integer between 1990 and 2100, or null");
+      }
+      patch.year_read = y;
+    } else {
+      patch.year_read = null;
     }
   }
-  const status = pickField(args, "status", "status");
-  if (status.present) {
-    if (!ALLOWED_STATUSES.has(status.value)) {
-      fail(400, "status must be 'read', 'currently_reading', or 'want_to_read'");
+  if (args.statusNote !== undefined) {
+    if (args.statusNote !== null && typeof args.statusNote !== "string") {
+      fail(400, "statusNote must be a string or null");
     }
-    sets.status = status.value;
+    patch.status_note = args.statusNote;
   }
-
-  const abandon = pickField(args, "abandonReason", "abandon_reason");
-  if (abandon.present && typeof abandon.value === "string" && abandon.value.trim()) {
-    // Abandoning: shelved as read at 0 stars in the current year, reason in
-    // status_note as "Abandoned — <reason>". Overrides the fields above.
-    sets.status = "read";
-    sets.rating = 0;
-    sets.year_read = currentYear;
-    sets.status_note = `Abandoned — ${abandon.value.trim()}`;
-  } else if (sets.status === "read") {
-    // Finished flow: a book finished now was read this year, unless the
-    // caller supplied an explicit yearRead.
-    if (!("year_read" in sets) && existing.year_read === null) {
-      sets.year_read = currentYear;
-    }
-  } else if (sets.status === "currently_reading") {
-    // Invariant: currently-reading books have year_read NULL.
-    if (!("year_read" in sets)) sets.year_read = null;
+  const cols = Object.keys(patch);
+  if (cols.length > 0) {
+    const sql = `UPDATE ${BOOKS_TABLE} SET ${cols
+      .map((c, i) => `${c} = ?${i + 1}`)
+      .join(", ")} WHERE id = ?${cols.length + 1}`;
+    await db.prepare(sql).bind(...cols.map((c) => patch[c]), id).run();
   }
-
-  const cols = Object.keys(sets);
-  if (!cols.length) fail(400, "no updatable fields provided");
-  const sql = `UPDATE ${BOOKS_TABLE} SET ${cols
-    .map((c, i) => `${c} = ?${i + 1}`)
-    .join(", ")} WHERE id = ?${cols.length + 1}`;
-  await db
-    .prepare(sql)
-    .bind(...cols.map((c) => sets[c]), id)
-    .run();
-  const updated = await getBookRow(db, id);
-  return shapeBookDetail(updated);
+  return { ok: true };
 }
 
+// Real addBook: { title, author?, yearRead?, rating?, status (default
+// 'read'), isAudiobook (default false) } → { book: BookSummary }.
+// Position is next within the same status + yearRead group. The real
+// action then enriches cover/metadata from Open Library; here metadata
+// enrichment is best-effort only and cover_blob_key stays NULL (no
+// cover bytes exist for a brand-new book on this host, so coverUrl is
+// null and the client shows its placeholder — the book counts toward
+// coversMissing in listBooks, like the real thing before enrichment).
 async function addBook(db, args) {
-  const rawKey = args && (args.olWorkKey || args.ol_work_key || args.workKey);
-  const workKey = rawKey ? normalizeWorkKey(rawKey) : null;
-  let title = args && typeof args.title === "string" ? args.title.trim() : "";
-  let author = args && typeof args.author === "string" ? args.author.trim() : "";
-  let publishYear = null;
-  let olDescription = null;
-  let subjects = null;
-  let resolvedKey = null;
+  const title = args && typeof args.title === "string" ? args.title.trim() : "";
+  if (!title) fail(400, "title required");
+  const author = args && typeof args.author === "string" ? args.author.trim() || null : null;
+  const status = args && args.status !== undefined ? args.status : "read";
+  if (status !== "read" && status !== "currently_reading") {
+    fail(400, "status must be 'read' or 'currently_reading'");
+  }
+  let yearRead = null;
+  if (args && args.yearRead !== undefined && args.yearRead !== null) {
+    const y = Number(args.yearRead);
+    if (!Number.isInteger(y) || y < 1990 || y > 2100) {
+      fail(400, "yearRead must be an integer between 1990 and 2100, or null");
+    }
+    yearRead = y;
+  }
+  let rating = null;
+  if (args && args.rating !== undefined && args.rating !== null) {
+    const r = Number(args.rating);
+    if (!Number.isFinite(r) || r < 0 || r > 5) {
+      fail(400, "rating must be null or a number between 0 and 5");
+    }
+    rating = r;
+  }
+  const isAudiobook = args && args.isAudiobook ? 1 : 0;
 
-  if (workKey) {
-    try {
-      const detail = await fetchWorkDetail(workKey);
-      if (!title && detail.title) title = detail.title;
-      if (!author && detail.author) author = detail.author;
-      publishYear = detail.firstPublishedYear ?? null;
-      olDescription = detail.synopsis ?? null;
-      subjects =
-        detail.subjects && detail.subjects.length
-          ? JSON.stringify(detail.subjects)
-          : null;
-    } catch {
-      /* metadata is best-effort; the caller's title/author still shelve */
-    }
-  }
-  if (!title) fail(400, "title required (or an olWorkKey that resolves to one)");
-  if (!workKey) {
-    const found = await searchOpenLibrary(title, author || undefined);
-    if (found) {
-      if (!author && found.author) author = found.author;
-      publishYear = found.publishYear ?? null;
-      // Re-resolve through the work key for description/subjects.
-      if (found.olWorkKey) {
-        try {
-          const detail = await fetchWorkDetail(found.olWorkKey);
-          olDescription = detail.synopsis ?? null;
-          subjects =
-            detail.subjects && detail.subjects.length
-              ? JSON.stringify(detail.subjects)
-              : null;
-          if (publishYear === null) publishYear = detail.firstPublishedYear ?? null;
-        } catch {
-          /* best-effort */
-        }
-      }
-      resolvedKey = found.olWorkKey;
-    }
-  }
-  const finalKey = workKey || resolvedKey;
-  const status =
-    args && ALLOWED_STATUSES.has(args.status) ? args.status : "currently_reading";
-  const position = await nextPosition(db, BOOKS_TABLE);
-  // NOTE (cover handling): cover_blob_key stays NULL on purpose. The old
-  // "covers/book-<newid>.jpg" convention would point at bytes that do not
-  // exist (nothing downloads a cover here), so the coverUrl helper returns
-  // null and the client shows its placeholder until the covers pipeline
-  // supplies a real file and key. The book counts as "covers missing" in
-  // listBooks' pending counts in the meantime.
+  const siblings = await allBookRows(db);
+  const sameGroup = siblings.filter(
+    (r) => r.status === status && (r.year_read ?? null) === yearRead,
+  );
+  const position =
+    sameGroup.length > 0 ? Math.max(...sameGroup.map((r) => r.position ?? 0)) + 1 : 0;
+
   const result = await db
     .prepare(
-      `INSERT INTO ${BOOKS_TABLE} (title, author, author_hint, year_read, rating, status, publish_year, position, cover_blob_key, ol_work_key, ol_description, subjects, detail_status, personal_notes, created_at)
-       VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, NULL, ?9, ?10, ?11, 'none', '', ?12)`
+      `INSERT INTO ${BOOKS_TABLE} (title, author, author_hint, year_read, rating, status, is_audiobook, position, detail_status, personal_notes, created_at)
+       VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, 'none', '', ?9)`,
     )
-    .bind(
-      title,
-      author || "Unknown",
-      author || null,
-      status === "read" ? new Date().getFullYear() : null,
-      null,
-      status,
-      publishYear,
-      position,
-      finalKey,
-      olDescription,
-      subjects,
-      Date.now()
-    )
+    .bind(title, author, author, yearRead, rating, status, isAudiobook, position, Date.now())
     .run();
   const newId = result && result.meta ? result.meta.last_row_id : null;
   if (!newId) fail(500, "insert did not return a new id");
-  const row = await getBookRow(db, Number(newId));
-  return shapeBookDetail(row);
+
+  // Best-effort metadata enrichment (author / publish year / subjects /
+  // work key), mirroring the real enrichBook's metadata half. Failures
+  // are never fatal.
+  try {
+    const found = await searchOpenLibrary(title, author || undefined);
+    if (found && found.olWorkKey) {
+      const fresh = await findBookRow(db, Number(newId));
+      const sets = { ol_work_key: found.olWorkKey };
+      if (fresh && !fresh.author && found.author) sets.author = found.author;
+      if (found.publishYear !== null) sets.publish_year = found.publishYear;
+      if (found.subjects && found.subjects.length) {
+        sets.subjects = JSON.stringify(found.subjects);
+      }
+      const cols = Object.keys(sets);
+      const sql = `UPDATE ${BOOKS_TABLE} SET ${cols
+        .map((c, i) => `${c} = ?${i + 1}`)
+        .join(", ")} WHERE id = ?${cols.length + 1}`;
+      await db.prepare(sql).bind(...cols.map((c) => sets[c]), Number(newId)).run();
+    }
+  } catch {
+    /* metadata is best-effort; the caller's title/author still shelve */
+  }
+
+  const row = await findBookRow(db, Number(newId));
+  return { book: shapeBookSummary(row) };
 }
 
+// Real addWishlistItem: { title, author?, olWorkKey?, source (default
+// 'typed') } → { item: WishlistItem }. Dedupe is by base title (the real
+// baseTitle, subtitle-insensitive) and returns the existing entry.
 async function addWishlistItem(db, args) {
-  const rawKey = args && (args.olWorkKey || args.ol_work_key || args.workKey);
-  const workKey = rawKey ? normalizeWorkKey(rawKey) : null;
-  let title = args && typeof args.title === "string" ? args.title.trim() : "";
-  let author = args && typeof args.author === "string" ? args.author.trim() : "";
-
-  // Dedupe first: same work key, or same normalized title → existing entry.
-  if (workKey) {
-    const existing = await db
-      .prepare(`SELECT * FROM ${WISHLIST_TABLE} WHERE ol_work_key = ?1`)
-      .bind(workKey)
-      .first();
-    if (existing) return shapeWishlistItem(existing);
+  const title = args && typeof args.title === "string" ? args.title.trim() : "";
+  if (!title) fail(400, "title required");
+  const author = args && typeof args.author === "string" ? args.author.trim() || null : null;
+  const source = args && args.source !== undefined ? args.source : "typed";
+  if (source !== "typed" && source !== "recommended") {
+    fail(400, "source must be 'typed' or 'recommended'");
   }
-  if (title) {
-    const { results } = await db
-      .prepare(`SELECT * FROM ${WISHLIST_TABLE} ORDER BY position ASC, id ASC`)
-      .all();
-    const dupe = (results || []).find(
-      (r) => normalizeTitle(r.title) === normalizeTitle(title)
-    );
-    if (dupe) return shapeWishlistItem(dupe);
-  }
+  const olWorkKey =
+    args && typeof args.olWorkKey === "string" && args.olWorkKey
+      ? args.olWorkKey
+      : null;
 
-  let resolvedKey = workKey;
-  if (workKey) {
-    try {
-      const detail = await fetchWorkDetail(workKey);
-      if (!title && detail.title) title = detail.title;
-      if (!author && detail.author) author = detail.author;
-    } catch {
-      /* best-effort */
-    }
-  } else if (title) {
-    const found = await searchOpenLibrary(title, author || undefined);
-    if (found) {
-      if (!author && found.author) author = found.author;
-      resolvedKey = found.olWorkKey;
-    }
-  }
-  if (!title) fail(400, "title required (or an olWorkKey that resolves to one)");
+  const existing = await allWishlistRows(db);
+  const dupe = existing.find((r) => baseTitle(r.title) === baseTitle(title));
+  if (dupe) return { item: shapeWishlistItem(dupe) };
 
-  const position = await nextPosition(db, WISHLIST_TABLE);
-  const source =
-    args && typeof args.source === "string" && args.source ? args.source : "manual";
-  // cover_blob_key stays NULL: listWishlist derives the cover URL from the
-  // work key ("wishlist/<WORKKEY>.jpg") until a real key is stored.
+  const position =
+    existing.length > 0 ? Math.max(...existing.map((r) => r.position ?? 0)) + 1 : 0;
   const result = await db
     .prepare(
       `INSERT INTO ${WISHLIST_TABLE} (title, author, ol_work_key, cover_blob_key, source, position, detail_fetched, created_at)
-       VALUES (?1, ?2, ?3, NULL, ?4, ?5, 0, ?6)`
+       VALUES (?1, ?2, ?3, NULL, ?4, ?5, 0, ?6)`,
     )
-    .bind(title, author || null, resolvedKey, source, position, Date.now())
+    .bind(title, author, olWorkKey, source, position, Date.now())
     .run();
   const newId = result && result.meta ? result.meta.last_row_id : null;
-  const row = await db
-    .prepare(`SELECT * FROM ${WISHLIST_TABLE} WHERE id = ?1`)
-    .bind(Number(newId))
-    .first();
-  return shapeWishlistItem(row);
+  if (!newId) fail(500, "insert did not return a new id");
+
+  // Typed adds resolve their work key by search (the real
+  // resolveTypedWishlist); recommended adds already carry theirs.
+  if (!olWorkKey) {
+    try {
+      const found = await searchOpenLibrary(title, author || undefined);
+      if (found && found.olWorkKey) {
+        await db
+          .prepare(`UPDATE ${WISHLIST_TABLE} SET ol_work_key = ?1 WHERE id = ?2`)
+          .bind(found.olWorkKey, Number(newId))
+          .run();
+      }
+    } catch {
+      /* best-effort */
+    }
+  }
+  const row = await findWishlistRow(db, Number(newId));
+  return { item: shapeWishlistItem(row) };
 }
 
+// Real removeWishlistItem: deletes (missing ids are a no-op) → { ok: true }.
 async function removeWishlistItem(db, args) {
   const id = requireBookId(args, "id");
-  const existing = await db
-    .prepare(`SELECT id FROM ${WISHLIST_TABLE} WHERE id = ?1`)
-    .bind(id)
-    .first();
-  if (!existing) fail(404, "wishlist item not found");
   await db.prepare(`DELETE FROM ${WISHLIST_TABLE} WHERE id = ?1`).bind(id).run();
-  return { removed: true, id };
+  return { ok: true };
 }
 
+// Real startWishlistItem: { started, bookId }. Shelves the item as
+// currently_reading (position next within the currently-reading group)
+// and clears it from the wishlist; if that title is already on the
+// nightstand, the wishlist entry is simply cleared. A missing item
+// returns { started: false, bookId: null } (never a throw).
 async function startWishlistItem(db, args) {
   const id = requireBookId(args, "id");
-  const item = await db
-    .prepare(`SELECT * FROM ${WISHLIST_TABLE} WHERE id = ?1`)
-    .bind(id)
-    .first();
-  if (!item) fail(404, "wishlist item not found");
-  // Carry the cover over via the wishlist cover-path convention
-  // ("wishlist/<WORKKEY>.jpg") so the new book's coverUrl resolves to the
-  // same file the wishlist showed; keep a stored key when there is one.
-  const wkId = workKeyId(item.ol_work_key);
-  const coverBlobKey =
-    item.cover_blob_key || (wkId ? `wishlist/${wkId}.jpg` : null);
-  const position = await nextPosition(db, BOOKS_TABLE);
+  const item = await findWishlistRow(db, id);
+  if (!item) return { started: false, bookId: null };
+
+  const allBooks = await allBookRows(db);
+  const already = allBooks.find(
+    (b) => b.status === "currently_reading" && baseTitle(b.title) === baseTitle(item.title),
+  );
+  if (already) {
+    await db.prepare(`DELETE FROM ${WISHLIST_TABLE} WHERE id = ?1`).bind(id).run();
+    return { started: true, bookId: already.id };
+  }
+
+  const reading = allBooks.filter((b) => b.status === "currently_reading");
+  const position =
+    reading.length > 0 ? Math.max(...reading.map((r) => r.position ?? 0)) + 1 : 0;
+  // Cover carry-over: the real action carries the stored blob key; on
+  // this host a seeded item's key is NULL but its cover file lives at
+  // the wishlist/<WORKKEY>.jpg convention, so carry that key to keep
+  // the new book's coverUrl resolving to the same file.
+  const coverBlobKey = item.cover_blob_key || wishlistCoverBlobKey(item);
   const result = await db
     .prepare(
-      `INSERT INTO ${BOOKS_TABLE} (title, author, author_hint, year_read, rating, status, publish_year, position, cover_blob_key, ol_work_key, ol_description, subjects, detail_status, personal_notes, created_at)
-       VALUES (?1, ?2, ?3, NULL, NULL, 'currently_reading', ?4, ?5, ?6, ?7, ?8, ?9, 'none', '', ?10)`
+      `INSERT INTO ${BOOKS_TABLE} (title, author, author_hint, year_read, rating, status, position, cover_blob_key, cover_checked, cover_attempts, cover_optimized, ol_work_key, detail_status, personal_notes, created_at)
+       VALUES (?1, ?2, ?3, NULL, NULL, 'currently_reading', ?4, ?5, ?6, ?7, ?8, ?9, 'none', '', ?10)`,
     )
     .bind(
       item.title,
-      item.author || "Unknown",
-      item.author || null,
-      item.publish_year ?? null,
+      item.author ?? null,
+      item.author ?? null,
       position,
       coverBlobKey,
+      coverBlobKey ? 1 : 0,
+      coverBlobKey ? 1 : 0,
+      coverBlobKey ? 1 : 0,
       item.ol_work_key ?? null,
-      item.synopsis ?? null,
-      item.subjects ?? null,
-      Date.now()
+      Date.now(),
     )
     .run();
   const newId = result && result.meta ? result.meta.last_row_id : null;
   if (!newId) fail(500, "insert did not return a new id");
   await db.prepare(`DELETE FROM ${WISHLIST_TABLE} WHERE id = ?1`).bind(id).run();
-  const row = await getBookRow(db, Number(newId));
-  return shapeBookDetail(row);
+  return { started: true, bookId: Number(newId) };
 }
 
+// Real dismissWishlistRecommendation: { olWorkKey, title } (both
+// required) → { ok: true }; inserts only when not already dismissed.
 async function dismissWishlistRecommendation(db, args) {
-  const rawKey = args && (args.olWorkKey || args.ol_work_key || args.workKey);
-  const workKey = rawKey ? normalizeWorkKey(rawKey) : null;
-  if (!workKey) fail(400, "olWorkKey required");
+  const olWorkKey = args && typeof args.olWorkKey === "string" ? args.olWorkKey : "";
+  const title = args && typeof args.title === "string" ? args.title : "";
+  if (!olWorkKey) fail(400, "olWorkKey required");
+  if (!title) fail(400, "title required");
   const existing = await db
     .prepare(`SELECT * FROM ${DISMISSED_TABLE} WHERE ol_work_key = ?1`)
-    .bind(workKey)
+    .bind(olWorkKey)
     .first();
-  if (existing) {
-    return {
-      dismissed: true,
-      already: true,
-      id: existing.id,
-      olWorkKey: existing.ol_work_key,
-      title: existing.title ?? null,
-      author: existing.author ?? null,
-    };
+  if (!existing) {
+    await db
+      .prepare(
+        `INSERT INTO ${DISMISSED_TABLE} (ol_work_key, title, created_at) VALUES (?1, ?2, ?3)`,
+      )
+      .bind(olWorkKey, title, Date.now())
+      .run();
   }
-  const title = args && typeof args.title === "string" ? args.title : null;
-  const author = args && typeof args.author === "string" ? args.author : null;
-  const result = await db
-    .prepare(
-      `INSERT INTO ${DISMISSED_TABLE} (ol_work_key, title, author, created_at) VALUES (?1, ?2, ?3, ?4)`
-    )
-    .bind(workKey, title, author, Date.now())
-    .run();
-  return {
-    dismissed: true,
-    already: false,
-    id: result && result.meta ? result.meta.last_row_id : null,
-    olWorkKey: workKey,
-    title,
-    author,
-  };
+  return { ok: true };
+}
+
+/* ==================== BACKGROUND STUBS (safe no-ops) ==================== */
+// Each returns the real action's response shape with zero progress and
+// `remaining` set to the real pending count, so the client's auto-load
+// loops (which break on processed===0 / ready===0) stop immediately.
+
+// Real: { imported, alreadyImported }. The hosted D1 is the master
+// copy — this NEVER imports anything; alreadyImported is always true so
+// the one-shot client import effect settles.
+async function importLibrary(db) {
+  const rows = await allBookRows(db);
+  void rows;
+  return { imported: 0, alreadyImported: true };
+}
+
+// Real: DetailResponse. Stored-data equivalent of the real action: when
+// the detail already exists it is returned unchanged; when it doesn't,
+// the real action would generate one — on this host the stored response
+// (which faithfully shows detailStatus as-is) is returned instead. A
+// missing book returns the same ok:false payload the real action does.
+async function prepareBookDetail(db, args) {
+  const id = requireBookId(args, "id");
+  const row = await findBookRow(db, id);
+  if (!row) return emptyDetailResponse();
+  return buildDetailResponse(row);
+}
+
+// Real: { processed, remaining }.
+async function enrichCovers(db) {
+  const counts = pendingCounts(await allBookRows(db));
+  return { processed: 0, remaining: counts.coversPending };
+}
+
+// Real: { processed, remaining }.
+async function optimizeCovers(db) {
+  const counts = pendingCounts(await allBookRows(db));
+  return { processed: 0, remaining: counts.coversUnoptimized };
+}
+
+// Real: { processed, ready, remaining }.
+async function preloadDetails(db) {
+  const counts = pendingCounts(await allBookRows(db));
+  return { processed: 0, ready: 0, remaining: counts.detailsPending };
+}
+
+// Real: { processed, ready, remaining }.
+async function preloadRecommendations(db) {
+  const counts = pendingCounts(await allBookRows(db));
+  return { processed: 0, ready: 0, remaining: counts.recsPending };
+}
+
+// Real: { processed, withSeries, remaining }.
+async function preloadSeries(db) {
+  const counts = pendingCounts(await allBookRows(db));
+  return { processed: 0, withSeries: 0, remaining: counts.seriesPending };
 }
 
 /* ============================== DISPATCHER ============================== */
@@ -817,6 +861,14 @@ const ACTIONS = {
   removeWishlistItem,
   startWishlistItem,
   dismissWishlistRecommendation,
+  // Background stubs (see above).
+  importLibrary,
+  prepareBookDetail,
+  enrichCovers,
+  optimizeCovers,
+  preloadDetails,
+  preloadRecommendations,
+  preloadSeries,
 };
 
 export async function onRequestPost(context) {
