@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Load the Library — The Archives</title>
+<meta name="theme-color" content="#120a05">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="icon" href="../icons/icon.svg" type="image/svg+xml">
+<style>
+  /* Transfer panel only — platform shape (MAX / Wish sealed-transfer
+     pattern) in the Archives palette. Sarah's app is untouched. */
+  *{ -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+  [hidden]{ display:none !important; }
+  body{ margin:0; background:#120a05; color:#e9dcc3;
+    font-family:"Cormorant Garamond","EB Garamond",Georgia,serif;
+    min-height:100dvh; display:flex; align-items:center; justify-content:center; padding:24px; }
+  main{ width:100%; max-width:420px; }
+  .panel{ display:none; background:#1d1109;
+    border:1px solid #4a3520; border-radius:14px; padding:28px 24px;
+    box-shadow:0 18px 50px rgba(0,0,0,.55); text-align:center; }
+  .panel.on{ display:block; }
+  .prompt{ font-size:24px; letter-spacing:.04em; color:#f0d488; margin:0 0 10px; }
+  .sub{ font-size:16.5px; line-height:1.45; color:#cbb894; margin:0 0 20px; }
+  input[type="password"]{ width:100%; padding:13px 14px; font-size:17px; border-radius:10px;
+    border:1px solid #6b4e2a; background:#120a05; color:#f5ecd7; outline:none; }
+  input[type="password"]:focus{ border-color:#f0d488; }
+  button.act{ width:100%; margin-top:14px; padding:14px; font-size:16px; letter-spacing:.14em;
+    text-transform:uppercase; font-family:inherit; font-weight:600; color:#241503;
+    background:linear-gradient(180deg,#f0d488,#d9ae4e); border:none; border-radius:10px; cursor:pointer; }
+  button.act:disabled{ opacity:.55; cursor:default; }
+  .error{ display:none; margin:16px 0 0; font-size:16px; line-height:1.4; color:#ff9d7a; }
+  .ok{ margin:16px 0 0; font-size:16.5px; line-height:1.5; color:#b9e2a0; }
+  .counts{ margin:14px auto 0; text-align:left; font-size:16.5px; line-height:1.6;
+    display:inline-block; color:#e9dcc3; }
+  a.open{ display:inline-block; margin-top:20px; color:#f0d488; font-size:17px; }
+</style>
+</head>
+<body>
+<main>
+  <section class="panel on" id="panelLoading">
+    <p class="prompt">The Archives</p>
+    <p class="sub">Checking your sign-in&hellip;</p>
+  </section>
+
+  <section class="panel" id="panelDenied">
+    <p class="prompt">Admins only</p>
+    <p class="sub">This page loads Sarah's library into the site, so it needs an
+      admin account. You're signed in, but not as an admin.</p>
+    <a class="open" href="../">Open the library</a>
+  </section>
+
+  <section class="panel" id="panelTransfer">
+    <p class="prompt">One last step — loading Sarah's library.</p>
+    <p class="sub">Enter the app password once. The sealed library is opened
+      here in your browser and loaded into your account, and the password
+      goes away for good.</p>
+    <form id="formTransfer">
+      <input type="password" id="pw" aria-label="App password" autocomplete="current-password" required>
+      <button class="act" id="btnLoad" type="submit">Load Sarah&rsquo;s library</button>
+    </form>
+    <p class="error" id="errTransfer"></p>
+    <div id="resultOk" hidden>
+      <p class="ok" id="okMsg"></p>
+      <div class="counts" id="okCounts"></div>
+      <br><a class="open" href="../">Open the library</a>
+    </div>
+    <div id="resultAlready" hidden>
+      <p class="ok" id="alreadyMsg"></p>
+      <br><a class="open" href="../">Open the library</a>
+    </div>
+  </section>
+</main>
+<script>
+  const PAYLOAD_URL = '../seed-payload.json';
+  const SEED_URL = '/api/library/seed';
+  const $ = (id) => document.getElementById(id);
+  const panels = ['panelLoading', 'panelDenied', 'panelTransfer'];
+  function show(id){ panels.forEach(p => $(p).classList.toggle('on', p === id)); }
+  function err(msg){ const e = $('errTransfer'); e.textContent = msg || ''; e.style.display = msg ? 'block' : 'none'; }
+
+  // === seal-decrypt begin ===
+  // The platform's sealed-transfer decrypt (private-sources/max-pocket-agenda
+  // shell): PBKDF2-SHA256 at the payload's iteration count -> AES-256-GCM.
+  // The payload's data is ciphertext with the GCM auth tag appended, which
+  // is exactly what WebCrypto's decrypt expects.
+  const fromB64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
+  async function decryptSealedPayload(payload, password) {
+    const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveKey']);
+    const key = await crypto.subtle.deriveKey({ name: 'PBKDF2', salt: fromB64(payload.salt), iterations: payload.iterations, hash: 'SHA-256' }, base, { name: 'AES-GCM', length: 256 }, false, ['decrypt']);
+    const plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: fromB64(payload.iv) }, key, fromB64(payload.data));
+    return new TextDecoder().decode(plain);
+  }
+  // === seal-decrypt end ===
+
+  // Boot gate (same shape as the other microsites): confirm the passkey
+  // session before showing the panel; anyone not signed in goes to the
+  // login page. The seed endpoint re-checks admin server-side regardless.
+  (async function boot(){
+    try {
+      const r = await fetch('/api/auth/me');
+      if (r.status === 401) { location.href = '/login/'; return; }
+      const me = await r.json().catch(() => null);
+      if (!me || me.signedIn === false) { location.href = '/login/'; return; }
+      if (me.role !== 'admin') { show('panelDenied'); return; }
+      show('panelTransfer');
+    } catch (e) {
+      // Offline or API trouble: leave the loading panel up rather than
+      // bouncing; the seed call itself will report any real failure.
+      show('panelTransfer');
+    }
+  })();
+
+  $('formTransfer').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const b = $('btnLoad'); const label = b.textContent;
+    b.disabled = true; b.textContent = 'Working…'; err('');
+    $('resultOk').hidden = true; $('resultAlready').hidden = true;
+
+    // 1) Fetch the sealed payload that sits next to the app.
+    let payload;
+    try {
+      const r = await fetch(PAYLOAD_URL, { cache: 'no-store' });
+      if (!r.ok) throw new Error('payload fetch ' + r.status);
+      payload = await r.json();
+    } catch (ex) {
+      err('The sealed library file isn\'t on the server yet. Nothing was loaded — tell Mumu and try again once it is.');
+      b.disabled = false; b.textContent = label; return;
+    }
+
+    // 2) Decrypt in the browser with the entered password. A wrong
+    // password fails the GCM auth check here, distinctly from any
+    // server response below.
+    let seedText;
+    try {
+      seedText = await decryptSealedPayload(payload, $('pw').value);
+      JSON.parse(seedText); // sanity: the plaintext must be the seed JSON
+    } catch (ex) {
+      err('That password didn\'t work — the sealed library couldn\'t be opened. Check the password and try again.');
+      b.disabled = false; b.textContent = label; return;
+    }
+
+    // 3) POST the decrypted JSON verbatim to the seed endpoint under
+    // this (admin) session.
+    let res, body = null;
+    try {
+      res = await fetch(SEED_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: seedText });
+      body = await res.json().catch(() => null);
+    } catch (ex) {
+      err('The library was opened, but the load didn\'t reach the server. Check your connection and try again.');
+      b.disabled = false; b.textContent = label; return;
+    }
+
+    if (res.ok && body && body.ok) {
+      const c = (body.data && body.data.counts) || {};
+      $('okMsg').textContent = 'Sarah\'s library is loaded.';
+      $('okCounts').innerHTML =
+        'Books: ' + (c.books ?? '—') + '<br>' +
+        'Series info: ' + (c.series_info ?? '—') + '<br>' +
+        'Wishlist items: ' + (c.wishlist_items ?? '—') + '<br>' +
+        'Dismissed picks: ' + (c.wishlist_dismissed ?? '—');
+      $('resultOk').hidden = false;
+      b.textContent = 'Loaded';
+      return;
+    }
+    if (res.status === 409) {
+      $('alreadyMsg').textContent = 'Already loaded — ' + ((body && body.error) || 'the library is already in place, so nothing was changed.');
+      $('resultAlready').hidden = false;
+      b.disabled = false; b.textContent = label;
+      return;
+    }
+    err('The server didn\'t accept the load (' + ((body && body.error) || ('HTTP ' + res.status)) + '). Nothing was changed — try again.');
+    b.disabled = false; b.textContent = label;
+  });
+</script>
+</body>
+</html>
