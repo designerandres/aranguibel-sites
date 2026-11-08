@@ -859,7 +859,7 @@ export const GUIDE = {
      ],
      "isNew": true,
      "kidPick": false,
-     "img": null
+     "img": "photos/the-bauble-bright.jpg"
     },
     {
      "id": "tune-in-lounge--in-holiday-fashion",
