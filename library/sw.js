@@ -3,15 +3,15 @@
 // only successful (res.ok) responses are stored, so a cover that
 // lands later is never masked by a cached 404; pages are
 // network-first with the cache as the offline fallback.
-const CACHE = "library-v3";
+const CACHE = "library-v4";
 const SHELL = [
   ".",
   "index.html",
   "app.js",
   "theme.css",
   "manifest.webmanifest",
-  "icons/icon-192.png",
-  "icons/icon-512.png",
+  "icons/icon-192.png?v=2",
+  "icons/icon-512.png?v=2",
 ];
 
 self.addEventListener("install", (e) => {
