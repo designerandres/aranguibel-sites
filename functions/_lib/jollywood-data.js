@@ -1042,7 +1042,7 @@ export const GUIDE = {
    "id": "act--glisten",
    "name": "Glisten!",
    "where": "Hollywood Boulevard",
-   "shows": "TBA",
+   "shows": "8:05 · 9:05 · 10:30 · 11:15 PM · 12:15 AM",
    "desc": "Champion ice skaters carve up Hollywood Boulevard in a glittering holiday skating spectacular, with guest appearances from classic Disney friends.",
    "img": "photos/act-glisten.jpg",
    "motif": "skate"
