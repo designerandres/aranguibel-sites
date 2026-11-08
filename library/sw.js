@@ -1,3 +1,4 @@
+// build 2026-11-07
 // The Archives — Sarah's Library: offline cache for the shell.
 // /api/ is never cached; covers + texture assets are cache-first but
 // only successful (res.ok) responses are stored, so a cover that
