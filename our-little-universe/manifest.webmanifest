@@ -1,0 +1,27 @@
+{
+ "name": "Our Little Universe",
+ "short_name": "Universe",
+ "description": "A small pause, every other day \u2014 one question, two answers, opened together.",
+ "display": "standalone",
+ "background_color": "#05030F",
+ "theme_color": "#05030F",
+ "scope": "/our-little-universe/",
+ "start_url": "/our-little-universe/app",
+ "icons": [
+  {
+   "src": "/our-little-universe/icons/icon-192.png",
+   "sizes": "192x192",
+   "type": "image/png"
+  },
+  {
+   "src": "/our-little-universe/icons/icon-512.png",
+   "sizes": "512x512",
+   "type": "image/png"
+  },
+  {
+   "src": "/our-little-universe/icons/icon.svg",
+   "sizes": "any",
+   "type": "image/svg+xml"
+  }
+ ]
+}

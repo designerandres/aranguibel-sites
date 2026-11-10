@@ -119,6 +119,7 @@
           <label class="scoperow"><input type="checkbox" class="inv-app" value="hatchs-countdown"> Hatch's Countdown</label>
           <label class="scoperow"><input type="checkbox" class="inv-app" value="nov-visit"> The PhotoPass Exchange (DLP Visit)</label>
           <label class="scoperow"><input type="checkbox" class="inv-app" value="yellowstone-2027"> Yellowstone 2027</label>
+          <label class="scoperow"><input type="checkbox" class="inv-app" value="our-little-universe"> Our Little Universe</label>
           <p class="scopehint">Tick one or more apps to limit this invite to just those. Leave everything unticked for a full account that opens everything.</p>
         </div>
       </details>
@@ -268,6 +269,9 @@ const APP_THEMES = {
   "library": { name: "The Archives", icon: "/library/icons/icon.svg",
     bg: "radial-gradient(900px 480px at 85% -10%, rgba(238,194,92,.17), transparent 60%), radial-gradient(700px 420px at -10% 110%, rgba(29,74,54,.28), transparent 55%), linear-gradient(180deg,#2b1a0e,#1d1209 48%,#120a05)",
     vars: { "--ink":"#ede3cb", "--ink2":"#b3a58c", "--card":"rgba(46,33,23,.88)", "--line":"rgba(201,162,39,.45)", "--accent":"#eec25c", "--accent2":"#c9a227", "--fieldbg":"#241708", "--btnink":"#2b1a05" }, scheme: "dark", font: '"Cormorant Garamond",serif' },
+  "our-little-universe": { name: "Our Little Universe", icon: "/our-little-universe/icons/icon.svg",
+    bg: "radial-gradient(900px 480px at 85% -10%, rgba(124,93,250,.35), transparent 60%), radial-gradient(700px 420px at -10% 110%, rgba(214,90,140,.28), transparent 55%), linear-gradient(180deg,#130e28,#05030f)",
+    vars: { "--ink":"#F0EAF9", "--ink2":"#AAA0CC", "--card":"rgba(19,14,40,.88)", "--line":"rgba(189,166,247,.3)", "--accent":"#BDA6F7", "--accent2":"#E8C877", "--fieldbg":"#0A0620", "--btnink":"#171233" }, scheme: "dark", font: '"Cinzel",serif' },
 };
 let inviteTheme = null;
 function applyInviteTheme(slug, info) {

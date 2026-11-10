@@ -485,6 +485,25 @@
       fig: "the gold book\nthat marks the shelves"
     },
     {
+      path: "our-little-universe/",
+      title: "Our Little Universe",
+      description: "A couples check-in for Sarah and Andres — one question every other day, answered in private and opened together, with every past answer kept in the Time Capsule.",
+      icon: "our-little-universe/icons/icon-512.png",
+      monogram: "\u2726",
+      tab: "family",
+      section: "The Night Sky",
+      territory: "the quiet hours, under the same stars",
+      teaser: "One question every other day — two answers, sealed until both are written, then opened together.",
+      story: "A small ritual for two, charted in the Log like any other voyage: a question arrives every other day, always in the morning and never at the same time — his early, hers a little after. Each answers alone and in private; the answers stay sealed until both are written, and then they open together, side by side. Every finished page is pressed into the Time Capsule, so the story of twenty years keeps writing itself one question at a time.",
+      marginalia: "his early, hers a little after",
+      marginaliaClass: "",
+      stamp: "First Question Pending",
+      stampClass: "teal",
+      waters: "The Milky Way",
+      bearings: "every other morning \u00B7 since 2006",
+      fig: "the gold star\nthat marks the sky"
+    },
+    {
       path: "jollywood-fam-2026/",
       title: "Jollywood Fam 2026",
       description: "Our Jollywood Nights gameplan — the foodie-guide ballot, our picks as a timed itinerary, and a countdown to premiere night, Saturday Nov 28.",
@@ -629,7 +648,7 @@
   try { const t = sessionStorage.getItem("skipperslog.tab"); if (TABS.includes(t)) activeTab = t; } catch (e) {}
   const openByTab = { family: null, personal: null }; // path of the expanded entry per tab
   let crewAdmin = false; // Invite Crew is the skipper's alone: set from /api/auth/me
-  const INVITABLE_SLUGS = ["jollywood-fam-2026", "poppy-picks", "cycles", "max-pocket-agenda", "lodge-boys-2026", "wish-day-guide", "hatchs-countdown", "nov-visit", "yellowstone-2027", "library"];
+  const INVITABLE_SLUGS = ["jollywood-fam-2026", "poppy-picks", "cycles", "max-pocket-agenda", "lodge-boys-2026", "wish-day-guide", "hatchs-countdown", "nov-visit", "yellowstone-2027", "library", "our-little-universe"];
 
   function applyOrder(order) {
     if (!Array.isArray(order)) return;
