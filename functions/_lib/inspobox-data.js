@@ -209,9 +209,9 @@ export const FEED = [
 ];
 
 // ---- Idea Starter atoms -------------------------------------------------
-// The generator crosses up to two sources (movements, or Disney). With a
-// prompt, the prompt is the seed and the atoms dress it; without one, a
-// subject is drawn from the crossed packs.
+// The generator crosses up to two sources (movements, or Disney). A typed
+// prompt becomes the seed line; a subject (with an action) is always drawn
+// from the crossed packs, prompt or not.
 
 export const ATOMS = {
   formats: [
@@ -235,6 +235,22 @@ export const ATOMS = {
     "a tailor who sews pockets for carrying weather",
     "an elevator operator in a hotel with a thousand floors",
     "a sign painter painting signs for businesses from the future",
+  ],
+  actions: [
+    "rehearsing a confession they've memorized wrong",
+    "racing a storm front across the district",
+    "teaching an apprentice who asks the right questions",
+    "hiding one impossible object in plain sight",
+    "waiting for a signal only they would recognize",
+    "fixing the machine everyone else gave up on",
+    "delivering a package with no address, only a description",
+    "practicing the bow they'll never get to take",
+    "negotiating with someone exactly like them",
+    "counting the minutes until the doors open",
+    "auditioning for the part of themselves",
+    "guarding a door that must never open",
+    "rebuilding yesterday's triumph from memory",
+    "smuggling one small hope past the checkpoint",
   ],
   settings: [
     "a flooded art museum at blue hour",

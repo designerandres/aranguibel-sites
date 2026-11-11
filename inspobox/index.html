@@ -140,6 +140,9 @@ img{display:block}
 .boxitem .bti{font-family:var(--unb);font-weight:900;font-size:13.5px;line-height:1.25;margin-top:4px}
 .boxitem .bb{font-size:11.5px;color:var(--dim);margin-top:4px;line-height:1.45}
 .boxitem .del{flex:none;align-self:flex-start;color:var(--faint);font-size:15px;padding:2px 4px}
+.boxitem .bacts{flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:7px}
+.boxitem .dl{font-family:var(--unb);font-weight:900;font-size:9.5px;letter-spacing:.07em;padding:7px 9px;border-radius:8px;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.16);color:#fff;white-space:nowrap}
+.boxitem .dl:active{background:var(--grad)}
 .boxempty{padding:50px 26px;text-align:center;color:var(--faint)}
 .boxempty .t{font-family:var(--unb);font-weight:900;font-size:15px;color:rgba(255,255,255,.8)}
 
@@ -180,7 +183,7 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
     <div class="logo">INSPO<span class="box">BOX</span></div>
     <div id="counter">— / —</div>
     <div id="tapHint">TAP A PIECE TO LOCK ITS GENRE</div>
-    <div id="buildTag">BUILD V15</div>
+    <div id="buildTag">BUILD V16</div>
   </div>
   <div class="topbtns">
     <button class="chipbtn" id="boxBtn">BOX <span class="n" id="boxCount">0</span></button>
@@ -382,13 +385,51 @@ function renderBox() {
     <div class="boxitem">
       <div class="bt"><div class="bk">SPARK · ${esc(b.label || "")}</div>
       <div class="bti">${esc(b.title)}</div><div class="bb">${esc(b.body || "")}</div></div>
-      <button class="del" data-del="${i}">✕</button>
+      <div class="bacts"><button class="dl" data-dl="${i}">PROMPT ↓</button><button class="del" data-del="${i}">✕</button></div>
     </div>`).join("");
 }
 $("#boxList").addEventListener("click", (e) => {
+  const dl = e.target.closest("[data-dl]");
+  if (dl) { downloadPrompt(Number(dl.dataset.dl)); return; }
   const del = e.target.closest("[data-del]");
   if (del) { box.splice(Number(del.dataset.del), 1); store.set("inspobox.box.v1", box); renderBox(); renderDeckSoft(); }
 });
+function buildPrompt(item) {
+  const head = [`INSPOBOX — ${item.title}`, item.label || ""];
+  if (!item.concept) return [...head, "", "PROMPT — paste into your genAI tool:", item.body || item.title, ""].join("\n");
+  const c = item.concept;
+  const cap = (s) => s ? s.charAt(0).toUpperCase() + s.slice(1) : "";
+  const sent = (s) => { s = (s || "").trim(); return s ? (s.endsWith(".") ? s : s + ".") : ""; };
+  const bits = [];
+  if (c.seed) bits.push(`Start from this seed: "${c.seed}"`);
+  let core = cap(c.subject || "");
+  if (c.setting) core += `, in ${c.setting}`;
+  bits.push(sent(core));
+  if (c.shot) bits.push(sent(cap(c.shot)));
+  if (c.light) bits.push(sent("Lighting: " + c.light));
+  if (c.twist) bits.push(sent("Twist: " + c.twist));
+  bits.push(`Format: ${c.kind} — ${c.label}. Title: "${c.title}".`);
+  return [...head, "", "PROMPT — paste into your genAI tool:", bits.join(" "), "",
+    "BREAKDOWN",
+    c.seed ? `Seed: ${c.seed}` : null,
+    `Subject: ${c.subject || "—"}`,
+    `World: ${c.setting || "—"}`,
+    `Shot: ${c.shot || "—"}`,
+    `Light: ${c.light || "—"}`,
+    `Twist: ${c.twist || "—"}`,
+    `Sources: ${c.tags || "—"}`,
+  ].filter((x) => x !== null).join("\n");
+}
+function downloadPrompt(i) {
+  const item = box[i]; if (!item) return;
+  const slug = (item.title || "concept").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  const name = `inspobox-${item.concept ? "concept-" + String(item.concept.n).padStart(3, "0") : "spark"}-${slug}.txt`;
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([buildPrompt(item)], { type: "text/plain" }));
+  a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+}
 function renderDeckSoft() { // refresh save states without rebuilding scroll position
   $$("[data-save]").forEach((b) => { const on = isSavedPiece(b.dataset.save); b.classList.toggle("saved", on); b.textContent = on ? "✓" : "+"; });
 }
@@ -575,7 +616,7 @@ function generate() {
   lastConcept = {
     n: genCount, kind: fmt.kind, label: fmt.label, title,
     seedLine: prompt || null,
-    subject: prompt ? null : (anchor ? pick(r, anchor.subjects) : pick(r, B.subjects)),
+    subject: (anchor ? pick(r, anchor.subjects) : pick(r, B.subjects)) + ", " + pick(r, A.actions),
     setting: anchor ? pick(r, anchor.settings) : (r() < 0.72 ? pick(r, B.settings) : null),
     shot: pick(r, B.shots), light: pick(r, B.lights),
     twist: anchor && r() < 0.6 ? pick(r, anchor.twists) : pick(r, B.twists), tags,
@@ -603,7 +644,7 @@ function renderConcept() {
   $("#rerollBtn").addEventListener("click", () => { rerolls += 1; generate(); });
   $("#saveSparkBtn").addEventListener("click", (e) => {
     const body = [c.seedLine ? "Seed: " + c.seedLine : c.subject, c.setting, "Shot: " + c.shot, "Twist: " + c.twist].filter(Boolean).join(" · ");
-    box.unshift({ type: "spark", title: c.title, label: c.kind + " · " + c.label + " · " + c.tags, body, ts: Date.now() });
+    box.unshift({ type: "spark", title: c.title, label: c.kind + " · " + c.label + " · " + c.tags, body, concept: { n: c.n, kind: c.kind, label: c.label, title: c.title, seed: c.seedLine, subject: c.subject, setting: c.setting, shot: c.shot, light: c.light, twist: c.twist, tags: c.tags }, ts: Date.now() });
     store.set("inspobox.box.v1", box); renderBox();
     e.target.textContent = "SAVED ✓";
   });
