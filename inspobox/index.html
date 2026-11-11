@@ -55,6 +55,10 @@ img{display:block}
 .kicker .mv{cursor:pointer}
 .ptitle{font-family:var(--anton);font-size:26px;line-height:1.06;margin-top:7px;letter-spacing:.01em}
 .pby{font-size:12.5px;color:var(--dim);margin-top:5px;font-weight:500}
+a.pby{display:block;text-decoration:underline dotted rgba(255,255,255,.42);text-underline-offset:3px}
+.pby .ext{font-size:10px;color:var(--faint)}
+a.bb{color:var(--dim);text-decoration:underline dotted rgba(255,255,255,.35);text-underline-offset:3px}
+#swTrack.drag{transition:none}
 .rail{display:flex;gap:15px;margin-top:14px;padding-top:13px;border-top:1px solid rgba(255,255,255,.14);overflow-x:auto;white-space:nowrap;-webkit-mask-image:linear-gradient(90deg,#000 88%,transparent);mask-image:linear-gradient(90deg,#000 88%,transparent)}
 .rail button{font-size:11.5px;font-weight:700;letter-spacing:.13em;color:var(--faint);padding-bottom:5px;flex:none}
 .rail button.on{background:linear-gradient(90deg,#FF2E4D,#FF8A1F);-webkit-background-clip:text;background-clip:text;color:transparent;box-shadow:0 3px 0 -1px #FF2E4D}
@@ -190,7 +194,7 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
     <div class="logo">INSPO<span class="box">BOX</span></div>
     <div id="counter">— / —</div>
     <div id="tapHint">TAP A PIECE TO LOCK ITS GENRE</div>
-    <div id="buildTag">BUILD V20</div>
+    <div id="buildTag">BUILD V21</div>
   </div>
   <div class="topbtns">
     <button class="chipbtn" id="boxBtn">BOX <span class="n" id="boxCount">0</span></button>
@@ -264,7 +268,7 @@ function rng(seed) { let t = seed >>> 0; return () => { t += 0x6D2B79F5; let r =
 const pick = (r, arr) => arr[Math.floor(r() * arr.length)];
 
 let DATA = null;
-const state = { media: "photography", movement: "all", current: 0 };
+const state = { media: "design", movement: "all", current: 0 };
 let box = store.get("inspobox.box.v1", []);
 let sparks = store.get("inspobox.sparks.v1", []);
 let genCount = store.get("inspobox.count.v1", 0);
@@ -323,7 +327,7 @@ function renderDeck(startId) {
       <div class="panel">
         <div class="kicker"><span class="mv" data-open-index>${state.movement === "all" ? "MOVEMENT" : "GENRE LOCKED"} — ${esc(mvName(p.movement).toUpperCase())}</span><span data-step="1">${esc(mdName(p.media).toUpperCase())} ›</span></div>
         <div class="ptitle">${esc(p.title)}</div>
-        <div class="pby">${esc(p.by)}</div>
+        ${p.url ? `<a class="pby" href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.by)} <span class="ext">↗</span></a>` : `<div class="pby">${esc(p.by)}</div>`}
         <div class="rail">${railHtml()}</div>
       </div>
     </section>`).join("");
@@ -382,7 +386,7 @@ function toggleSavePiece(id) {
   if (!p) return;
   const ix = box.findIndex((b) => b.type === "piece" && b.id === id);
   if (ix >= 0) box.splice(ix, 1);
-  else box.unshift({ type: "piece", id: p.id, title: p.title, movement: p.movement, media: p.media, img: p.img, by: p.by, ts: Date.now() });
+  else box.unshift({ type: "piece", id: p.id, title: p.title, movement: p.movement, media: p.media, img: p.img, by: p.by, url: p.url || "", ts: Date.now() });
   store.set("inspobox.box.v1", box);
   $$(`[data-save="${id}"]`).forEach((b) => { const on = ix < 0; b.classList.toggle("saved", on); b.textContent = on ? "✓" : "+"; });
   renderBox();
@@ -398,7 +402,7 @@ function renderBox() {
     <div class="boxitem">
       <img src="${esc(b.img)}" alt="">
       <div class="bt"><div class="bk">${esc(mvName(b.movement).toUpperCase())} · ${esc(mdName(b.media).toUpperCase())}</div>
-      <div class="bti">${esc(b.title)}</div><div class="bb">${esc(b.by || "")}</div></div>
+      <div class="bti">${esc(b.title)}</div>${b.url ? `<a class="bb" href="${esc(b.url)}" target="_blank" rel="noopener">${esc(b.by || "")} ↗</a>` : `<div class="bb">${esc(b.by || "")}</div>`}</div>
       <button class="del" data-del="${i}">✕</button>
     </div>` : `
     <div class="boxitem">
@@ -547,12 +551,49 @@ function openSwitcher(target, commitMs) {
   requestAnimationFrame(centerStrip);
   armSwitcher(commitMs || 950);
 }
+function stripTxFor(id) {
+  const track = $("#swTrack"); if (!track) return 0;
+  const el = track.querySelector(`[data-sw="${id}"]`); if (!el) return 0;
+  return Math.round(window.innerWidth / 2 - (el.offsetLeft + el.offsetWidth / 2));
+}
 function centerStrip() {
   const track = $("#swTrack"); if (!track) return;
-  const el = track.querySelector(`[data-sw="${sw.pending}"]`); if (!el) return;
   $$("#swTrack .switem").forEach((it) => it.classList.toggle("on", it.dataset.sw === sw.pending));
-  const cx = el.offsetLeft + el.offsetWidth / 2;
-  track.style.transform = `translateX(${Math.round(window.innerWidth / 2 - cx)}px)`;
+  track.style.transform = `translateX(${stripTxFor(sw.pending)}px)`;
+}
+/* finger-tracked dragging: the strip follows the finger 1:1 and whichever
+   segment sits under the screen center becomes the pending pick; letting
+   go snaps to it and commits. */
+sw.drag = null;
+function beginDrag(x) {
+  if (!sw.open) { openSwitcher(null); if (!sw.open) return; }
+  clearTimeout(sw.timer);
+  $("#swTrack").classList.add("drag");
+  sw.drag = { startX: x, baseTx: stripTxFor(sw.pending) };
+}
+function dragStripTo(x) {
+  if (!sw.drag) return;
+  const track = $("#swTrack");
+  const lo = stripTxFor(sw.list[sw.list.length - 1]) - 56, hi = stripTxFor(sw.list[0]) + 56;
+  const tx = Math.max(lo, Math.min(hi, sw.drag.baseTx + (x - sw.drag.startX)));
+  track.style.transform = `translateX(${tx}px)`;
+  let best = sw.pending, bd = Infinity;
+  $$("#swTrack .switem").forEach((it) => {
+    const d = Math.abs(it.offsetLeft + it.offsetWidth / 2 + tx - window.innerWidth / 2);
+    if (d < bd) { bd = d; best = it.dataset.sw; }
+  });
+  if (best !== sw.pending) {
+    sw.pending = best;
+    $$("#swTrack .switem").forEach((it) => it.classList.toggle("on", it.dataset.sw === sw.pending));
+    if (navigator.vibrate) navigator.vibrate(6);
+  }
+}
+function endDrag() {
+  if (!sw.drag) return;
+  sw.drag = null;
+  $("#swTrack").classList.remove("drag");
+  centerStrip();
+  armSwitcher(230);
 }
 function armSwitcher(ms) { clearTimeout(sw.timer); sw.timer = setTimeout(commitSwitcher, ms); }
 function stepPending(dir) {
@@ -581,34 +622,26 @@ function disciplineStep(dir) {
   if (sw.open) stepPending(dir);
 }
 $("#switcher").addEventListener("click", commitSwitcher);
-let swX = null, swY = null, swTickX = null;
-$("#deck").addEventListener("pointerdown", (e) => { swX = e.clientX; swY = e.clientY; swTickX = null; });
+let swX = null, swY = null;
+$("#deck").addEventListener("pointerdown", (e) => { swX = e.clientX; swY = e.clientY; });
 $("#deck").addEventListener("pointermove", (e) => {
   if (swX === null) return;
   const dx = e.clientX - swX, dy = e.clientY - swY;
-  if (swTickX === null) {
-    if (Math.abs(dx) > 52 && Math.abs(dx) > Math.abs(dy) * 1.4) { swTickX = e.clientX; disciplineStep(dx < 0 ? 1 : -1); }
-  } else {
-    const ddx = e.clientX - swTickX;
-    if (Math.abs(ddx) > 64 && Math.abs(dx) > Math.abs(dy) * 1.4) { swTickX = e.clientX; stepPending(ddx < 0 ? 1 : -1); }
-  }
+  if (sw.drag) { dragStripTo(e.clientX); return; }
+  if (Math.abs(dx) > 52 && Math.abs(dx) > Math.abs(dy) * 1.4) beginDrag(e.clientX);
 });
-const swReset = () => { if (swTickX !== null && sw.open) armSwitcher(170); swX = null; swTickX = null; };
+const swReset = () => { endDrag(); swX = null; };
 $("#deck").addEventListener("pointerup", swReset);
 $("#deck").addEventListener("pointercancel", swReset);
-let tX = null, tY = null, tTickX = null;
-$("#deck").addEventListener("touchstart", (e) => { const t = e.touches[0]; tX = t.clientX; tY = t.clientY; tTickX = null; }, { passive: true });
+let tX = null, tY = null;
+$("#deck").addEventListener("touchstart", (e) => { const t = e.touches[0]; tX = t.clientX; tY = t.clientY; }, { passive: true });
 $("#deck").addEventListener("touchmove", (e) => {
   if (tX === null) return;
   const t = e.touches[0], dx = t.clientX - tX, dy = t.clientY - tY;
-  if (tTickX === null) {
-    if (Math.abs(dx) > 24 && Math.abs(dx) > Math.abs(dy) * 1.25) { tTickX = t.clientX; e.preventDefault(); disciplineStep(dx < 0 ? 1 : -1); }
-  } else {
-    const ddx = t.clientX - tTickX;
-    if (Math.abs(ddx) > 64 && Math.abs(dx) > Math.abs(dy) * 1.25) { tTickX = t.clientX; e.preventDefault(); stepPending(ddx < 0 ? 1 : -1); }
-  }
+  if (sw.drag) { e.preventDefault(); dragStripTo(t.clientX); return; }
+  if (Math.abs(dx) > 24 && Math.abs(dx) > Math.abs(dy) * 1.25) { e.preventDefault(); beginDrag(t.clientX); }
 }, { passive: false });
-const tReset = () => { if (tTickX !== null && sw.open) armSwitcher(170); tX = null; tTickX = null; };
+const tReset = () => { endDrag(); tX = null; };
 $("#deck").addEventListener("touchend", tReset);
 $("#deck").addEventListener("touchcancel", tReset);
 let tapX = null, tapY = null;
