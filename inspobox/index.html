@@ -37,8 +37,9 @@ img{display:block}
 #dots{position:fixed;right:13px;top:50%;transform:translateY(-50%);z-index:40;display:flex;flex-direction:column;gap:7px;align-items:center}
 #dots i{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.4);display:block;transition:all .3s}
 #dots i.on{height:22px;border-radius:3px;background:linear-gradient(180deg,#FF2E4D,#FF8A1F)}
-#igniteBtn{position:fixed;right:16px;bottom:calc(224px + env(safe-area-inset-bottom));z-index:41;display:flex;align-items:center;gap:9px;padding:14px 18px;border-radius:15px;background:var(--grad);font-family:var(--unb);font-weight:900;font-size:15px;letter-spacing:.05em;box-shadow:0 5px 0 #6E0B1E,0 16px 34px rgba(255,46,77,.35)}
+#igniteBtn{position:fixed;left:16px;top:522px;z-index:41;width:56px;height:56px;border-radius:15px;background:var(--grad);display:flex;align-items:center;justify-content:center;box-shadow:0 5px 0 #6E0B1E,0 16px 34px rgba(255,46,77,.35)}
 #igniteBtn:active{transform:translateY(3px);box-shadow:0 2px 0 #6E0B1E,0 10px 22px rgba(255,46,77,.3)}
+@media (max-height:740px){#igniteBtn{top:auto;bottom:calc(198px + env(safe-area-inset-bottom))}}
 
 /* ---------- deck ---------- */
 #deck{height:100dvh;overflow-y:auto;scroll-snap-type:y mandatory;overscroll-behavior:none}
@@ -179,7 +180,7 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
     <div class="logo">INSPO<span class="box">BOX</span></div>
     <div id="counter">— / —</div>
     <div id="tapHint">TAP A PIECE TO LOCK ITS GENRE</div>
-    <div id="buildTag">BUILD V14</div>
+    <div id="buildTag">BUILD V15</div>
   </div>
   <div class="topbtns">
     <button class="chipbtn" id="boxBtn">BOX <span class="n" id="boxCount">0</span></button>
@@ -190,7 +191,7 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
 
 <div id="dots"></div>
 <main id="deck"></main>
-<button id="igniteBtn">IGNITE <span style="font-size:17px">✳</span></button>
+<button id="igniteBtn" aria-label="Ignite — open the idea starter"><svg viewBox="0 0 48 48" width="27" height="27" aria-hidden="true"><path d="M24 3 L27.3 16.1 L38.8 9.2 L31.9 20.7 L45 24 L31.9 27.3 L38.8 38.8 L27.3 31.9 L24 45 L20.7 31.9 L9.2 38.8 L16.1 27.3 L3 24 L16.1 20.7 L9.2 9.2 L20.7 16.1 Z" fill="#fff" stroke="#fff" stroke-width="2.5" stroke-linejoin="round"/></svg></button>
 
 <!-- IDEA STARTER -->
 <section class="layer" id="starter" aria-hidden="true">
@@ -212,7 +213,7 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
       <div class="rowp" id="sparksRow"></div>
     </div>
     <div style="flex:1;min-height:18px"></div>
-    <button id="igniteMain">IGNITE <span style="font-size:22px">✳</span></button>
+    <button id="igniteMain">IGNITE <svg viewBox="0 0 48 48" width="23" height="23" aria-hidden="true"><path d="M24 3 L27.3 16.1 L38.8 9.2 L31.9 20.7 L45 24 L31.9 27.3 L38.8 38.8 L27.3 31.9 L24 45 L20.7 31.9 L9.2 38.8 L16.1 27.3 L3 24 L16.1 20.7 L9.2 9.2 L20.7 16.1 Z" fill="#fff" stroke="#fff" stroke-width="2.5" stroke-linejoin="round"/></svg></button>
     <div class="capnote">CROSS TWO SOURCES FOR A REMIX · SWIPE DOWN TO CLOSE</div>
   </div>
 </section>
