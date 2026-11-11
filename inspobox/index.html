@@ -41,7 +41,7 @@ img{display:block}
 #igniteBtn:active{transform:translateY(3px);box-shadow:0 2px 0 #6E0B1E,0 10px 22px rgba(255,46,77,.3)}
 
 /* ---------- deck ---------- */
-#deck{height:100dvh;overflow-y:auto;scroll-snap-type:y mandatory;overscroll-behavior:none}
+#deck{height:100dvh;overflow-y:auto;scroll-snap-type:y mandatory;overscroll-behavior:none;touch-action:pan-y}
 .piece{position:relative;height:100dvh;scroll-snap-align:start;scroll-snap-stop:always;overflow:hidden;background:#0B0B13}
 .piece .bgimg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .piece .bgvid{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
@@ -451,14 +451,16 @@ function disciplineStep(dir) {
   const ti = deckList.findIndex((p) => p.media === target);
   if (ti >= 0) { scrollToPiece(ti); flash(mdName(target).toUpperCase()); }
 }
-let swipeX = null, swipeY = null;
-$("#deck").addEventListener("touchstart", (e) => { const t = e.touches[0]; swipeX = t.clientX; swipeY = t.clientY; }, { passive: true });
-$("#deck").addEventListener("touchend", (e) => {
-  if (swipeX === null) return;
-  const t = e.changedTouches[0], dx = t.clientX - swipeX, dy = t.clientY - swipeY;
-  if (Math.abs(dx) > 72 && Math.abs(dx) > Math.abs(dy) * 1.7) disciplineStep(dx < 0 ? 1 : -1);
-  swipeX = null;
-}, { passive: true });
+let swX = null, swY = null, swFired = false;
+$("#deck").addEventListener("pointerdown", (e) => { swX = e.clientX; swY = e.clientY; swFired = false; });
+$("#deck").addEventListener("pointermove", (e) => {
+  if (swX === null || swFired) return;
+  const dx = e.clientX - swX, dy = e.clientY - swY;
+  if (Math.abs(dx) > 52 && Math.abs(dx) > Math.abs(dy) * 1.4) { swFired = true; disciplineStep(dx < 0 ? 1 : -1); }
+});
+const swReset = () => { swX = null; };
+$("#deck").addEventListener("pointerup", swReset);
+$("#deck").addEventListener("pointercancel", swReset);
 $("#lockPill").addEventListener("click", () => { state.movement = "all"; renderIndex(); renderDeck(); });
 let tapX = null, tapY = null;
 $("#deck").addEventListener("pointerdown", (e) => { tapX = e.clientX; tapY = e.clientY; });
