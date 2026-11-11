@@ -124,6 +124,9 @@ img{display:block}
 .tile .tn .tg{font-size:11px;color:var(--dim);margin-top:3px;font-weight:500}
 .tile .cnt{position:absolute;top:10px;right:10px;background:rgba(5,5,10,.55);backdrop-filter:blur(10px);border:1px solid var(--glassline);border-radius:999px;padding:4px 9px;font-family:var(--anton);font-size:12px}
 .tile.on{outline:3px solid var(--red);outline-offset:-3px}
+.tile.gradtile{background:linear-gradient(155deg,#33101F,#17101F 55%,#0B0B13)}
+.tile .bigletter{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--anton);font-size:92px;color:transparent;-webkit-text-stroke:2px rgba(255,255,255,.28)}
+.tile .soon{position:absolute;top:10px;left:10px;background:rgba(255,255,255,.12);border:1px solid var(--glassline);border-radius:999px;padding:4px 9px;font-family:var(--unb);font-weight:900;font-size:8.5px;letter-spacing:.09em;color:var(--dim)}
 .tile.alltile{background:var(--grad);display:flex;align-items:flex-end}
 .tile.alltile .tn .nm{font-size:17.5px}
 
@@ -393,8 +396,8 @@ function renderIndex() {
   $("#indexGrid").innerHTML = `
     <button class="tile alltile ${state.movement === "all" ? "on" : ""}" data-mv="all"><span class="tn"><span class="nm">ALL<br>MOVEMENTS</span><span class="tg" style="display:block">${DATA.feed.length} pieces · tap a genre to lock it</span></span></button>
     ` + DATA.movements.map((m) => `
-    <button class="tile ${state.movement === m.id ? "on" : ""}" data-mv="${m.id}">
-      <img src="${esc(m.img)}" alt="" loading="lazy"><span class="tsc"></span>
+    <button class="tile ${state.movement === m.id ? "on" : ""} ${m.img ? "" : "gradtile"}" data-mv="${m.id}">
+      ${m.img ? `<img src="${esc(m.img)}" alt="" loading="lazy">` : `<span class="bigletter">${esc(m.name.charAt(0))}</span><span class="soon">FIRST DROP SOON</span>`}<span class="tsc"></span>
       <span class="cnt">${counts[m.id] || 0}</span>${state.movement === m.id ? '<span class="lockb">LOCKED</span>' : ""}
       <span class="tn"><span class="nm">${esc(m.name.toUpperCase())}</span><span class="tg" style="display:block">${esc(m.tag)}</span></span>
     </button>`).join("");
