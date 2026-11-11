@@ -148,6 +148,14 @@ img{display:block}
 #gate a{display:inline-block;padding:15px 26px;border-radius:15px;background:var(--grad);font-family:var(--unb);font-weight:900;font-size:14px;color:#fff;text-decoration:none;box-shadow:0 5px 0 #6E0B1E}
 #loading{position:fixed;inset:0;z-index:99;background:var(--bg);display:flex;align-items:center;justify-content:center;font-family:var(--unb);font-weight:900;letter-spacing:.1em;font-size:14px;color:var(--dim)}
 .star{position:absolute;pointer-events:none}
+#lockPill{position:fixed;top:calc(64px + env(safe-area-inset-top));left:18px;z-index:41;padding:8px 13px;border-radius:999px;background:rgba(255,46,77,.16);border:1.5px solid var(--red);color:#FFC2CC;font-family:var(--unb);font-weight:900;font-size:10px;letter-spacing:.07em;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+#lockPill .x{color:#fff;margin-left:7px;font-size:11px}
+#tapHint{font-size:8.5px;letter-spacing:.26em;font-weight:700;color:var(--faint);margin-top:5px}
+#flash{position:fixed;left:0;right:0;top:34%;z-index:45;text-align:center;font-family:var(--anton);font-size:52px;letter-spacing:.05em;color:transparent;-webkit-text-stroke:2px rgba(255,255,255,.9);opacity:0;transition:opacity .25s;pointer-events:none;text-shadow:none}
+#flash.show{opacity:.95}
+.layernote{flex:none;padding:12px 20px 2px;font-size:12px;line-height:1.55;color:var(--dim);font-weight:500}
+.layernote b{color:#fff}
+.tile .lockb{position:absolute;top:10px;left:10px;background:var(--red);border-radius:999px;padding:4px 9px;font-family:var(--unb);font-weight:900;font-size:9px;letter-spacing:.08em}
 </style>
 </head>
 <body>
@@ -164,11 +172,14 @@ img{display:block}
   <div>
     <div class="logo">INSPO<span class="box">BOX</span></div>
     <div id="counter">— / —</div>
+    <div id="tapHint">TAP A PIECE TO LOCK ITS GENRE</div>
   </div>
   <div class="topbtns">
     <button class="chipbtn" id="boxBtn">BOX <span class="n" id="boxCount">0</span></button>
   </div>
 </header>
+<button id="lockPill" hidden></button>
+<div id="flash"></div>
 
 <div id="dots"></div>
 <main id="deck"></main>
@@ -206,6 +217,7 @@ img{display:block}
     <div class="logo">INSPO<span class="box">BOX</span></div>
     <div style="display:flex;align-items:center;gap:12px"><span class="mode">MOVEMENTS</span><button class="xbtn" data-close>✕</button></div>
   </div>
+  <div class="layernote"><b>Tap any piece</b> in the feed to lock its genre — or pick one here. Up/down stays inside the genre; <b>left/right</b> swipes cross disciplines. Tap the locked genre again to unlock.</div>
   <div id="indexGrid"></div>
 </section>
 
@@ -250,19 +262,23 @@ async function load() {
 }
 
 /* ---------------- deck ---------------- */
-function filteredFeed() {
-  return DATA.feed.filter((p) => (state.media === "all" || p.media === state.media) && (state.movement === "all" || p.movement === state.movement));
+let deckList = [];
+function deckFeed() {
+  if (state.movement === "all") return [...DATA.feed];
+  const order = DATA.media.map((m) => m.id);
+  return DATA.feed.filter((p) => p.movement === state.movement)
+    .sort((a, b) => order.indexOf(a.media) - order.indexOf(b.media));
 }
 function mvName(id) { const m = DATA.movements.find((x) => x.id === id); return m ? m.name : id; }
 function mdName(id) { const m = DATA.media.find((x) => x.id === id); return m ? m.name : id; }
 function isSavedPiece(id) { return box.some((b) => b.type === "piece" && b.id === id); }
 
-function renderDeck() {
-  const feed = filteredFeed();
+function renderDeck(startId) {
+  const feed = deckFeed(); deckList = feed;
   const deck = $("#deck");
   if (!feed.length) {
-    deck.innerHTML = `<div class="deckempty"><div class="big">NOTHING IN<br>THIS CROSSING… YET</div><p>No ${esc(mdName(state.media))} in ${esc(mvName(state.movement))} in this drop. The next curation pass fills gaps like this.</p><button class="chipbtn" id="clearFilters">SHOW EVERYTHING</button></div>`;
-    $("#clearFilters").addEventListener("click", () => { state.media = "all"; state.movement = "all"; renderDeck(); });
+    deck.innerHTML = `<div class="deckempty"><div class="big">NOTHING HERE… YET</div><p>This genre has no pieces in the current drop. The next curation pass fills gaps like this.</p><button class="chipbtn" id="clearFilters">UNLOCK — SHOW EVERYTHING</button></div>`;
+    $("#clearFilters").addEventListener("click", () => { state.movement = "all"; renderIndex(); renderDeck(); });
     $("#dots").innerHTML = ""; $("#counter").textContent = "0 / 0";
     return;
   }
@@ -277,7 +293,7 @@ function renderDeck() {
       <div class="vtitle" data-open-index title="All movements">${esc(mvName(p.movement).toUpperCase())}</div>
       <button class="savebtn ${isSavedPiece(p.id) ? "saved" : ""}" data-save="${p.id}" aria-label="Save to your box">${isSavedPiece(p.id) ? "✓" : "+"}</button>
       <div class="panel">
-        <div class="kicker"><span class="mv" data-open-index>MOVEMENT — ${esc(mvName(p.movement).toUpperCase())}</span><span>${esc(mdName(p.media).toUpperCase())}</span></div>
+        <div class="kicker"><span class="mv" data-open-index>${state.movement === "all" ? "MOVEMENT" : "GENRE LOCKED"} — ${esc(mvName(p.movement).toUpperCase())}</span><span>${esc(mdName(p.media).toUpperCase())}</span></div>
         <div class="ptitle">${esc(p.title)}</div>
         <div class="pby">${esc(p.by)}</div>
         <div class="rail">${railHtml()}</div>
@@ -286,15 +302,27 @@ function renderDeck() {
   $("#dots").innerHTML = feed.map((_, i) => `<i class="${i === 0 ? "on" : ""}"></i>`).join("");
   state.current = 0; updateChrome(feed.length);
   deck.scrollTop = 0;
+  if (startId) {
+    const ix = feed.findIndex((p) => p.id === startId);
+    if (ix > 0) { const el = $$(".piece", deck)[ix]; if (el) { deck.scrollTop = el.offsetTop; state.current = ix; updateChrome(feed.length); } }
+  }
   bindDeck(feed);
 }
 function railHtml() {
-  const items = [{ id: "all", name: "All" }, ...DATA.media];
-  return items.map((m) => `<button data-media="${m.id}" class="${state.media === m.id ? "on" : ""}">${esc(m.name.toUpperCase())}</button>`).join("");
+  const order = DATA.media.map((m) => m.id);
+  const present = order.filter((id) => deckList.some((p) => p.media === id));
+  const items = [{ id: "all", name: "Top" }, ...DATA.media.filter((m) => present.includes(m.id))];
+  return items.map((m) => `<button data-media="${m.id}">${esc(m.name.toUpperCase())}</button>`).join("");
 }
 function updateChrome(total) {
   $("#counter").textContent = String(state.current + 1).padStart(2, "0") + " / " + String(total).padStart(2, "0");
   $$("#dots i").forEach((d, i) => d.classList.toggle("on", i === state.current));
+  const cur = deckList[state.current];
+  $$(".rail button").forEach((b) => b.classList.toggle("on", !!cur && b.dataset.media === cur.media));
+  $("#tapHint").style.display = state.movement === "all" ? "" : "none";
+  const lp = $("#lockPill");
+  if (state.movement === "all") lp.hidden = true;
+  else { lp.hidden = false; lp.innerHTML = `GENRE LOCKED · ${esc(mvName(state.movement).toUpperCase())}<span class="x">✕</span>`; }
 }
 let deckObs = null;
 function bindDeck(feed) {
@@ -313,7 +341,7 @@ function bindDeck(feed) {
 }
 $("#deck").addEventListener("click", (e) => {
   const mediaBtn = e.target.closest("[data-media]");
-  if (mediaBtn) { state.media = mediaBtn.dataset.media; renderDeck(); return; }
+  if (mediaBtn) { jumpToMedia(mediaBtn.dataset.media); return; }
   const saveBtn = e.target.closest("[data-save]");
   if (saveBtn) { toggleSavePiece(saveBtn.dataset.save); return; }
   if (e.target.closest("[data-open-index]")) openLayer("#indexLayer");
@@ -363,18 +391,19 @@ function renderIndex() {
   const counts = {};
   DATA.feed.forEach((p) => { counts[p.movement] = (counts[p.movement] || 0) + 1; });
   $("#indexGrid").innerHTML = `
-    <button class="tile alltile ${state.movement === "all" ? "on" : ""}" data-mv="all"><span class="tn"><span class="nm">ALL<br>MOVEMENTS</span><span class="tg" style="display:block">${DATA.feed.length} pieces in this drop</span></span></button>
+    <button class="tile alltile ${state.movement === "all" ? "on" : ""}" data-mv="all"><span class="tn"><span class="nm">ALL<br>MOVEMENTS</span><span class="tg" style="display:block">${DATA.feed.length} pieces · tap a genre to lock it</span></span></button>
     ` + DATA.movements.map((m) => `
     <button class="tile ${state.movement === m.id ? "on" : ""}" data-mv="${m.id}">
       <img src="${esc(m.img)}" alt="" loading="lazy"><span class="tsc"></span>
-      <span class="cnt">${counts[m.id] || 0}</span>
+      <span class="cnt">${counts[m.id] || 0}</span>${state.movement === m.id ? '<span class="lockb">LOCKED</span>' : ""}
       <span class="tn"><span class="nm">${esc(m.name.toUpperCase())}</span><span class="tg" style="display:block">${esc(m.tag)}</span></span>
     </button>`).join("");
 }
 $("#indexGrid").addEventListener("click", (e) => {
   const t = e.target.closest("[data-mv]");
   if (!t) return;
-  state.movement = t.dataset.mv;
+  const mv = t.dataset.mv;
+  state.movement = mv === state.movement ? "all" : mv;
   closeLayer("#indexLayer"); renderIndex(); renderDeck();
 });
 
@@ -400,6 +429,50 @@ $$(".layer").forEach((layer) => {
     zone.addEventListener("mousedown", (e) => { begin(e.clientY); const mm = (ev) => move(ev.clientY); const mu = () => { end(); removeEventListener("mousemove", mm); removeEventListener("mouseup", mu); }; addEventListener("mousemove", mm); addEventListener("mouseup", mu); });
   }
 });
+
+/* ---------------- two-axis navigation ---------------- */
+function scrollToPiece(i) { const el = $$("#deck .piece")[i]; if (el) el.scrollIntoView({ behavior: "smooth" }); }
+let flashTimer = null;
+function flash(txt) { const f = $("#flash"); f.textContent = txt; f.classList.add("show"); clearTimeout(flashTimer); flashTimer = setTimeout(() => f.classList.remove("show"), 780); }
+function jumpToMedia(id) {
+  if (id === "all") { scrollToPiece(0); return; }
+  const ti = deckList.findIndex((p) => p.media === id);
+  if (ti >= 0) { scrollToPiece(ti); flash(mdName(id).toUpperCase()); }
+}
+function disciplineStep(dir) {
+  if (!deckList.length) return;
+  const order = DATA.media.map((m) => m.id);
+  const present = order.filter((id) => deckList.some((p) => p.media === id));
+  const cur = deckList[state.current];
+  if (!cur) return;
+  if (present.length < 2) { flash(mdName(cur.media).toUpperCase()); return; }
+  const ix = present.indexOf(cur.media);
+  const target = present[(ix + dir + present.length) % present.length];
+  const ti = deckList.findIndex((p) => p.media === target);
+  if (ti >= 0) { scrollToPiece(ti); flash(mdName(target).toUpperCase()); }
+}
+let swipeX = null, swipeY = null;
+$("#deck").addEventListener("touchstart", (e) => { const t = e.touches[0]; swipeX = t.clientX; swipeY = t.clientY; }, { passive: true });
+$("#deck").addEventListener("touchend", (e) => {
+  if (swipeX === null) return;
+  const t = e.changedTouches[0], dx = t.clientX - swipeX, dy = t.clientY - swipeY;
+  if (Math.abs(dx) > 72 && Math.abs(dx) > Math.abs(dy) * 1.7) disciplineStep(dx < 0 ? 1 : -1);
+  swipeX = null;
+}, { passive: true });
+$("#lockPill").addEventListener("click", () => { state.movement = "all"; renderIndex(); renderDeck(); });
+let tapX = null, tapY = null;
+$("#deck").addEventListener("pointerdown", (e) => { tapX = e.clientX; tapY = e.clientY; });
+$("#deck").addEventListener("pointerup", (e) => {
+  if (tapX === null) return;
+  const moved = Math.hypot(e.clientX - tapX, e.clientY - tapY); tapX = null;
+  if (moved > 12) return;
+  if (e.target.closest("button, .panel, .vtitle, a")) return;
+  const piece = e.target.closest(".piece"); if (!piece) return;
+  const p = deckList.find((x) => x.id === piece.dataset.id); if (!p) return;
+  if (state.movement === "all") { state.movement = p.movement; renderIndex(); renderDeck(p.id); flash(mvName(p.movement).toUpperCase() + " — LOCKED"); }
+  else flash(mvName(p.movement).toUpperCase());
+});
+window.INSPOBOX = { disciplineStep, jumpToMedia, getState: () => ({ movement: state.movement, current: state.current, count: deckList.length, media: deckList[state.current] ? deckList[state.current].media : null }) };
 
 /* ---------------- idea starter ---------------- */
 const sel = { sources: [], studio: null };
