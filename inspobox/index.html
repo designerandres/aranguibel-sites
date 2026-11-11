@@ -151,8 +151,7 @@ img{display:block}
 #gate a{display:inline-block;padding:15px 26px;border-radius:15px;background:var(--grad);font-family:var(--unb);font-weight:900;font-size:14px;color:#fff;text-decoration:none;box-shadow:0 5px 0 #6E0B1E}
 #loading{position:fixed;inset:0;z-index:99;background:var(--bg);display:flex;align-items:center;justify-content:center;font-family:var(--unb);font-weight:900;letter-spacing:.1em;font-size:14px;color:var(--dim)}
 .star{position:absolute;pointer-events:none}
-#lockPill{position:fixed;top:calc(64px + env(safe-area-inset-top));left:18px;z-index:41;padding:8px 13px;border-radius:999px;background:rgba(255,46,77,.16);border:1.5px solid var(--red);color:#FFC2CC;font-family:var(--unb);font-weight:900;font-size:10px;letter-spacing:.07em;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
-#lockPill .x{color:#fff;margin-left:7px;font-size:11px}
+body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF3CAC 105%);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none}
 #tapHint{font-size:8.5px;letter-spacing:.26em;font-weight:700;color:var(--faint);margin-top:5px}
 #flash{position:fixed;left:0;right:0;top:34%;z-index:45;text-align:center;font-family:var(--anton);font-size:52px;letter-spacing:.05em;color:transparent;-webkit-text-stroke:2px rgba(255,255,255,.9);opacity:0;transition:opacity .25s;pointer-events:none;text-shadow:none}
 #flash.show{opacity:.95}
@@ -181,7 +180,6 @@ img{display:block}
     <button class="chipbtn" id="boxBtn">BOX <span class="n" id="boxCount">0</span></button>
   </div>
 </header>
-<button id="lockPill" hidden></button>
 <div id="flash"></div>
 
 <div id="dots"></div>
@@ -220,7 +218,7 @@ img{display:block}
     <div class="logo">INSPO<span class="box">BOX</span></div>
     <div style="display:flex;align-items:center;gap:12px"><span class="mode">MOVEMENTS</span><button class="xbtn" data-close>✕</button></div>
   </div>
-  <div class="layernote"><b>Tap any piece</b> in the feed to lock its genre — or pick one here. Up/down stays inside the genre; <b>left/right</b> swipes cross disciplines. Tap the locked genre again to unlock.</div>
+  <div class="layernote"><b>Tap any piece</b> in the feed to lock its genre — or pick one here. Up/down stays inside the genre; <b>left/right</b> swipes cross disciplines. Tap the colored genre title on any piece to unlock (tapping the locked genre here works too).</div>
   <div id="indexGrid"></div>
 </section>
 
@@ -323,9 +321,7 @@ function updateChrome(total) {
   const cur = deckList[state.current];
   $$(".rail button").forEach((b) => b.classList.toggle("on", !!cur && b.dataset.media === cur.media));
   $("#tapHint").style.display = state.movement === "all" ? "" : "none";
-  const lp = $("#lockPill");
-  if (state.movement === "all") lp.hidden = true;
-  else { lp.hidden = false; lp.innerHTML = `GENRE LOCKED · ${esc(mvName(state.movement).toUpperCase())}<span class="x">✕</span>`; }
+  document.body.classList.toggle("locked", state.movement !== "all");
 }
 let deckObs = null;
 function bindDeck(feed) {
@@ -347,7 +343,10 @@ $("#deck").addEventListener("click", (e) => {
   if (mediaBtn) { jumpToMedia(mediaBtn.dataset.media); return; }
   const saveBtn = e.target.closest("[data-save]");
   if (saveBtn) { toggleSavePiece(saveBtn.dataset.save); return; }
-  if (e.target.closest("[data-open-index]")) openLayer("#indexLayer");
+  if (e.target.closest("[data-open-index]")) {
+    if (state.movement !== "all") { const keepId = deckList[state.current] && deckList[state.current].id; state.movement = "all"; renderIndex(); renderDeck(keepId); flash("UNLOCKED"); }
+    else openLayer("#indexLayer");
+  }
 });
 
 /* ---------------- box ---------------- */
@@ -464,7 +463,6 @@ $("#deck").addEventListener("pointermove", (e) => {
 const swReset = () => { swX = null; };
 $("#deck").addEventListener("pointerup", swReset);
 $("#deck").addEventListener("pointercancel", swReset);
-$("#lockPill").addEventListener("click", () => { state.movement = "all"; renderIndex(); renderDeck(); });
 let tapX = null, tapY = null;
 $("#deck").addEventListener("pointerdown", (e) => { tapX = e.clientX; tapY = e.clientY; });
 $("#deck").addEventListener("pointerup", (e) => {
