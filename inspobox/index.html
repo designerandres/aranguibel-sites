@@ -84,16 +84,12 @@ a.bb{color:var(--dim);text-decoration:underline dotted rgba(255,255,255,.35);tex
 .skicker{font-family:var(--unb);font-weight:900;font-size:11.5px;letter-spacing:.13em;background:linear-gradient(90deg,#FF2E4D,#FF8A1F);-webkit-background-clip:text;background-clip:text;color:transparent}
 #promptInput{margin-top:12px;width:100%;background:none;border:none;resize:none;color:#fff;font-family:var(--anton);font-size:42px;line-height:1.06;letter-spacing:.004em;text-transform:uppercase;min-height:96px;outline:none}
 #promptInput::placeholder{color:rgba(255,255,255,.28)}
-.crossrow{display:flex;gap:9px;flex-wrap:wrap;margin-top:16px;align-items:center}
-.srcpill{padding:10px 13px;border-radius:999px;background:rgba(255,255,255,.08);border:2px solid rgba(255,255,255,.20);font-family:var(--unb);font-weight:900;font-size:11px;letter-spacing:.04em;white-space:nowrap}
-.srcpill.on{border-color:var(--red);color:#FFC2CC;background:rgba(255,46,77,.13)}
-.srcpill.disney.on{border-color:#FFB53A;color:#FFE1A8;background:rgba(255,160,40,.12)}
+.selrow{display:flex;flex-direction:column;gap:11px;margin-top:18px}
+.selfield{display:block}
+.selfield .slbl{display:block;font-size:9.5px;letter-spacing:.28em;font-weight:700;color:rgba(255,255,255,.55);margin:0 0 6px 2px}
+.selfield select{appearance:none;-webkit-appearance:none;width:100%;background:rgba(16,14,24,.55) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9'%3E%3Cpath d='M1 1l6 6 6-6' stroke='%23FF2E4D' stroke-width='2.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 16px center;border:1.5px solid rgba(255,255,255,.20);border-radius:13px;padding:13px 42px 13px 15px;font-family:var(--unb);font-weight:900;font-size:15px;letter-spacing:.03em;color:#fff;text-transform:uppercase;backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px)}
+.selfield select:focus{outline:none;border-color:var(--red)}
 .xglyph{font-family:var(--unb);font-weight:900;font-size:15px;color:var(--red);padding:0 1px}
-.subrow{display:none;gap:8px;flex-wrap:wrap;margin-top:11px}
-.subrow.show{display:flex}
-.subrow .lbl{width:100%;font-size:9.5px;letter-spacing:.28em;font-weight:700;color:#FFD9A0}
-.studiopill{padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.18);font-family:var(--unb);font-weight:700;font-size:10.5px;white-space:nowrap}
-.studiopill.on{border-color:#FFB53A;color:#FFE1A8}
 .card{position:relative;margin-top:22px;border-radius:14px;background:rgba(18,16,28,.62);backdrop-filter:blur(22px) saturate(1.5);-webkit-backdrop-filter:blur(22px) saturate(1.5);border:1px solid var(--glassline);padding:17px;overflow:hidden}
 .ghostnum{position:absolute;top:-40px;right:8px;font-family:var(--anton);font-size:124px;color:transparent;-webkit-text-stroke:2px rgba(255,255,255,.08);pointer-events:none}
 .clabel{font-size:10px;letter-spacing:.24em;font-weight:700;color:#FFB3C0;display:flex;align-items:center;gap:8px;position:relative}
@@ -194,7 +190,7 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
     <div class="logo">INSPO<span class="box">BOX</span></div>
     <div id="counter">— / —</div>
     <div id="tapHint">TAP A PIECE TO LOCK ITS GENRE</div>
-    <div id="buildTag">BUILD V22</div>
+    <div id="buildTag">BUILD V23</div>
   </div>
   <div class="topbtns">
     <button class="chipbtn" id="boxBtn">BOX <span class="n" id="boxCount">0</span></button>
@@ -218,10 +214,13 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
   </div>
   <div id="starterBody">
     <svg class="star" style="top:6px;right:30px" width="24" height="24" viewBox="0 0 24 24"><path d="M12 0 L14.5 9.5 L24 12 L14.5 14.5 L12 24 L9.5 14.5 L0 12 L9.5 9.5 Z" fill="#FF2E4D"/></svg>
-    <div class="skicker">✳ DESCRIBE IT IN A LINE — OR DON'T</div>
-    <textarea id="promptInput" rows="2" placeholder="A FLORIST WHO ONLY WORKS AT NIGHT" autocomplete="off"></textarea>
-    <div class="crossrow" id="srcRow"></div>
-    <div class="subrow" id="studioRow"><span class="lbl">WHICH STUDIO?</span></div>
+    <div class="skicker">✳ EVERY IDEA IS A DISNEY IDEA — 10 SECONDS, THREE BEATS</div>
+    <textarea id="promptInput" rows="2" placeholder="NAME A TWIST — OR A MASHUP: MOANA MEETS ELSA…" autocomplete="off"></textarea>
+    <div class="selrow">
+      <label class="selfield"><span class="slbl">VISUAL STYLE</span><select id="styleSel" aria-label="Visual style"></select></label>
+      <label class="selfield"><span class="slbl">MOVEMENT</span><select id="moveSel" aria-label="Movement"></select></label>
+      <label class="selfield"><span class="slbl">DISNEY STUDIO</span><select id="studioSel" aria-label="Disney studio"></select></label>
+    </div>
     <div id="conceptZone"></div>
     <div class="sparks" id="sparksZone" style="display:none">
       <div class="h">PREVIOUS SPARKS</div>
@@ -229,7 +228,7 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
     </div>
     <div style="flex:1;min-height:18px"></div>
     <button id="igniteMain">IGNITE <svg viewBox="0 0 48 48" width="23" height="23" aria-hidden="true"><path d="M24 3 L27.3 16.1 L38.8 9.2 L31.9 20.7 L45 24 L31.9 27.3 L38.8 38.8 L27.3 31.9 L24 45 L20.7 31.9 L9.2 38.8 L16.1 27.3 L3 24 L16.1 20.7 L9.2 9.2 L20.7 16.1 Z" fill="#fff" stroke="#fff" stroke-width="2.5" stroke-linejoin="round"/></svg></button>
-    <div class="capnote">CROSS TWO SOURCES FOR A REMIX · SWIPE DOWN TO CLOSE</div>
+    <div class="capnote">ONE STYLE · ONE MOVEMENT · ONE STUDIO · ONE IP — UNLESS YOUR LINE NAMES A MASHUP</div>
   </div>
 </section>
 
@@ -281,7 +280,7 @@ async function load() {
   if (!res || res.status === 401 || res.status === 403) { $("#loading").style.display = "none"; $("#gate").classList.add("show"); return; }
   DATA = await res.json();
   $("#loading").style.display = "none";
-  buildSrcPills(); buildStudioPills(); renderDeck(); renderIndex(); renderBox(); renderSparks();
+  buildSelects(); renderDeck(); renderIndex(); renderBox(); renderSparks();
 }
 
 /* ---------------- deck ---------------- */
@@ -319,7 +318,7 @@ function renderDeck(startId) {
     <section class="piece" data-id="${p.id}" data-idx="${i}">
       ${p.video
         ? `<video class="bgvid" src="${esc(p.video)}" poster="${esc(p.img)}" muted loop playsinline preload="metadata"></video>`
-        : `<img class="bgimg" src="${esc(p.img)}" alt="" ${i > 1 ? 'loading="lazy"' : ""}>`}
+        : `<img class="bgimg" src="${esc(p.img)}" alt="" decoding="async" ${i > 1 ? 'loading="lazy"' : ""}>`}
       <div class="scrim"></div>
       <div class="prog" style="width:${Math.round(((i + 1) / feed.length) * 100)}%"></div>
       <div class="vtitle" data-open-index title="All movements">${esc(mvName(p.movement).toUpperCase())}</div>
@@ -421,6 +420,34 @@ function buildPrompt(item) {
   const head = [`INSPOBOX — ${item.title}`, item.label || ""];
   if (!item.concept) return [...head, "", "PROMPT — paste into your genAI tool:", item.body || item.title, ""].join("\n");
   const c = item.concept;
+  if (c.open) {
+    const cap = (s) => s ? s.charAt(0).toUpperCase() + s.slice(1) : "";
+    const sent = (s) => { s = (s || "").trim(); return s ? (s.endsWith(".") ? s : s + ".") : ""; };
+    const st = (DATA.atoms.styles || []).find((s) => s.id === c.styleId);
+    const mv = (DATA.atoms.moves || {})[c.movementId] || {};
+    const lines = [];
+    if (st) lines.push(sent(cap(st.look)));
+    if (mv.dress) lines.push(sent(`Dress the world in ${mv.dress}; light: ${mv.light}`));
+    lines.push(sent(`From ${c.studio}'s ${c.ip}${c.ip2 ? `, crossed with ${c.ip2} in a mashup` : ""}: ${cap(c.subject)}, in ${c.place}`));
+    lines.push(`0-3s OPEN: ${sent(cap(c.open))}`);
+    lines.push(`3-7s PIVOT: ${sent(cap(c.pivot))}`);
+    lines.push(`7-10s FINAL FRAME: ${sent(cap(c.final))}`);
+    lines.push("End held on the final frame as a clean poster image. No text, no captions, no watermark.");
+    return [...head, "", "PROMPT — paste into your video genAI tool:", lines.join(" "), "",
+      "BREAKDOWN",
+      `Format: 10-second video · ${c.label}`,
+      `Style: ${c.style || "—"}`,
+      `Movement: ${c.movement || "—"}`,
+      `Studio: ${c.studio || "—"}`,
+      `IP: ${c.ip || "—"}${c.ip2 ? " ✕ " + c.ip2 + " (mashup)" : ""}`,
+      c.seed ? `Seed: ${c.seed}` : null,
+      `Subject: ${c.subject || "—"}`,
+      `Setting: ${c.place || "—"}`,
+      `Open (0-3s): ${c.open}`,
+      `Pivot (3-7s): ${c.pivot}`,
+      `Final frame (7-10s): ${c.final}`,
+    ].filter((x) => x !== null).join("\n");
+  }
   const cap = (s) => s ? s.charAt(0).toUpperCase() + s.slice(1) : "";
   const sent = (s) => { s = (s || "").trim(); return s ? (s.endsWith(".") ? s : s + ".") : ""; };
   const bits = [];
@@ -656,72 +683,79 @@ $("#deck").addEventListener("pointerup", (e) => {
   if (state.movement === "all") { state.movement = p.movement; renderIndex(); renderDeck(p.id); flash(mvName(p.movement).toUpperCase() + " — LOCKED"); }
   else flash(mvName(p.movement).toUpperCase());
 });
-window.INSPOBOX = { disciplineStep, jumpToMedia, getState: () => ({ movement: state.movement, current: state.current, count: deckList.length, media: state.media }) };
+window.INSPOBOX = { disciplineStep, jumpToMedia, getState: () => ({ movement: state.movement, current: state.current, count: deckList.length, media: state.media }), getConcept: () => lastConcept };
 
 /* ---------------- idea starter ---------------- */
-const sel = { sources: [], studio: null };
+const sel = { style: "cgi", movement: "surreal", studio: "animation" };
 let lastConcept = null, rerolls = 0;
-function buildSrcPills() {
-  const row = $("#srcRow");
-  const pills = DATA.movements.map((m) => ({ id: m.id, name: m.name }));
-  pills.push({ id: "disney", name: "DISNEY ✦" });
-  row.innerHTML = pills.map((p) => `<button class="srcpill ${p.id === "disney" ? "disney" : ""}" data-src="${p.id}">${esc(p.name.toUpperCase())}</button>`).join("");
+function buildSelects() {
+  const fill = (id, items, val) => { const el = $(id); if (!el) return; el.innerHTML = items.map((x) => `<option value="${x.id}">${esc(x.name.toUpperCase())}</option>`).join(""); el.value = val; };
+  fill("#styleSel", DATA.atoms.styles, sel.style);
+  fill("#moveSel", DATA.movements, sel.movement);
+  fill("#studioSel", DATA.disney.studios, sel.studio);
 }
-function buildStudioPills() {
-  const row = $("#studioRow");
-  row.innerHTML = `<span class="lbl">WHICH STUDIO?</span>` + DATA.disney.studios.map((s) => `<button class="studiopill" data-studio="${s.id}">${esc(s.name.toUpperCase())}</button>`).join("");
+$("#styleSel").addEventListener("change", (e) => { sel.style = e.target.value; });
+$("#moveSel").addEventListener("change", (e) => { sel.movement = e.target.value; });
+$("#studioSel").addEventListener("change", (e) => { sel.studio = e.target.value; });
+const cap1 = (s) => s ? s.charAt(0).toUpperCase() + s.slice(1) : "";
+const heroName = (ch) => ch.split(",")[0].trim();
+const fillTok = (s, map) => s.replace(/\{(\w+)\}/g, (_, k) => map[k] || "");
+function findNamedIPs(text) {
+  const t = " " + (text || "").toLowerCase() + " ";
+  const hits = [];
+  for (const st of DATA.disney.studios) for (const ip of DATA.disney.packs[st.id]) {
+    if (ip.keys.some((k) => t.includes(k))) hits.push({ studio: st, ip });
+  }
+  return hits;
 }
-$("#srcRow").addEventListener("click", (e) => {
-  const b = e.target.closest("[data-src]"); if (!b) return;
-  const id = b.dataset.src, ix = sel.sources.indexOf(id);
-  if (ix >= 0) sel.sources.splice(ix, 1);
-  else { if (sel.sources.length >= 2) sel.sources.shift(); sel.sources.push(id); }
-  $$("#srcRow .srcpill").forEach((p) => p.classList.toggle("on", sel.sources.includes(p.dataset.src)));
-  $("#studioRow").classList.toggle("show", sel.sources.includes("disney"));
-});
-$("#studioRow").addEventListener("click", (e) => {
-  const b = e.target.closest("[data-studio]"); if (!b) return;
-  sel.studio = sel.studio === b.dataset.studio ? null : b.dataset.studio;
-  $$("#studioRow .studiopill").forEach((p) => p.classList.toggle("on", p.dataset.studio === sel.studio));
-});
 const promptEl = $("#promptInput");
 promptEl.addEventListener("input", () => { promptEl.style.height = "auto"; promptEl.style.height = Math.min(promptEl.scrollHeight, 170) + "px"; });
 
 function generate() {
   const A = DATA.atoms, D = DATA.disney;
   const prompt = promptEl.value.trim();
-  const sources = sel.sources.length ? [...sel.sources] : [pick(Math.random, DATA.movements).id];
-  const seed = hashStr(prompt + "|" + sources.join(",") + "|" + (sel.studio || "")) + rerolls * 7919 + genCount * 131;
+  const seed = hashStr([sel.style, sel.movement, sel.studio, prompt].join("|")) + rerolls * 7919 + genCount * 131;
   const r = rng(seed);
-  const B = { subjects: [...A.subjects], settings: [...A.settings], shots: [...A.shots], lights: [...A.lights], twists: [...A.twists], adj: [...A.titleAdj], nouns: [...A.titleNoun] };
-  let studioName = null;
-  let anchor = null;
-  for (const id of sources) {
-    if (id === "disney") {
-      const st = sel.studio ? D.studios.find((s) => s.id === sel.studio) : pick(r, D.studios);
-      studioName = st.name;
-      const pack = D.packs[st.id];
-      anchor = pack;
-      B.shots.push(...D.shots);
-      B.lights.push(...D.lights);
-      B.twists.push(...pack.twists);
-      B.adj.push(...D.titleAdj); B.nouns.push(...D.titleNoun);
-    } else {
-      const f = A.flavor[id];
-      if (f) { B.subjects.push(...f.subjects); B.settings.push(...f.settings); B.shots.push(...f.shots); B.twists.push(...f.twists); B.adj.push(...f.adj); B.nouns.push(...f.nouns); }
-    }
+  const style = A.styles.find((s) => s.id === sel.style) || A.styles[0];
+  const studio = D.studios.find((s) => s.id === sel.studio) || D.studios[0];
+  const pack = D.packs[studio.id];
+  // The one exception to single-IP grounding: the line names a mashup.
+  const named = findNamedIPs(prompt);
+  const wantsCross = named.length >= 2 || /\b(mashup|mash-up|crossover|cross-over|meets|versus|vs)\b/i.test(prompt);
+  let ipA = null, ipB = null;
+  if (named.length >= 2) { ipA = named[0].ip; ipB = named[1].ip; }
+  else if (wantsCross && named.length === 1) {
+    ipA = pick(r, pack);
+    if (named[0].ip === ipA) { const others = D.studios.filter((s) => s.id !== studio.id); ipB = pick(r, D.packs[pick(r, others).id]); }
+    else ipB = named[0].ip;
+  } else if (wantsCross) {
+    ipA = pick(r, pack);
+    const others = D.studios.filter((s) => s.id !== studio.id);
+    ipB = pick(r, D.packs[pick(r, others).id]);
+  } else ipA = pick(r, pack);
+  const hero = pick(r, ipA.chars), H = heroName(hero);
+  const place = pick(r, ipA.places);
+  const open = fillTok(pick(r, ipA.opens), { H });
+  let pivot, final;
+  if (ipB) {
+    const H2 = heroName(pick(r, ipB.chars));
+    pivot = fillTok(pick(r, A.mashPivots), { H, H2, IP2: ipB.name, A2: ipB.prop });
+    final = fillTok(pick(r, A.mashFinals), { H, H2, IP: ipA.name, IP2: ipB.name });
+  } else {
+    pivot = fillTok(pick(r, ipA.pivots), { H });
+    final = fillTok(pick(r, ipA.finals), { H });
   }
-  const fmt = pick(r, A.formats);
-  const title = (r() < 0.45 ? "THE " : "") + pick(r, B.adj) + " " + pick(r, B.nouns);
-  const tags = sources.map((id) => id === "disney" ? "DISNEY · " + (studioName || "").toUpperCase() : mvName(id).toUpperCase()).join(" ✕ ");
+  const fmt = pick(r, A.aspects);
+  const noun = pick(r, ipA.nouns);
+  const title = r() < 0.6 ? `THE ${pick(r, A.titleAdj)} ${noun}` : `THE ${noun}`;
+  const tags = `${style.name.toUpperCase()} ✕ ${mvName(sel.movement).toUpperCase()} · ${studio.name.toUpperCase()} — ${ipA.name.toUpperCase()}${ipB ? " ✕ " + ipB.name.toUpperCase() + " · MASHUP" : ""}`;
   genCount += 1; store.set("inspobox.count.v1", genCount);
   lastConcept = {
     n: genCount, kind: fmt.kind, label: fmt.label, title,
     seedLine: prompt || null,
-    subject: (anchor ? pick(r, anchor.subjects) : pick(r, B.subjects)) + ", " + pick(r, A.actions),
-    setting: anchor ? pick(r, anchor.settings) : (r() < 0.72 ? pick(r, B.settings) : null),
-    shot: pick(r, B.shots), light: pick(r, B.lights),
-    twist: anchor && r() < 0.6 ? pick(r, anchor.twists) : pick(r, B.twists), tags,
+    styleId: style.id, style: style.name, movementId: sel.movement, movement: mvName(sel.movement),
+    studio: studio.name, ip: ipA.name, ip2: ipB ? ipB.name : null, mashup: !!ipB,
+    subject: hero, place, open, pivot, final, tags,
   };
   renderConcept();
 }
@@ -729,11 +763,11 @@ function renderConcept() {
   const c = lastConcept; if (!c) return;
   const rows = [];
   if (c.seedLine) rows.push(`<div class="crow"><b>SEED</b>“${esc(c.seedLine)}”</div>`);
-  if (c.subject) rows.push(`<div class="crow"><b>SUBJECT</b>${esc(c.subject)}</div>`);
-  if (c.setting) rows.push(`<div class="crow"><b>WORLD</b>${esc(c.setting)}</div>`);
-  rows.push(`<div class="crow"><b>SHOT</b>${esc(c.shot)}</div>`);
-  rows.push(`<div class="crow"><b>LIGHT</b>${esc(c.light)}</div>`);
-  rows.push(`<div class="crow"><b>TWIST</b>${esc(c.twist)}</div>`);
+  rows.push(`<div class="crow"><b>SUBJECT</b>${esc(c.subject)}</div>`);
+  rows.push(`<div class="crow"><b>WORLD</b>${esc(c.ip)} — ${esc(c.place)}</div>`);
+  rows.push(`<div class="crow"><b>OPEN · 0–3S</b>${esc(cap1(c.open))}</div>`);
+  rows.push(`<div class="crow"><b>PIVOT · 3–7S</b>${esc(cap1(c.pivot))}</div>`);
+  rows.push(`<div class="crow"><b>FINAL · 7–10S</b>${esc(cap1(c.final))}</div>`);
   $("#conceptZone").innerHTML = `
     <div class="card">
       <div class="ghostnum">${String(c.n).padStart(2, "0")}</div>
@@ -745,8 +779,8 @@ function renderConcept() {
     </div>`;
   $("#rerollBtn").addEventListener("click", () => { rerolls += 1; generate(); });
   $("#saveSparkBtn").addEventListener("click", (e) => {
-    const body = [c.seedLine ? "Seed: " + c.seedLine : c.subject, c.setting, "Shot: " + c.shot, "Twist: " + c.twist].filter(Boolean).join(" · ");
-    box.unshift({ type: "spark", title: c.title, label: c.kind + " · " + c.label + " · " + c.tags, body, concept: { n: c.n, kind: c.kind, label: c.label, title: c.title, seed: c.seedLine, subject: c.subject, setting: c.setting, shot: c.shot, light: c.light, twist: c.twist, tags: c.tags }, ts: Date.now() });
+    const body = `${c.subject} — ${c.place}. Open: ${c.open} · Pivot: ${c.pivot} · Final: ${c.final}`;
+    box.unshift({ type: "spark", title: c.title, label: c.kind + " · " + c.label + " · " + c.tags, body, concept: { n: c.n, kind: c.kind, label: c.label, title: c.title, seed: c.seedLine, styleId: c.styleId, style: c.style, movementId: c.movementId, movement: c.movement, studio: c.studio, ip: c.ip, ip2: c.ip2, mashup: c.mashup, subject: c.subject, place: c.place, open: c.open, pivot: c.pivot, final: c.final, tags: c.tags }, ts: Date.now() });
     store.set("inspobox.box.v1", box); renderBox();
     e.target.textContent = "SAVED ✓";
   });
