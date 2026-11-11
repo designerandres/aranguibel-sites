@@ -457,16 +457,17 @@ export const ATOMS = {
 };
 
 // ---- Disney pack ----------------------------------------------------------
-// A crossable source of its own: pick Disney, then a studio. Atoms are
-// archetypes, worlds and formats from across the studios — built for
-// remixing into original concepts.
+// A crossable source of its own: pick Disney, then a studio. Picking a
+// studio ANCHORS the concept: SUBJECT and WORLD are drawn from that
+// studio's own characters and worlds (Lucasfilm spans Star Wars and
+// Indiana Jones); a crossed movement dresses the shot, light and twist.
 
 export const DISNEY = {
   studios: [
     { id: "animation", name: "Animation" },
     { id: "pixar", name: "Pixar" },
     { id: "marvel", name: "Marvel" },
-    { id: "starwars", name: "Star Wars" },
+    { id: "lucasfilm", name: "Lucasfilm" },
     { id: "parks", name: "Parks" },
     { id: "liveaction", name: "Live-Action" },
   ],
@@ -488,33 +489,33 @@ export const DISNEY = {
   titleNoun: ["TIME", "WISH", "PARADE", "HARBOUR", "KINGDOM", "SPARK"],
   packs: {
     animation: {
-      subjects: ["a sidekick applying for a promotion to hero", "the castle's night staff, after the last guest leaves", "a lost song looking for its movie"],
-      settings: ["a kingdom where every law is a musical cue", "a forest clearing that hosts a nightly animal parliament", "a tower library where the books are spells with opinions"],
-      twists: ["The villain's song is the best one and everyone knows it", "The transformation sequence is a union job with paperwork"],
+      subjects: ["the Genie, three wishes into a midlife crisis", "Mrs. Potts running the castle's night shift, Chip on lookout", "Timon and Pumbaa's motivational seminar for one very tense lion", "Olaf's summer travel agency, now booking", "Kronk, pulling the wrong lever again", "Lumière casting tonight's dinner show"],
+      settings: ["Arendelle's ice palace at first thaw", "the Beast's west-wing library, mid-waltz lesson", "Pride Rock at dawn — everything the light touches", "Agrabah's Cave of Wonders, strictly hands-off", "the Snuggly Duckling tavern on lantern night", "Atlantica's grotto of collected human things", "Never Land's mermaid lagoon at low tide", "Motunui's reef, just past where the songs stop warning you", "a New Orleans bayou where the jazz is literal magic"],
+      twists: ["The villain's song is the best one and everyone knows it", "The transformation sequence is a union job with paperwork", "The sidekick's contract negotiations are the real third act"],
     },
     pixar: {
-      subjects: ["a feelings-for-hire temp agency inside a very ordinary head", "the monster who is terrified of the child", "a lamp's retirement, told in objects"],
-      settings: ["the memory archives at the end of a long childhood", "a city built entirely from found objects", "the after-hours world inside a family restaurant"],
+      subjects: ["Joy and Sadness co-running a very emotional returns desk", "WALL·E's collection, appraised piece by piece", "Miguel smuggling one forbidden song across the marigold bridge", "Remy, deep in his food-critic era", "a scream-canister archivist adjusting to the laugh economy", "Carl's balloon-permit hearing — exhibit A is the house"],
+      settings: ["the Monsters, Inc. laugh floor at quota time", "Andy's room on moving day, seen from inside the toy box", "the Land of the Dead, on the marigold bridge at Día de los Muertos", "Paradise Falls, anchored by a house and ten thousand balloons", "Riley's Headquarters during the big move", "Radiator Springs at neon dusk, one traffic light blinking", "the Great Before, where personalities get assigned", "Element City's hearth district in fire season"],
       twists: ["The macguffin is a core memory and it is mislabeled", "It is a buddy comedy about a process, and the process is grief"],
     },
     marvel: {
-      subjects: ["a hero's very normal day off, ruined politely", "the cleanup crew that arrives after the third-act battle", "a villain's origin told as a cooking show"],
-      settings: ["a support group for reformed henchmen", "the one city block that has been destroyed six times", "a shield-grade safehouse run like a bed & breakfast"],
+      subjects: ["the Damage Control cleanup crew after an Avengers-level event", "a TVA analyst who pruned his own timeline by accident", "Shuri's newest lab intern, day one", "a reformed HYDRA henchman's support group, local chapter", "the bodega owner who has seen Spider-Man at his worst and his best", "an Asgardian bridge toll-keeper with strong opinions"],
+      settings: ["the TVA's waiting room — take a number, lose a timeline", "Wakanda's vibranium mines on inspection day", "the Sanctum Sanctorum's library; mind the reshelving curses", "Knowhere's mining colony, inside a dead god's head", "the Avengers compound cafeteria, shawarma Fridays", "Asgard's rainbow bridge at rush hour", "the Quantum Realm, where five minutes is negotiable", "the Daily Bugle newsroom on a Spider-Man deadline"],
       twists: ["The post-credits scene is the actual plot", "Powers are inherited, and so is the therapy bill"],
     },
-    starwars: {
-      subjects: ["a droid with a collections hobby and a debt problem", "the cantina's house band negotiating a record deal", "a moisture farmer who wins the lottery and hates it"],
-      settings: ["the last video-rental store in the galaxy", "a repair shop at the edge of a junkyard planet", "a diplomatic summit hosted on a retired star destroyer"],
-      twists: ["The Force is strong in the paperwork", "It is a western; the saloon is a docking bay"],
+    lucasfilm: {
+      subjects: ["a smuggler who owes Jabba the Hutt money and one favor too many", "a protocol droid translating insults at a diplomatic summit", "the Mos Eisley cantina's house band negotiating a record deal", "a moisture farmer on Tatooine who wins the lottery and hates it", "a Jedi dropout running a noodle stand in Coruscant's lower levels", "an Imperial middle-manager writing up the Death Star incident report", "a bounty hunter who only takes jobs with dental", "an archaeologist in a fedora racing a rival to the relic — and he hates snakes", "a museum curator whose star donations keep being reclaimed by a man in a fedora"],
+      settings: ["the Mos Eisley cantina on Tatooine, last call before the twin suns set", "the Death Star's detention level, one corridor from the trash compactor", "an Ewok village in the Endor treetops at dawn", "Cloud City's carbon-freezing chamber, steam and orange light", "Echo Base on Hoth, hangar doors groaning against the cold", "Coruscant's lower levels, where the neon never quite reaches", "a booby-trapped Peruvian temple that punishes greed", "the Well of Souls beneath Tanis — torches, sand and snakes", "a Venice library built over a catacomb, mid-canal-chase", "the Grail temple's final chamber, three trials deep", "a Shanghai nightclub in 1935, gongs and getaway cars"],
+      twists: ["The Force is strong in the paperwork", "It is a western; the saloon is a docking bay", "The map is real, the X is honest, the floor is not", "He chose wisely — the budget didn't"],
     },
     parks: {
-      subjects: ["a forgotten attraction animatronic learning new dances", "the night crew that repaints the magic before dawn", "a balloon seller who has heard every wish for forty years"],
-      settings: ["the utilidor city beneath the kingdom at 4 AM", "a parade float warehouse where the floats dream", "the last empty land, the night before it opens"],
+      subjects: ["a Jungle Cruise skipper on year forty of the same hippos", "the Haunted Mansion's 1,000th ghost, interviewing for the spot", "the night crew that repaints the magic before dawn", "a Country Bear learning new dances from the internet", "a Dole Whip vendor who has heard every wish since 1987", "a monorail pilot narrating the loop like a nature documentary"],
+      settings: ["the Haunted Mansion's ballroom, after the 999 happy haunts clock out", "Main Street, U.S.A. at 4 AM, mid-repaint", "the Jungle Cruise docks, backside-of-water side", "Black Spire Outpost on Batuu at park close", "the utilidors beneath Magic Kingdom at shift change", "Spaceship Earth, stalled mid-ride inside the Renaissance scene", "Pirates of the Caribbean's burning town, looping forever", "the Tree of Life's root system, after hours"],
       twists: ["The ride is sentient and it has notes on the script", "Every guest wish is archived, and one just expired"],
     },
     liveaction: {
-      subjects: ["a very Mary-sensible nanny assigned to a house of tiny chaos agents", "the understudy who knows every role in the building", "a bookshop owner whose shop keeps casting spells by accident"],
-      settings: ["a London rooftop at chimney-sweep hour", "a small-town main street that refuses to be modernized", "a boarding house where every tenant is hiding a talent"],
+      subjects: ["a practically perfect nanny assigned to a house of tiny chaos agents", "a race-car Beetle with strong opinions — answers to Herbie", "the Sanderson sisters' community-theater comeback tour", "an inventor whose flying-rubber experiment worked far too well", "the understudy who knows every role in the building", "a bookshop owner whose shop keeps casting spells by accident"],
+      settings: ["Cherry Tree Lane, London — the Banks house at chimney-sweep hour", "a backyard shrunk to ant scale, sprinkler weather incoming", "Salem on Halloween, three sisters overdue by 300 years", "Flynn's Arcade after close, one cabinet still glowing", "a Portobello Road stall where the antiques behave strangely", "the Mighty Ducks' home rink before the district final", "a summer-camp lake, twins conspiring at opposite ends"],
       twists: ["The practical effect is real and nobody will say how", "It ends with a parade; it always ends with a parade"],
     },
   },

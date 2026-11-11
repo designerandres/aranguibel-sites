@@ -179,7 +179,7 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
     <div class="logo">INSPO<span class="box">BOX</span></div>
     <div id="counter">— / —</div>
     <div id="tapHint">TAP A PIECE TO LOCK ITS GENRE</div>
-    <div id="buildTag">BUILD V13</div>
+    <div id="buildTag">BUILD V14</div>
   </div>
   <div class="topbtns">
     <button class="chipbtn" id="boxBtn">BOX <span class="n" id="boxCount">0</span></button>
@@ -551,16 +551,16 @@ function generate() {
   const r = rng(seed);
   const B = { subjects: [...A.subjects], settings: [...A.settings], shots: [...A.shots], lights: [...A.lights], twists: [...A.twists], adj: [...A.titleAdj], nouns: [...A.titleNoun] };
   let studioName = null;
+  let anchor = null;
   for (const id of sources) {
     if (id === "disney") {
       const st = sel.studio ? D.studios.find((s) => s.id === sel.studio) : pick(r, D.studios);
       studioName = st.name;
       const pack = D.packs[st.id];
-      B.subjects.push(...pack.subjects, ...pack.subjects);
-      B.settings.push(...pack.settings);
+      anchor = pack;
       B.shots.push(...D.shots);
       B.lights.push(...D.lights);
-      B.twists.push(...pack.twists, ...pack.twists);
+      B.twists.push(...pack.twists);
       B.adj.push(...D.titleAdj); B.nouns.push(...D.titleNoun);
     } else {
       const f = A.flavor[id];
@@ -574,9 +574,10 @@ function generate() {
   lastConcept = {
     n: genCount, kind: fmt.kind, label: fmt.label, title,
     seedLine: prompt || null,
-    subject: prompt ? null : pick(r, B.subjects),
-    setting: r() < 0.72 ? pick(r, B.settings) : null,
-    shot: pick(r, B.shots), light: pick(r, B.lights), twist: pick(r, B.twists), tags,
+    subject: prompt ? null : (anchor ? pick(r, anchor.subjects) : pick(r, B.subjects)),
+    setting: anchor ? pick(r, anchor.settings) : (r() < 0.72 ? pick(r, B.settings) : null),
+    shot: pick(r, B.shots), light: pick(r, B.lights),
+    twist: anchor && r() < 0.6 ? pick(r, anchor.twists) : pick(r, B.twists), tags,
   };
   renderConcept();
 }
