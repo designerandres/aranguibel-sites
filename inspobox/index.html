@@ -179,7 +179,7 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
     <div class="logo">INSPO<span class="box">BOX</span></div>
     <div id="counter">— / —</div>
     <div id="tapHint">TAP A PIECE TO LOCK ITS GENRE</div>
-    <div id="buildTag">BUILD V7</div>
+    <div id="buildTag">BUILD V8</div>
   </div>
   <div class="topbtns">
     <button class="chipbtn" id="boxBtn">BOX <span class="n" id="boxCount">0</span></button>
@@ -224,7 +224,7 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
     <div class="logo">INSPO<span class="box">BOX</span></div>
     <div style="display:flex;align-items:center;gap:12px"><span class="mode">MOVEMENTS</span><button class="xbtn" data-close>✕</button></div>
   </div>
-  <div class="layernote"><b>Tap any piece</b> in the feed to lock its genre — or pick one here. Up/down stays inside the genre; <b>left/right</b> swipes cross disciplines. Tap the colored genre title on any piece to unlock (tapping the locked genre here works too).</div>
+  <div class="layernote"><b>Tap any piece</b> in the feed to lock its genre — or pick one here. Every vertical stack is a single discipline — <b>left/right</b> swipes switch discipline. Tap the colored genre title on any piece to unlock (tapping the locked genre here works too).</div>
   <div id="indexGrid"></div>
 </section>
 
@@ -252,7 +252,7 @@ function rng(seed) { let t = seed >>> 0; return () => { t += 0x6D2B79F5; let r =
 const pick = (r, arr) => arr[Math.floor(r() * arr.length)];
 
 let DATA = null;
-const state = { media: "all", movement: "all", current: 0 };
+const state = { media: "photography", movement: "all", current: 0 };
 let box = store.get("inspobox.box.v1", []);
 let sparks = store.get("inspobox.sparks.v1", []);
 let genCount = store.get("inspobox.count.v1", 0);
@@ -270,11 +270,9 @@ async function load() {
 
 /* ---------------- deck ---------------- */
 let deckList = [];
+function scopeFeed() { return DATA.feed.filter((p) => state.movement === "all" || p.movement === state.movement); }
 function deckFeed() {
-  if (state.movement === "all") return [...DATA.feed];
-  const order = DATA.media.map((m) => m.id);
-  return DATA.feed.filter((p) => p.movement === state.movement)
-    .sort((a, b) => order.indexOf(a.media) - order.indexOf(b.media));
+  return scopeFeed().filter((p) => p.media === state.media);
 }
 function mvName(id) { const m = DATA.movements.find((x) => x.id === id); return m ? m.name : id; }
 function mdName(id) { const m = DATA.media.find((x) => x.id === id); return m ? m.name : id; }
@@ -317,9 +315,8 @@ function renderDeck(startId) {
 }
 function railHtml() {
   const order = DATA.media.map((m) => m.id);
-  const present = order.filter((id) => deckList.some((p) => p.media === id));
-  const items = [{ id: "all", name: "Top" }, ...DATA.media.filter((m) => present.includes(m.id))];
-  return items.map((m) => `<button data-media="${m.id}">${esc(m.name.toUpperCase())}</button>`).join("");
+  const present = order.filter((id) => scopeFeed().some((p) => p.media === id));
+  return DATA.media.filter((m) => present.includes(m.id)).map((m) => `<button data-media="${m.id}">${esc(m.name.toUpperCase())}</button>`).join("");
 }
 function updateChrome(total) {
   $("#counter").textContent = String(state.current + 1).padStart(2, "0") + " / " + String(total).padStart(2, "0");
@@ -413,6 +410,8 @@ $("#indexGrid").addEventListener("click", (e) => {
   if (!t) return;
   const mv = t.dataset.mv;
   state.movement = mv === state.movement ? "all" : mv;
+  const scope = scopeFeed();
+  if (scope.length && !scope.some((p) => p.media === state.media)) state.media = DATA.media.map((m) => m.id).find((id) => scope.some((p) => p.media === id));
   closeLayer("#indexLayer"); renderIndex(); renderDeck();
 });
 
@@ -453,25 +452,33 @@ function scrollToPiece(i) {
 let flashTimer = null;
 function flash(txt) { const f = $("#flash"); f.textContent = txt; f.classList.add("show"); clearTimeout(flashTimer); flashTimer = setTimeout(() => f.classList.remove("show"), 780); }
 function jumpToMedia(id) {
-  if (id === "all") { scrollToPiece(0); return; }
-  const ti = deckList.findIndex((p) => p.media === id);
-  if (ti >= 0) { scrollToPiece(ti); flash(mdName(id).toUpperCase()); }
+  if (id === state.media) return;
+  goMedia(id);
+}
+function goMedia(next) {
+  const cur = deckList[state.current];
+  const cell = scopeFeed().filter((p) => p.media === next);
+  if (!cell.length) return;
+  const target = (cur && cell.find((p) => p.movement === cur.movement)) || cell[0];
+  const veil = $("#veil");
+  veil.classList.add("on");
+  flash(mdName(next).toUpperCase());
+  setTimeout(() => {
+    state.media = next;
+    renderDeck(target && target.id);
+    setTimeout(() => veil.classList.remove("on"), 70);
+  }, 195);
 }
 let lastStepAt = 0;
 function disciplineStep(dir) {
   const now = Date.now();
   if (now - lastStepAt < 700) return;
   lastStepAt = now;
-  if (!deckList.length) return;
   const order = DATA.media.map((m) => m.id);
-  const present = order.filter((id) => deckList.some((p) => p.media === id));
-  const cur = deckList[state.current];
-  if (!cur) return;
-  if (present.length < 2) { flash(mdName(cur.media).toUpperCase()); return; }
-  const ix = present.indexOf(cur.media);
-  const target = present[(ix + dir + present.length) % present.length];
-  const ti = deckList.findIndex((p) => p.media === target);
-  if (ti >= 0) { scrollToPiece(ti); flash(mdName(target).toUpperCase()); }
+  const present = order.filter((id) => scopeFeed().some((p) => p.media === id));
+  if (present.length < 2) { flash(mdName(state.media).toUpperCase()); return; }
+  const next = present[(present.indexOf(state.media) + dir + present.length) % present.length];
+  goMedia(next);
 }
 let swX = null, swY = null, swFired = false;
 $("#deck").addEventListener("pointerdown", (e) => { swX = e.clientX; swY = e.clientY; swFired = false; });
@@ -505,7 +512,7 @@ $("#deck").addEventListener("pointerup", (e) => {
   if (state.movement === "all") { state.movement = p.movement; renderIndex(); renderDeck(p.id); flash(mvName(p.movement).toUpperCase() + " — LOCKED"); }
   else flash(mvName(p.movement).toUpperCase());
 });
-window.INSPOBOX = { disciplineStep, jumpToMedia, getState: () => ({ movement: state.movement, current: state.current, count: deckList.length, media: deckList[state.current] ? deckList[state.current].media : null }) };
+window.INSPOBOX = { disciplineStep, jumpToMedia, getState: () => ({ movement: state.movement, current: state.current, count: deckList.length, media: state.media }) };
 
 /* ---------------- idea starter ---------------- */
 const sel = { sources: [], studio: null };
