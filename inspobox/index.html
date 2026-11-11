@@ -182,7 +182,7 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
     <div class="logo">INSPO<span class="box">BOX</span></div>
     <div id="counter">— / —</div>
     <div id="tapHint">TAP A PIECE TO LOCK ITS GENRE</div>
-    <div id="buildTag">BUILD V17</div>
+    <div id="buildTag">BUILD V18</div>
   </div>
   <div class="topbtns">
     <button class="chipbtn" id="boxBtn">BOX <span class="n" id="boxCount">0</span></button>
@@ -343,17 +343,18 @@ function updateChrome(total) {
   positionIgnite();
 }
 function positionIgnite() {
-  // The spark button floats in the left rail under the genre title, but the
-  // info panel's height varies with its title — so park the button a fixed
-  // gap above the current piece's panel instead of at a fixed height.
+  // The spark button floats in the left rail under the genre title. Panel
+  // heights vary per piece, so measuring the current panel mid-scroll made
+  // the button hop between cards. Instead: park it once per deck, a fixed
+  // gap above the TALLEST panel in the deck (offsetTop is layout geometry,
+  // independent of scroll position) — it never moves while scrolling and
+  // can never overlap any card's info panel.
   const btn = $("#igniteBtn"); if (!btn) return;
-  const piece = $$("#deck .piece")[state.current];
-  const panel = piece && piece.querySelector(".panel");
-  if (!panel) return;
-  btn.style.top = Math.max(330, Math.round(panel.getBoundingClientRect().top) - 68) + "px";
+  let minTop = Infinity;
+  $$("#deck .piece .panel").forEach((p) => { minTop = Math.min(minTop, p.offsetTop); });
+  if (!isFinite(minTop)) return;
+  btn.style.top = Math.max(330, Math.round(minTop) - 68) + "px";
 }
-let igniteTimer = null;
-$("#deck").addEventListener("scroll", () => { clearTimeout(igniteTimer); igniteTimer = setTimeout(positionIgnite, 130); }, { passive: true });
 let deckObs = null;
 function bindDeck(feed) {
   if (deckObs) deckObs.disconnect();
