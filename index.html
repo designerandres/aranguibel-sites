@@ -599,6 +599,25 @@
       fig: "kindred cameras\nfrom across the sea"
     },
     {
+      path: "inspobox/",
+      title: "INSPOBOX",
+      description: "A box of bold eye candy and remixable idea sparks — a full-bleed swipe feed of movements and media, plus an idea starter that crosses them into fresh photo and video concepts. Disney included.",
+      icon: "inspobox/icons/icon-512.png",
+      monogram: "\u2733",
+      tab: "personal",
+      section: "The Spark Room",
+      territory: "the loud hours, in neon and brass",
+      teaser: "Swipe the feed. Cross two movements. Ignite a concept.",
+      story: "Built in Miami during Adobe MAX week, in the conference's own neon: a deck of full-bleed pieces filed by movement — surreal, deco, cyberpunk, steampunk and their kin — and crossed by craft: camerawork, architecture, photography, design, UI. Below deck, the Idea Starter takes a one-line seed, crosses two sources (Disney and all its studios among them) and deals a concept card: subject, world, shot, light and twist. Keep the good ones in the Box.",
+      marginalia: "mind the sparks",
+      marginaliaClass: "",
+      stamp: "Now Stocking Sparks",
+      stampClass: "rust",
+      waters: "The Neon District",
+      bearings: "est. Nov 2026 \u00B7 Miami waters",
+      fig: "the red box\nthat is never empty"
+    },
+    {
       path: "wish-day-guide/",
       title: "Wish Day Guide",
       description: "Day-of guide for the Disney Wish visit — itinerary, maps, and logistics for October 30, 2026.",
@@ -648,7 +667,7 @@
   try { const t = sessionStorage.getItem("skipperslog.tab"); if (TABS.includes(t)) activeTab = t; } catch (e) {}
   const openByTab = { family: null, personal: null }; // path of the expanded entry per tab
   let crewAdmin = false; // Invite Crew is the skipper's alone: set from /api/auth/me
-  const INVITABLE_SLUGS = ["jollywood-fam-2026", "poppy-picks", "cycles", "max-pocket-agenda", "lodge-boys-2026", "wish-day-guide", "hatchs-countdown", "nov-visit", "yellowstone-2027", "library", "our-little-universe"];
+  const INVITABLE_SLUGS = ["jollywood-fam-2026", "poppy-picks", "cycles", "max-pocket-agenda", "lodge-boys-2026", "wish-day-guide", "hatchs-countdown", "nov-visit", "yellowstone-2027", "library", "our-little-universe", "inspobox"];
 
   function applyOrder(order) {
     if (!Array.isArray(order)) return;

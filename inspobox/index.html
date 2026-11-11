@@ -1,0 +1,513 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>INSPOBOX — Ideas &amp; Eye Candy</title>
+<meta name="theme-color" content="#07070C">
+<link rel="manifest" href="/inspobox/manifest.webmanifest">
+<link rel="icon" href="/inspobox/icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/inspobox/icons/icon-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Grotesk:wght@500;700&family=Unbounded:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#07070C; --ink:#FFFFFF; --dim:rgba(255,255,255,.66); --faint:rgba(255,255,255,.45);
+  --red:#FF2E4D; --orange:#FF8A1F; --pink:#FF3CAC; --cyan:#22D3EE; --violet:#7B2FFF;
+  --grad:linear-gradient(92deg,#FF2E4D 10%,#FF5A1F 55%,#FF3CAC 118%);
+  --glass:rgba(16,14,24,.55); --glassline:rgba(255,255,255,.16);
+  --anton:'Anton',sans-serif; --unb:'Unbounded',sans-serif; --sg:'Space Grotesk',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:var(--bg);color:var(--ink);font-family:var(--sg);overflow:hidden}
+button{font-family:inherit;color:inherit;background:none;border:none;cursor:pointer}
+img{display:block}
+::-webkit-scrollbar{display:none}
+
+/* ---------- fixed chrome ---------- */
+#topbar{position:fixed;top:0;left:0;right:0;z-index:40;display:flex;justify-content:space-between;align-items:flex-start;padding:calc(14px + env(safe-area-inset-top)) 18px 0;pointer-events:none}
+#topbar>*{pointer-events:auto}
+.logo{font-family:var(--unb);font-weight:900;font-size:18px;letter-spacing:.01em;text-shadow:0 2px 18px rgba(0,0,0,.45)}
+.logo .box{background:linear-gradient(90deg,#FF2E4D,#FF8A1F);-webkit-background-clip:text;background-clip:text;color:transparent;border:2.5px solid var(--red);padding:1px 6px;border-radius:6px;margin-left:3px}
+.topbtns{display:flex;gap:9px;align-items:center}
+.chipbtn{display:flex;align-items:center;gap:7px;padding:10px 14px;border-radius:999px;background:var(--glass);backdrop-filter:blur(18px) saturate(1.5);-webkit-backdrop-filter:blur(18px) saturate(1.5);border:1px solid var(--glassline);font-family:var(--unb);font-weight:900;font-size:11px;letter-spacing:.05em}
+.chipbtn .n{background:var(--grad);border-radius:999px;min-width:19px;height:19px;display:flex;align-items:center;justify-content:center;font-size:10.5px;padding:0 5px}
+#counter{font-family:var(--anton);font-size:15px;letter-spacing:.08em;color:var(--dim);padding-top:9px}
+#dots{position:fixed;right:13px;top:50%;transform:translateY(-50%);z-index:40;display:flex;flex-direction:column;gap:7px;align-items:center}
+#dots i{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.4);display:block;transition:all .3s}
+#dots i.on{height:22px;border-radius:3px;background:linear-gradient(180deg,#FF2E4D,#FF8A1F)}
+#igniteBtn{position:fixed;right:16px;bottom:calc(224px + env(safe-area-inset-bottom));z-index:41;display:flex;align-items:center;gap:9px;padding:14px 18px;border-radius:15px;background:var(--grad);font-family:var(--unb);font-weight:900;font-size:15px;letter-spacing:.05em;box-shadow:0 5px 0 #6E0B1E,0 16px 34px rgba(255,46,77,.35)}
+#igniteBtn:active{transform:translateY(3px);box-shadow:0 2px 0 #6E0B1E,0 10px 22px rgba(255,46,77,.3)}
+
+/* ---------- deck ---------- */
+#deck{height:100dvh;overflow-y:auto;scroll-snap-type:y mandatory;overscroll-behavior:none}
+.piece{position:relative;height:100dvh;scroll-snap-align:start;scroll-snap-stop:always;overflow:hidden;background:#0B0B13}
+.piece .bgimg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.piece .bgvid{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.piece .scrim{position:absolute;inset:0;background:linear-gradient(180deg,rgba(5,5,10,.40) 0%,transparent 26%,transparent 44%,rgba(5,5,10,.88) 84%)}
+.piece .prog{position:absolute;top:0;left:0;height:3px;background:var(--grad);z-index:3}
+.vtitle{position:absolute;left:12px;top:158px;writing-mode:vertical-rl;transform:rotate(180deg);font-family:var(--anton);font-size:58px;letter-spacing:.03em;color:#fff;text-shadow:5px 5px 0 rgba(255,46,77,.85);z-index:2;cursor:pointer}
+.shapes{position:absolute;top:104px;right:22px;opacity:.92;z-index:2;pointer-events:none}
+.savebtn{position:absolute;right:16px;top:108px;z-index:5;width:44px;height:44px;border-radius:50%;background:var(--glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--glassline);font-size:23px;font-weight:500;display:flex;align-items:center;justify-content:center}
+.savebtn.saved{background:var(--grad);border-color:transparent}
+.panel{position:absolute;left:14px;right:14px;bottom:calc(14px + env(safe-area-inset-bottom));z-index:4;border-radius:14px;background:var(--glass);backdrop-filter:blur(22px) saturate(1.5);-webkit-backdrop-filter:blur(22px) saturate(1.5);border:1px solid var(--glassline);padding:16px 16px 12px}
+.kicker{font-size:10.5px;letter-spacing:.3em;font-weight:700;color:#FFB3C0;display:flex;justify-content:space-between;gap:10px}
+.kicker .mv{cursor:pointer}
+.ptitle{font-family:var(--anton);font-size:26px;line-height:1.06;margin-top:7px;letter-spacing:.01em}
+.pby{font-size:12.5px;color:var(--dim);margin-top:5px;font-weight:500}
+.rail{display:flex;gap:15px;margin-top:14px;padding-top:13px;border-top:1px solid rgba(255,255,255,.14);overflow-x:auto;white-space:nowrap;-webkit-mask-image:linear-gradient(90deg,#000 88%,transparent);mask-image:linear-gradient(90deg,#000 88%,transparent)}
+.rail button{font-size:11.5px;font-weight:700;letter-spacing:.13em;color:var(--faint);padding-bottom:5px;flex:none}
+.rail button.on{background:linear-gradient(90deg,#FF2E4D,#FF8A1F);-webkit-background-clip:text;background-clip:text;color:transparent;box-shadow:0 3px 0 -1px #FF2E4D}
+.deckempty{height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:30px;text-align:center}
+.deckempty .big{font-family:var(--anton);font-size:34px;line-height:1.1}
+.deckempty p{color:var(--dim);font-size:14px;line-height:1.55;max-width:280px}
+
+/* ---------- layers ---------- */
+.layer{position:fixed;inset:0;z-index:60;background:var(--bg);transform:translateY(102%);transition:transform .48s cubic-bezier(.32,.72,.24,1);display:flex;flex-direction:column;overflow:hidden}
+.layer.open{transform:translateY(0)}
+.layer .grab{flex:none;padding:12px 0 4px;display:flex;justify-content:center;cursor:grab}
+.layer .grab i{width:44px;height:5px;border-radius:3px;background:rgba(255,255,255,.35);display:block}
+.layerhead{flex:none;display:flex;justify-content:space-between;align-items:center;padding:8px 20px 4px}
+.layerhead .mode{font-size:10.5px;letter-spacing:.3em;font-weight:700;color:var(--dim)}
+.xbtn{width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.16);font-size:16px;display:flex;align-items:center;justify-content:center}
+
+/* ---------- starter ---------- */
+#starter .glows{position:absolute;inset:0;pointer-events:none}
+#starter .glows::before{content:"";position:absolute;width:540px;height:540px;border-radius:50%;background:radial-gradient(circle,rgba(255,46,77,.34),transparent 65%);top:-200px;left:-170px}
+#starter .glows::after{content:"";position:absolute;width:580px;height:580px;border-radius:50%;background:radial-gradient(circle,rgba(123,47,255,.30),transparent 65%);bottom:-260px;right:-200px}
+#starter .dotgrid{position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.12) 1px,transparent 1.4px);background-size:26px 26px;opacity:.45;pointer-events:none}
+#starterBody{position:relative;flex:1;overflow-y:auto;padding:14px 24px calc(20px + env(safe-area-inset-bottom));display:flex;flex-direction:column}
+.skicker{font-family:var(--unb);font-weight:900;font-size:11.5px;letter-spacing:.13em;background:linear-gradient(90deg,#FF2E4D,#FF8A1F);-webkit-background-clip:text;background-clip:text;color:transparent}
+#promptInput{margin-top:12px;width:100%;background:none;border:none;resize:none;color:#fff;font-family:var(--anton);font-size:42px;line-height:1.06;letter-spacing:.004em;text-transform:uppercase;min-height:96px;outline:none}
+#promptInput::placeholder{color:rgba(255,255,255,.28)}
+.crossrow{display:flex;gap:9px;flex-wrap:wrap;margin-top:16px;align-items:center}
+.srcpill{padding:10px 13px;border-radius:999px;background:rgba(255,255,255,.08);border:2px solid rgba(255,255,255,.20);font-family:var(--unb);font-weight:900;font-size:11px;letter-spacing:.04em;white-space:nowrap}
+.srcpill.on{border-color:var(--red);color:#FFC2CC;background:rgba(255,46,77,.13)}
+.srcpill.disney.on{border-color:#FFB53A;color:#FFE1A8;background:rgba(255,160,40,.12)}
+.xglyph{font-family:var(--unb);font-weight:900;font-size:15px;color:var(--red);padding:0 1px}
+.subrow{display:none;gap:8px;flex-wrap:wrap;margin-top:11px}
+.subrow.show{display:flex}
+.subrow .lbl{width:100%;font-size:9.5px;letter-spacing:.28em;font-weight:700;color:#FFD9A0}
+.studiopill{padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.18);font-family:var(--unb);font-weight:700;font-size:10.5px;white-space:nowrap}
+.studiopill.on{border-color:#FFB53A;color:#FFE1A8}
+.card{position:relative;margin-top:22px;border-radius:14px;background:rgba(18,16,28,.62);backdrop-filter:blur(22px) saturate(1.5);-webkit-backdrop-filter:blur(22px) saturate(1.5);border:1px solid var(--glassline);padding:17px;overflow:hidden}
+.ghostnum{position:absolute;top:-40px;right:8px;font-family:var(--anton);font-size:124px;color:transparent;-webkit-text-stroke:2px rgba(255,255,255,.08);pointer-events:none}
+.clabel{font-size:10px;letter-spacing:.24em;font-weight:700;color:#FFB3C0;display:flex;align-items:center;gap:8px;position:relative}
+.clabel::before{content:"";width:9px;height:9px;background:var(--red);flex:none}
+.ctitle{font-family:var(--unb);font-weight:900;font-size:23px;margin-top:9px;line-height:1.16;position:relative}
+.crow{margin-top:11px;font-size:13px;line-height:1.5;color:rgba(255,255,255,.88);font-weight:500;position:relative}
+.crow b{color:#fff;font-size:10.5px;letter-spacing:.13em;margin-right:7px}
+.crow b::before{content:"▶ ";color:var(--red);font-size:9px}
+.ctags{margin-top:13px;font-family:var(--unb);font-weight:700;font-size:10px;letter-spacing:.06em;color:#FFC2CC;position:relative}
+.cardbtns{display:flex;gap:9px;margin-top:15px;position:relative}
+.cardbtns button{flex:1;padding:12px 0;border-radius:11px;font-family:var(--unb);font-weight:900;font-size:11.5px;letter-spacing:.05em;border:1.5px solid rgba(255,255,255,.22)}
+.cardbtns .savec{background:var(--grad);border-color:transparent}
+.emptycard{margin-top:22px;border-radius:14px;border:1.5px dashed rgba(255,255,255,.22);padding:26px 20px;text-align:center;color:var(--faint)}
+.emptycard .t{font-family:var(--unb);font-weight:900;font-size:14px;color:rgba(255,255,255,.75);letter-spacing:.04em}
+.emptycard p{font-size:12.5px;margin-top:8px;line-height:1.55}
+.sparks{margin-top:24px}
+.sparks .h{font-size:10px;letter-spacing:.3em;font-weight:700;color:var(--faint)}
+.sparks .rowp{display:flex;gap:9px;margin-top:11px;overflow-x:auto;padding-bottom:4px}
+.spill{padding:10px 13px;border-radius:999px;background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.16);font-size:11.5px;font-weight:700;letter-spacing:.05em;white-space:nowrap;color:rgba(255,255,255,.92);flex:none}
+#igniteMain{margin-top:22px;flex:none;height:70px;border-radius:15px;background:var(--grad);display:flex;align-items:center;justify-content:center;gap:11px;font-family:var(--unb);font-weight:900;font-size:20px;letter-spacing:.05em;box-shadow:0 5px 0 #6E0B1E,0 16px 34px rgba(255,46,77,.30);width:100%}
+#igniteMain:active{transform:translateY(3px);box-shadow:0 2px 0 #6E0B1E}
+.capnote{text-align:center;margin-top:13px;font-size:10.5px;letter-spacing:.24em;font-weight:700;color:var(--faint)}
+
+/* ---------- movement index ---------- */
+#indexGrid{flex:1;overflow-y:auto;padding:16px 16px calc(24px + env(safe-area-inset-bottom));display:grid;grid-template-columns:1fr 1fr;gap:11px;align-content:start;grid-auto-rows:calc((100vw - 43px) / 2 / 0.82)}
+.tile{position:relative;border-radius:14px;overflow:hidden;aspect-ratio:.82;background:#101018;text-align:left}
+.tile img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.tile .tsc{position:absolute;inset:0;background:linear-gradient(180deg,transparent 38%,rgba(4,4,9,.88))}
+.tile{padding:0}.tile .tn{position:absolute;left:13px;right:13px;bottom:11px;display:block}.tile .tn .nm{display:block}
+.tile .tn .nm{font-family:var(--unb);font-weight:900;font-size:14.5px;line-height:1.18;overflow-wrap:break-word}
+.tile .tn .tg{font-size:11px;color:var(--dim);margin-top:3px;font-weight:500}
+.tile .cnt{position:absolute;top:10px;right:10px;background:rgba(5,5,10,.55);backdrop-filter:blur(10px);border:1px solid var(--glassline);border-radius:999px;padding:4px 9px;font-family:var(--anton);font-size:12px}
+.tile.on{outline:3px solid var(--red);outline-offset:-3px}
+.tile.alltile{background:var(--grad);display:flex;align-items:flex-end}
+.tile.alltile .tn .nm{font-size:17.5px}
+
+/* ---------- box ---------- */
+#boxList{flex:1;overflow-y:auto;padding:14px 16px calc(24px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:11px}
+.boxitem{display:flex;gap:12px;border-radius:14px;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.11);padding:11px;align-items:stretch;text-align:left;width:100%}
+.boxitem img{width:62px;border-radius:9px;object-fit:cover;flex:none}
+.boxitem .bt{flex:1;min-width:0}
+.boxitem .bk{font-size:9px;letter-spacing:.24em;font-weight:700;color:#FFB3C0}
+.boxitem .bti{font-family:var(--unb);font-weight:900;font-size:13.5px;line-height:1.25;margin-top:4px}
+.boxitem .bb{font-size:11.5px;color:var(--dim);margin-top:4px;line-height:1.45}
+.boxitem .del{flex:none;align-self:flex-start;color:var(--faint);font-size:15px;padding:2px 4px}
+.boxempty{padding:50px 26px;text-align:center;color:var(--faint)}
+.boxempty .t{font-family:var(--unb);font-weight:900;font-size:15px;color:rgba(255,255,255,.8)}
+
+/* ---------- gate ---------- */
+#gate{position:fixed;inset:0;z-index:100;background:var(--bg);display:none;flex-direction:column;align-items:center;justify-content:center;gap:20px;padding:30px;text-align:center}
+#gate.show{display:flex}
+#gate .glogo{font-family:var(--unb);font-weight:900;font-size:30px}
+#gate .glogo .box{background:linear-gradient(90deg,#FF2E4D,#FF8A1F);-webkit-background-clip:text;background-clip:text;color:transparent;border:3px solid var(--red);padding:1px 8px;border-radius:8px;margin-left:4px}
+#gate p{color:var(--dim);font-size:14px;line-height:1.6;max-width:300px}
+#gate a{display:inline-block;padding:15px 26px;border-radius:15px;background:var(--grad);font-family:var(--unb);font-weight:900;font-size:14px;color:#fff;text-decoration:none;box-shadow:0 5px 0 #6E0B1E}
+#loading{position:fixed;inset:0;z-index:99;background:var(--bg);display:flex;align-items:center;justify-content:center;font-family:var(--unb);font-weight:900;letter-spacing:.1em;font-size:14px;color:var(--dim)}
+.star{position:absolute;pointer-events:none}
+</style>
+</head>
+<body>
+
+<div id="loading">INSPO<span style="color:#FF2E4D">BOX</span>&nbsp;LOADING…</div>
+
+<div id="gate">
+  <div class="glogo">INSPO<span class="box">BOX</span></div>
+  <p>A private box of eye candy and idea sparks. Sign in once with Face ID — the same passkey as the rest of the fleet.</p>
+  <a href="/login/">Sign in with Face ID</a>
+</div>
+
+<header id="topbar">
+  <div>
+    <div class="logo">INSPO<span class="box">BOX</span></div>
+    <div id="counter">— / —</div>
+  </div>
+  <div class="topbtns">
+    <button class="chipbtn" id="boxBtn">BOX <span class="n" id="boxCount">0</span></button>
+  </div>
+</header>
+
+<div id="dots"></div>
+<main id="deck"></main>
+<button id="igniteBtn">IGNITE <span style="font-size:17px">✳</span></button>
+
+<!-- IDEA STARTER -->
+<section class="layer" id="starter" aria-hidden="true">
+  <div class="glows"></div><div class="dotgrid"></div>
+  <div class="grab" data-drag><i></i></div>
+  <div class="layerhead">
+    <div class="logo">INSPO<span class="box">BOX</span></div>
+    <div style="display:flex;align-items:center;gap:12px"><span class="mode">IDEA STARTER</span><button class="xbtn" data-close>✕</button></div>
+  </div>
+  <div id="starterBody">
+    <svg class="star" style="top:6px;right:30px" width="24" height="24" viewBox="0 0 24 24"><path d="M12 0 L14.5 9.5 L24 12 L14.5 14.5 L12 24 L9.5 14.5 L0 12 L9.5 9.5 Z" fill="#FF2E4D"/></svg>
+    <div class="skicker">✳ DESCRIBE IT IN A LINE — OR DON'T</div>
+    <textarea id="promptInput" rows="2" placeholder="A FLORIST WHO ONLY WORKS AT NIGHT" autocomplete="off"></textarea>
+    <div class="crossrow" id="srcRow"></div>
+    <div class="subrow" id="studioRow"><span class="lbl">WHICH STUDIO?</span></div>
+    <div id="conceptZone"></div>
+    <div class="sparks" id="sparksZone" style="display:none">
+      <div class="h">PREVIOUS SPARKS</div>
+      <div class="rowp" id="sparksRow"></div>
+    </div>
+    <div style="flex:1;min-height:18px"></div>
+    <button id="igniteMain">IGNITE <span style="font-size:22px">✳</span></button>
+    <div class="capnote">CROSS TWO SOURCES FOR A REMIX · SWIPE DOWN TO CLOSE</div>
+  </div>
+</section>
+
+<!-- MOVEMENT INDEX -->
+<section class="layer" id="indexLayer" aria-hidden="true">
+  <div class="grab" data-drag><i></i></div>
+  <div class="layerhead">
+    <div class="logo">INSPO<span class="box">BOX</span></div>
+    <div style="display:flex;align-items:center;gap:12px"><span class="mode">MOVEMENTS</span><button class="xbtn" data-close>✕</button></div>
+  </div>
+  <div id="indexGrid"></div>
+</section>
+
+<!-- THE BOX -->
+<section class="layer" id="boxLayer" aria-hidden="true">
+  <div class="grab" data-drag><i></i></div>
+  <div class="layerhead">
+    <div class="logo">INSPO<span class="box">BOX</span></div>
+    <div style="display:flex;align-items:center;gap:12px"><span class="mode">YOUR BOX</span><button class="xbtn" data-close>✕</button></div>
+  </div>
+  <div id="boxList"></div>
+</section>
+
+<script>
+"use strict";
+const $ = (s, r) => (r || document).querySelector(s);
+const $$ = (s, r) => [...(r || document).querySelectorAll(s)];
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+};
+function hashStr(s) { let h = 2166136261; for (const ch of s) { h ^= ch.codePointAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
+function rng(seed) { let t = seed >>> 0; return () => { t += 0x6D2B79F5; let r = Math.imul(t ^ (t >>> 15), 1 | t); r ^= r + Math.imul(r ^ (r >>> 7), 61 | r); return ((r ^ (r >>> 14)) >>> 0) / 4294967296; }; }
+const pick = (r, arr) => arr[Math.floor(r() * arr.length)];
+
+let DATA = null;
+const state = { media: "all", movement: "all", current: 0 };
+let box = store.get("inspobox.box.v1", []);
+let sparks = store.get("inspobox.sparks.v1", []);
+let genCount = store.get("inspobox.count.v1", 0);
+
+/* ---------------- data ---------------- */
+async function load() {
+  let res;
+  try { res = await fetch("/api/inspobox/data", { headers: { accept: "application/json" } }); }
+  catch { res = null; }
+  if (!res || res.status === 401 || res.status === 403) { $("#loading").style.display = "none"; $("#gate").classList.add("show"); return; }
+  DATA = await res.json();
+  $("#loading").style.display = "none";
+  buildSrcPills(); buildStudioPills(); renderDeck(); renderIndex(); renderBox(); renderSparks();
+}
+
+/* ---------------- deck ---------------- */
+function filteredFeed() {
+  return DATA.feed.filter((p) => (state.media === "all" || p.media === state.media) && (state.movement === "all" || p.movement === state.movement));
+}
+function mvName(id) { const m = DATA.movements.find((x) => x.id === id); return m ? m.name : id; }
+function mdName(id) { const m = DATA.media.find((x) => x.id === id); return m ? m.name : id; }
+function isSavedPiece(id) { return box.some((b) => b.type === "piece" && b.id === id); }
+
+function renderDeck() {
+  const feed = filteredFeed();
+  const deck = $("#deck");
+  if (!feed.length) {
+    deck.innerHTML = `<div class="deckempty"><div class="big">NOTHING IN<br>THIS CROSSING… YET</div><p>No ${esc(mdName(state.media))} in ${esc(mvName(state.movement))} in this drop. The next curation pass fills gaps like this.</p><button class="chipbtn" id="clearFilters">SHOW EVERYTHING</button></div>`;
+    $("#clearFilters").addEventListener("click", () => { state.media = "all"; state.movement = "all"; renderDeck(); });
+    $("#dots").innerHTML = ""; $("#counter").textContent = "0 / 0";
+    return;
+  }
+  deck.innerHTML = feed.map((p, i) => `
+    <section class="piece" data-id="${p.id}" data-idx="${i}">
+      ${p.video
+        ? `<video class="bgvid" src="${esc(p.video)}" poster="${esc(p.img)}" muted loop playsinline preload="metadata"></video>`
+        : `<img class="bgimg" src="${esc(p.img)}" alt="" ${i > 1 ? 'loading="lazy"' : ""}>`}
+      <div class="scrim"></div>
+      <div class="prog" style="width:${Math.round(((i + 1) / feed.length) * 100)}%"></div>
+      <svg class="shapes" width="80" height="112" viewBox="0 0 86 120" fill="none" stroke="#fff" stroke-width="2"><circle cx="58" cy="22" r="15"/><path d="M8 78 L30 40 L52 78 Z"/><path d="M6 104 q10 -12 20 0 q10 12 20 0 q10 -12 20 0"/></svg>
+      <div class="vtitle" data-open-index title="All movements">${esc(mvName(p.movement).toUpperCase())}</div>
+      <button class="savebtn ${isSavedPiece(p.id) ? "saved" : ""}" data-save="${p.id}" aria-label="Save to your box">${isSavedPiece(p.id) ? "✓" : "+"}</button>
+      <div class="panel">
+        <div class="kicker"><span class="mv" data-open-index>MOVEMENT — ${esc(mvName(p.movement).toUpperCase())}</span><span>${esc(mdName(p.media).toUpperCase())}</span></div>
+        <div class="ptitle">${esc(p.title)}</div>
+        <div class="pby">${esc(p.by)}</div>
+        <div class="rail">${railHtml()}</div>
+      </div>
+    </section>`).join("");
+  $("#dots").innerHTML = feed.map((_, i) => `<i class="${i === 0 ? "on" : ""}"></i>`).join("");
+  state.current = 0; updateChrome(feed.length);
+  deck.scrollTop = 0;
+  bindDeck(feed);
+}
+function railHtml() {
+  const items = [{ id: "all", name: "All" }, ...DATA.media];
+  return items.map((m) => `<button data-media="${m.id}" class="${state.media === m.id ? "on" : ""}">${esc(m.name.toUpperCase())}</button>`).join("");
+}
+function updateChrome(total) {
+  $("#counter").textContent = String(state.current + 1).padStart(2, "0") + " / " + String(total).padStart(2, "0");
+  $$("#dots i").forEach((d, i) => d.classList.toggle("on", i === state.current));
+}
+let deckObs = null;
+function bindDeck(feed) {
+  if (deckObs) deckObs.disconnect();
+  deckObs = new IntersectionObserver((entries) => {
+    for (const e of entries) {
+      const v = e.target.querySelector("video");
+      if (e.isIntersecting) {
+        state.current = Number(e.target.dataset.idx);
+        updateChrome(feed.length);
+        if (v) v.play().catch(() => {});
+      } else if (v) v.pause();
+    }
+  }, { root: $("#deck"), threshold: 0.6 });
+  $$(".piece", $("#deck")).forEach((el) => deckObs.observe(el));
+}
+$("#deck").addEventListener("click", (e) => {
+  const mediaBtn = e.target.closest("[data-media]");
+  if (mediaBtn) { state.media = mediaBtn.dataset.media; renderDeck(); return; }
+  const saveBtn = e.target.closest("[data-save]");
+  if (saveBtn) { toggleSavePiece(saveBtn.dataset.save); return; }
+  if (e.target.closest("[data-open-index]")) openLayer("#indexLayer");
+});
+
+/* ---------------- box ---------------- */
+function toggleSavePiece(id) {
+  const p = DATA.feed.find((x) => x.id === id);
+  if (!p) return;
+  const ix = box.findIndex((b) => b.type === "piece" && b.id === id);
+  if (ix >= 0) box.splice(ix, 1);
+  else box.unshift({ type: "piece", id: p.id, title: p.title, movement: p.movement, media: p.media, img: p.img, by: p.by, ts: Date.now() });
+  store.set("inspobox.box.v1", box);
+  $$(`[data-save="${id}"]`).forEach((b) => { const on = ix < 0; b.classList.toggle("saved", on); b.textContent = on ? "✓" : "+"; });
+  renderBox();
+}
+function renderBox() {
+  $("#boxCount").textContent = box.length;
+  const list = $("#boxList");
+  if (!box.length) {
+    list.innerHTML = `<div class="boxempty"><div class="t">THE BOX IS EMPTY</div><p style="margin-top:9px;font-size:13px;line-height:1.6">Tap + on any piece in the feed, or save a spark from the Idea Starter, and it lands here.</p></div>`;
+    return;
+  }
+  list.innerHTML = box.map((b, i) => b.type === "piece" ? `
+    <div class="boxitem">
+      <img src="${esc(b.img)}" alt="">
+      <div class="bt"><div class="bk">${esc(mvName(b.movement).toUpperCase())} · ${esc(mdName(b.media).toUpperCase())}</div>
+      <div class="bti">${esc(b.title)}</div><div class="bb">${esc(b.by || "")}</div></div>
+      <button class="del" data-del="${i}">✕</button>
+    </div>` : `
+    <div class="boxitem">
+      <div class="bt"><div class="bk">SPARK · ${esc(b.label || "")}</div>
+      <div class="bti">${esc(b.title)}</div><div class="bb">${esc(b.body || "")}</div></div>
+      <button class="del" data-del="${i}">✕</button>
+    </div>`).join("");
+}
+$("#boxList").addEventListener("click", (e) => {
+  const del = e.target.closest("[data-del]");
+  if (del) { box.splice(Number(del.dataset.del), 1); store.set("inspobox.box.v1", box); renderBox(); renderDeckSoft(); }
+});
+function renderDeckSoft() { // refresh save states without rebuilding scroll position
+  $$("[data-save]").forEach((b) => { const on = isSavedPiece(b.dataset.save); b.classList.toggle("saved", on); b.textContent = on ? "✓" : "+"; });
+}
+
+/* ---------------- movement index ---------------- */
+function renderIndex() {
+  const counts = {};
+  DATA.feed.forEach((p) => { counts[p.movement] = (counts[p.movement] || 0) + 1; });
+  $("#indexGrid").innerHTML = `
+    <button class="tile alltile ${state.movement === "all" ? "on" : ""}" data-mv="all"><span class="tn"><span class="nm">ALL<br>MOVEMENTS</span><span class="tg" style="display:block">${DATA.feed.length} pieces in this drop</span></span></button>
+    ` + DATA.movements.map((m) => `
+    <button class="tile ${state.movement === m.id ? "on" : ""}" data-mv="${m.id}">
+      <img src="${esc(m.img)}" alt="" loading="lazy"><span class="tsc"></span>
+      <span class="cnt">${counts[m.id] || 0}</span>
+      <span class="tn"><span class="nm">${esc(m.name.toUpperCase())}</span><span class="tg" style="display:block">${esc(m.tag)}</span></span>
+    </button>`).join("");
+}
+$("#indexGrid").addEventListener("click", (e) => {
+  const t = e.target.closest("[data-mv]");
+  if (!t) return;
+  state.movement = t.dataset.mv;
+  closeLayer("#indexLayer"); renderIndex(); renderDeck();
+});
+
+/* ---------------- layers ---------------- */
+function openLayer(sel) { const l = $(sel); l.classList.add("open"); l.setAttribute("aria-hidden", "false"); }
+function closeLayer(sel) { const l = $(sel); l.classList.remove("open"); l.setAttribute("aria-hidden", "true"); l.style.transform = ""; }
+$("#igniteBtn").addEventListener("click", () => openLayer("#starter"));
+$("#boxBtn").addEventListener("click", () => openLayer("#boxLayer"));
+$$("[data-close]").forEach((b) => b.addEventListener("click", () => closeLayer("#" + b.closest(".layer").id)));
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") $$(".layer.open").forEach((l) => closeLayer("#" + l.id)); });
+// swipe-down to close, dragged from the grab handle / layer head (standing rule)
+$$(".layer").forEach((layer) => {
+  const handle = layer.querySelector("[data-drag]");
+  const head = layer.querySelector(".layerhead");
+  let startY = null, dy = 0;
+  const begin = (y) => { startY = y; dy = 0; layer.style.transition = "none"; };
+  const move = (y) => { if (startY === null) return; dy = Math.max(0, y - startY); layer.style.transform = `translateY(${dy}px)`; };
+  const end = () => { if (startY === null) return; layer.style.transition = ""; if (dy > layer.offsetHeight / 3.2) closeLayer("#" + layer.id); else layer.style.transform = ""; startY = null; };
+  for (const zone of [handle, head]) {
+    zone.addEventListener("touchstart", (e) => begin(e.touches[0].clientY), { passive: true });
+    zone.addEventListener("touchmove", (e) => move(e.touches[0].clientY), { passive: true });
+    zone.addEventListener("touchend", end);
+    zone.addEventListener("mousedown", (e) => { begin(e.clientY); const mm = (ev) => move(ev.clientY); const mu = () => { end(); removeEventListener("mousemove", mm); removeEventListener("mouseup", mu); }; addEventListener("mousemove", mm); addEventListener("mouseup", mu); });
+  }
+});
+
+/* ---------------- idea starter ---------------- */
+const sel = { sources: [], studio: null };
+let lastConcept = null, rerolls = 0;
+function buildSrcPills() {
+  const row = $("#srcRow");
+  const pills = DATA.movements.map((m) => ({ id: m.id, name: m.name }));
+  pills.push({ id: "disney", name: "DISNEY ✦" });
+  row.innerHTML = pills.map((p) => `<button class="srcpill ${p.id === "disney" ? "disney" : ""}" data-src="${p.id}">${esc(p.name.toUpperCase())}</button>`).join("");
+}
+function buildStudioPills() {
+  const row = $("#studioRow");
+  row.innerHTML = `<span class="lbl">WHICH STUDIO?</span>` + DATA.disney.studios.map((s) => `<button class="studiopill" data-studio="${s.id}">${esc(s.name.toUpperCase())}</button>`).join("");
+}
+$("#srcRow").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-src]"); if (!b) return;
+  const id = b.dataset.src, ix = sel.sources.indexOf(id);
+  if (ix >= 0) sel.sources.splice(ix, 1);
+  else { if (sel.sources.length >= 2) sel.sources.shift(); sel.sources.push(id); }
+  $$("#srcRow .srcpill").forEach((p) => p.classList.toggle("on", sel.sources.includes(p.dataset.src)));
+  $("#studioRow").classList.toggle("show", sel.sources.includes("disney"));
+});
+$("#studioRow").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-studio]"); if (!b) return;
+  sel.studio = sel.studio === b.dataset.studio ? null : b.dataset.studio;
+  $$("#studioRow .studiopill").forEach((p) => p.classList.toggle("on", p.dataset.studio === sel.studio));
+});
+const promptEl = $("#promptInput");
+promptEl.addEventListener("input", () => { promptEl.style.height = "auto"; promptEl.style.height = Math.min(promptEl.scrollHeight, 170) + "px"; });
+
+function generate() {
+  const A = DATA.atoms, D = DATA.disney;
+  const prompt = promptEl.value.trim();
+  const sources = sel.sources.length ? [...sel.sources] : [pick(Math.random, DATA.movements).id];
+  const seed = hashStr(prompt + "|" + sources.join(",") + "|" + (sel.studio || "")) + rerolls * 7919 + genCount * 131;
+  const r = rng(seed);
+  const B = { subjects: [...A.subjects], settings: [...A.settings], shots: [...A.shots], lights: [...A.lights], twists: [...A.twists], adj: [...A.titleAdj], nouns: [...A.titleNoun] };
+  let studioName = null;
+  for (const id of sources) {
+    if (id === "disney") {
+      const st = sel.studio ? D.studios.find((s) => s.id === sel.studio) : pick(r, D.studios);
+      studioName = st.name;
+      const pack = D.packs[st.id];
+      B.subjects.push(...pack.subjects, ...pack.subjects);
+      B.settings.push(...pack.settings);
+      B.shots.push(...D.shots);
+      B.lights.push(...D.lights);
+      B.twists.push(...pack.twists, ...pack.twists);
+      B.adj.push(...D.titleAdj); B.nouns.push(...D.titleNoun);
+    } else {
+      const f = A.flavor[id];
+      if (f) { B.subjects.push(...f.subjects); B.settings.push(...f.settings); B.shots.push(...f.shots); B.twists.push(...f.twists); B.adj.push(...f.adj); B.nouns.push(...f.nouns); }
+    }
+  }
+  const fmt = pick(r, A.formats);
+  const title = (r() < 0.45 ? "THE " : "") + pick(r, B.adj) + " " + pick(r, B.nouns);
+  const tags = sources.map((id) => id === "disney" ? "DISNEY · " + (studioName || "").toUpperCase() : mvName(id).toUpperCase()).join(" ✕ ");
+  genCount += 1; store.set("inspobox.count.v1", genCount);
+  lastConcept = {
+    n: genCount, kind: fmt.kind, label: fmt.label, title,
+    seedLine: prompt || null,
+    subject: prompt ? null : pick(r, B.subjects),
+    setting: r() < 0.72 ? pick(r, B.settings) : null,
+    shot: pick(r, B.shots), light: pick(r, B.lights), twist: pick(r, B.twists), tags,
+  };
+  renderConcept();
+}
+function renderConcept() {
+  const c = lastConcept; if (!c) return;
+  const rows = [];
+  if (c.seedLine) rows.push(`<div class="crow"><b>SEED</b>“${esc(c.seedLine)}”</div>`);
+  if (c.subject) rows.push(`<div class="crow"><b>SUBJECT</b>${esc(c.subject)}</div>`);
+  if (c.setting) rows.push(`<div class="crow"><b>WORLD</b>${esc(c.setting)}</div>`);
+  rows.push(`<div class="crow"><b>SHOT</b>${esc(c.shot)}</div>`);
+  rows.push(`<div class="crow"><b>LIGHT</b>${esc(c.light)}</div>`);
+  rows.push(`<div class="crow"><b>TWIST</b>${esc(c.twist)}</div>`);
+  $("#conceptZone").innerHTML = `
+    <div class="card">
+      <div class="ghostnum">${String(c.n).padStart(2, "0")}</div>
+      <div class="clabel">CONCEPT Nº ${String(c.n).padStart(3, "0")} — ${esc(c.kind)} · ${esc(c.label)}</div>
+      <div class="ctitle">${esc(c.title)}</div>
+      ${rows.join("")}
+      <div class="ctags">${esc(c.tags)}</div>
+      <div class="cardbtns"><button id="rerollBtn">↻ REROLL</button><button class="savec" id="saveSparkBtn">SAVE TO BOX</button></div>
+    </div>`;
+  $("#rerollBtn").addEventListener("click", () => { rerolls += 1; generate(); });
+  $("#saveSparkBtn").addEventListener("click", (e) => {
+    const body = [c.seedLine ? "Seed: " + c.seedLine : c.subject, c.setting, "Shot: " + c.shot, "Twist: " + c.twist].filter(Boolean).join(" · ");
+    box.unshift({ type: "spark", title: c.title, label: c.kind + " · " + c.label + " · " + c.tags, body, ts: Date.now() });
+    store.set("inspobox.box.v1", box); renderBox();
+    e.target.textContent = "SAVED ✓";
+  });
+  // history strip
+  sparks = sparks.filter((s) => s.title !== c.title || s.n !== c.n);
+  sparks.unshift({ n: c.n, title: c.title, tags: c.tags });
+  sparks = sparks.slice(0, 14);
+  store.set("inspobox.sparks.v1", sparks);
+  renderSparks();
+}
+function renderSparks() {
+  const zone = $("#sparksZone"); if (!zone) return;
+  zone.style.display = sparks.length ? "" : "none";
+  $("#sparksRow").innerHTML = sparks.map((s) => `<button class="spill">${esc(s.title)}</button>`).join("");
+}
+$("#igniteMain").addEventListener("click", () => { rerolls = 0; generate(); $("#conceptZone").scrollIntoView({ behavior: "smooth", block: "nearest" }); });
+
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("/inspobox/sw.js").catch(() => {});
+load();
+</script>
+</body>
+</html>
