@@ -41,7 +41,7 @@ img{display:block}
 #igniteBtn:active{transform:translateY(3px);box-shadow:0 2px 0 #6E0B1E,0 10px 22px rgba(255,46,77,.3)}
 
 /* ---------- deck ---------- */
-#deck{height:100dvh;overflow-y:auto;scroll-snap-type:y mandatory;overscroll-behavior:none;touch-action:pan-y}
+#deck{height:100dvh;overflow-y:auto;scroll-snap-type:y mandatory;overscroll-behavior:none}
 .piece{position:relative;height:100dvh;scroll-snap-align:start;scroll-snap-stop:always;overflow:hidden;background:#0B0B13}
 .piece .bgimg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .piece .bgvid{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
@@ -153,6 +153,8 @@ img{display:block}
 .star{position:absolute;pointer-events:none}
 body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF3CAC 105%);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none}
 #tapHint{font-size:8.5px;letter-spacing:.26em;font-weight:700;color:var(--faint);margin-top:5px}
+#buildTag{font-size:7.5px;letter-spacing:.3em;font-weight:700;color:#33333F;margin-top:4px}
+.kicker [data-step]{cursor:pointer;text-decoration:underline dotted rgba(255,255,255,.45);text-underline-offset:3px}
 #flash{position:fixed;left:0;right:0;top:34%;z-index:45;text-align:center;font-family:var(--anton);font-size:52px;letter-spacing:.05em;color:transparent;-webkit-text-stroke:2px rgba(255,255,255,.9);opacity:0;transition:opacity .25s;pointer-events:none;text-shadow:none}
 #flash.show{opacity:.95}
 .layernote{flex:none;padding:12px 20px 2px;font-size:12px;line-height:1.55;color:var(--dim);font-weight:500}
@@ -175,6 +177,7 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
     <div class="logo">INSPO<span class="box">BOX</span></div>
     <div id="counter">— / —</div>
     <div id="tapHint">TAP A PIECE TO LOCK ITS GENRE</div>
+    <div id="buildTag">BUILD V6</div>
   </div>
   <div class="topbtns">
     <button class="chipbtn" id="boxBtn">BOX <span class="n" id="boxCount">0</span></button>
@@ -294,7 +297,7 @@ function renderDeck(startId) {
       <div class="vtitle" data-open-index title="All movements">${esc(mvName(p.movement).toUpperCase())}</div>
       <button class="savebtn ${isSavedPiece(p.id) ? "saved" : ""}" data-save="${p.id}" aria-label="Save to your box">${isSavedPiece(p.id) ? "✓" : "+"}</button>
       <div class="panel">
-        <div class="kicker"><span class="mv" data-open-index>${state.movement === "all" ? "MOVEMENT" : "GENRE LOCKED"} — ${esc(mvName(p.movement).toUpperCase())}</span><span>${esc(mdName(p.media).toUpperCase())}</span></div>
+        <div class="kicker"><span class="mv" data-open-index>${state.movement === "all" ? "MOVEMENT" : "GENRE LOCKED"} — ${esc(mvName(p.movement).toUpperCase())}</span><span data-step="1">${esc(mdName(p.media).toUpperCase())} ›</span></div>
         <div class="ptitle">${esc(p.title)}</div>
         <div class="pby">${esc(p.by)}</div>
         <div class="rail">${railHtml()}</div>
@@ -343,6 +346,7 @@ $("#deck").addEventListener("click", (e) => {
   if (mediaBtn) { jumpToMedia(mediaBtn.dataset.media); return; }
   const saveBtn = e.target.closest("[data-save]");
   if (saveBtn) { toggleSavePiece(saveBtn.dataset.save); return; }
+  if (e.target.closest("[data-step]")) { disciplineStep(1); return; }
   if (e.target.closest("[data-open-index]")) {
     if (state.movement !== "all") { const keepId = deckList[state.current] && deckList[state.current].id; state.movement = "all"; renderIndex(); renderDeck(keepId); flash("UNLOCKED"); }
     else openLayer("#indexLayer");
@@ -441,7 +445,11 @@ function jumpToMedia(id) {
   const ti = deckList.findIndex((p) => p.media === id);
   if (ti >= 0) { scrollToPiece(ti); flash(mdName(id).toUpperCase()); }
 }
+let lastStepAt = 0;
 function disciplineStep(dir) {
+  const now = Date.now();
+  if (now - lastStepAt < 700) return;
+  lastStepAt = now;
   if (!deckList.length) return;
   const order = DATA.media.map((m) => m.id);
   const present = order.filter((id) => deckList.some((p) => p.media === id));
@@ -463,6 +471,16 @@ $("#deck").addEventListener("pointermove", (e) => {
 const swReset = () => { swX = null; };
 $("#deck").addEventListener("pointerup", swReset);
 $("#deck").addEventListener("pointercancel", swReset);
+let tX = null, tY = null, tFired = false;
+$("#deck").addEventListener("touchstart", (e) => { const t = e.touches[0]; tX = t.clientX; tY = t.clientY; tFired = false; }, { passive: true });
+$("#deck").addEventListener("touchmove", (e) => {
+  if (tX === null || tFired) return;
+  const t = e.touches[0], dx = t.clientX - tX, dy = t.clientY - tY;
+  if (Math.abs(dx) > 24 && Math.abs(dx) > Math.abs(dy) * 1.25) { tFired = true; e.preventDefault(); disciplineStep(dx < 0 ? 1 : -1); }
+}, { passive: false });
+const tReset = () => { tX = null; };
+$("#deck").addEventListener("touchend", tReset);
+$("#deck").addEventListener("touchcancel", tReset);
 let tapX = null, tapY = null;
 $("#deck").addEventListener("pointerdown", (e) => { tapX = e.clientX; tapY = e.clientY; });
 $("#deck").addEventListener("pointerup", (e) => {
@@ -582,7 +600,7 @@ function renderSparks() {
 }
 $("#igniteMain").addEventListener("click", () => { rerolls = 0; generate(); $("#conceptZone").scrollIntoView({ behavior: "smooth", block: "nearest" }); });
 
-if ("serviceWorker" in navigator) navigator.serviceWorker.register("/inspobox/sw.js").catch(() => {});
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("/inspobox/sw.js").then((r) => r && r.update()).catch(() => {});
 load();
 </script>
 </body>
