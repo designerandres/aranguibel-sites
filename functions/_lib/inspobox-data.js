@@ -24,7 +24,7 @@ export const MOVEMENTS = [
   { id: "gothic", name: "Gothic", tag: "Stone, shadow & stained glass", img: "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/30/Albi-cathedral-gothic-interior-perspective.jpg/1280px-Albi-cathedral-gothic-interior-perspective.jpg" },
   { id: "psychedelic", name: "Psychedelic", tag: "Liquid light & kaleidoscopes", img: "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b9/Goa_trance_party%2C_Psychedelic_art%2C_Trance_visuals%2C_Goa%2C_India.jpg/1280px-Goa_trance_party%2C_Psychedelic_art%2C_Trance_visuals%2C_Goa%2C_India.jpg" },
   { id: "dieselpunk", name: "Dieselpunk", tag: "War-era steel & smoke", img: "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7f/Junker_Ju_52_LN-DAF%2C_DNL_aircraft_1920s%2C_1930s%2C_1940s.jpg/1280px-Junker_Ju_52_LN-DAF%2C_DNL_aircraft_1920s%2C_1930s%2C_1940s.jpg" },
-  { id: "afrofuturism", name: "Afrofuturism", tag: "Ancient future, royal tech", img: null },
+  { id: "afrofuturism", name: "Afrofuturism", tag: "Ancient future, royal tech", img: "https://cdna.artstation.com/p/assets/images/images/097/714/854/large/christopher-taylor-afromech-3-color-lr.webp?1774982768" },
   { id: "mid-century", name: "Mid-Century", tag: "Atomic-age optimism", img: "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3c/Mid-century_modern_house_in_Palm_Springs.jpg/1280px-Mid-century_modern_house_in_Palm_Springs.jpg" },
 ];
 
@@ -177,6 +177,11 @@ export const FEED = [
   { id: "w396", movement: "surreal", media: "photography", title: "SURREALISM - COLD DREAMWORLD HALFREALITY OF UBIK; PLACE DOES NOT", by: "Prototyperspective · via Wikimedia Commons · CC0", img: "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/73/Surrealism_-_Cold_dreamworld_halfreality_of_Ubik%3B_place_does_not_exist.jpg/1280px-Surrealism_-_Cold_dreamworld_halfreality_of_Ubik%3B_place_does_not_exist.jpg" },
   { id: "w397", movement: "minimalist", media: "photography", title: "SURREALISM", by: "madras91 · via Wikimedia Commons · CC BY 2.0", img: "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f2/Surrealism_%2849679583271%29.jpg/1280px-Surrealism_%2849679583271%29.jpg" },
   { id: "w401", movement: "liminal", media: "architecture", title: "SEATTLE - WESTLAKE MALL UNDER CONSTRUCTION, CIRCA 1988", by: "Seattle Municipal Archives from Seattle, WA · via Wikimedia Commons · CC BY 2.0", img: "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/ff/Seattle_-_Westlake_Mall_under_construction%2C_circa_1988.jpg/1280px-Seattle_-_Westlake_Mall_under_construction%2C_circa_1988.jpg" },
+ { id: "a101", movement: "afrofuturism", media: "design", title: "THE KINGS", by: "Henniton Oliveira · via ArtStation", img: "https://cdna.artstation.com/p/assets/images/images/050/091/938/large/henniton-oliveira-3-black-king.jpg?1654050342" },
+ { id: "a102", movement: "afrofuturism", media: "design", title: "TRINITY\'S SISTERS", by: "Simon Vernus · via ArtStation", img: "https://cdnb.artstation.com/p/assets/images/images/022/957/277/large/simon-vernus-render-1.jpg?1577463607" },
+ { id: "a103", movement: "afrofuturism", media: "design", title: "ANYANWU, SUN GODDESS", by: "UGO SIRIUS · via ArtStation", img: "https://cdnb.artstation.com/p/assets/images/images/025/868/639/large/ugo-sirius-ancient-igbo-sun-goddess-anyanwu-ose-obala-aka-ose-ete-ose-bx-girl-from-mars-sirius-ugo-art-4.jpg?1587177112" },
+ { id: "a104", movement: "afrofuturism", media: "design", title: "AFRO-MECH MASK Nº 3", by: "Christopher Taylor · via ArtStation", img: "https://cdna.artstation.com/p/assets/images/images/097/714/854/large/christopher-taylor-afromech-3-color-lr.webp?1774982768" },
+ { id: "a105", movement: "afrofuturism", media: "design", title: "THE NEW DRACONIANS", by: "Christopher Taylor · via ArtStation", img: "https://cdna.artstation.com/p/assets/images/images/097/715/604/large/christopher-taylor-new-draconians-cover-1-final-1-lr.webp?1774984651" },
 ];
 
 // ---- Idea Starter atoms -------------------------------------------------
