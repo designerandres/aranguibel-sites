@@ -37,7 +37,7 @@ img{display:block}
 #dots{position:fixed;right:13px;top:50%;transform:translateY(-50%);z-index:40;display:flex;flex-direction:column;gap:7px;align-items:center}
 #dots i{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.4);display:block;transition:all .3s}
 #dots i.on{height:22px;border-radius:3px;background:linear-gradient(180deg,#FF2E4D,#FF8A1F)}
-#igniteBtn{position:fixed;left:16px;top:522px;z-index:41;width:56px;height:56px;border-radius:15px;background:var(--grad);display:flex;align-items:center;justify-content:center;box-shadow:0 5px 0 #6E0B1E,0 16px 34px rgba(255,46,77,.35)}
+#igniteBtn{position:fixed;left:14px;right:14px;bottom:calc(14px + env(safe-area-inset-bottom));z-index:41;height:54px;border-radius:15px;background:var(--grad);display:flex;align-items:center;justify-content:center;gap:10px;font-family:var(--unb);font-weight:900;font-size:16px;letter-spacing:.22em;color:#fff;box-shadow:0 5px 0 #6E0B1E,0 16px 34px rgba(255,46,77,.35)}
 #igniteBtn:active{transform:translateY(3px);box-shadow:0 2px 0 #6E0B1E,0 10px 22px rgba(255,46,77,.3)}
 
 /* ---------- deck ---------- */
@@ -48,10 +48,9 @@ img{display:block}
 .piece .scrim{position:absolute;inset:0;background:linear-gradient(180deg,rgba(5,5,10,.40) 0%,transparent 26%,transparent 44%,rgba(5,5,10,.88) 84%)}
 .piece .prog{position:absolute;top:0;left:0;height:3px;background:var(--grad);z-index:3}
 .vtitle{position:absolute;left:12px;top:158px;writing-mode:vertical-rl;transform:rotate(180deg);font-family:var(--anton);font-size:58px;letter-spacing:.03em;color:#fff;text-shadow:5px 5px 0 rgba(255,46,77,.85);z-index:2;cursor:pointer}
-.shapes{position:absolute;top:104px;right:22px;opacity:.92;z-index:2;pointer-events:none}
 .savebtn{position:absolute;right:16px;top:108px;z-index:5;width:44px;height:44px;border-radius:50%;background:var(--glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--glassline);font-size:23px;font-weight:500;display:flex;align-items:center;justify-content:center}
 .savebtn.saved{background:var(--grad);border-color:transparent}
-.panel{position:absolute;left:14px;right:14px;bottom:calc(14px + env(safe-area-inset-bottom));z-index:4;border-radius:14px;background:var(--glass);backdrop-filter:blur(22px) saturate(1.5);-webkit-backdrop-filter:blur(22px) saturate(1.5);border:1px solid var(--glassline);padding:16px 16px 12px}
+.panel{position:absolute;left:14px;right:14px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:4;border-radius:14px;background:var(--glass);backdrop-filter:blur(22px) saturate(1.5);-webkit-backdrop-filter:blur(22px) saturate(1.5);border:1px solid var(--glassline);padding:16px 16px 12px}
 .kicker{font-size:10.5px;letter-spacing:.3em;font-weight:700;color:#FFB3C0;display:flex;justify-content:space-between;gap:10px}
 .kicker .mv{cursor:pointer}
 .ptitle{font-family:var(--anton);font-size:26px;line-height:1.06;margin-top:7px;letter-spacing:.01em}
@@ -158,8 +157,17 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
 #tapHint{font-size:8.5px;letter-spacing:.26em;font-weight:700;color:var(--faint);margin-top:5px}
 #buildTag{font-size:7.5px;letter-spacing:.3em;font-weight:700;color:#33333F;margin-top:4px}
 .kicker [data-step]{cursor:pointer;text-decoration:underline dotted rgba(255,255,255,.45);text-underline-offset:3px}
-#veil{position:fixed;inset:0;background:#000;opacity:0;pointer-events:none;transition:opacity .19s ease;z-index:65}
+#veil{position:fixed;inset:0;background:#050508;background-image:radial-gradient(rgba(255,255,255,.13) 1px, transparent 1.5px);background-size:22px 22px;opacity:0;pointer-events:none;transition:opacity .19s ease;z-index:65}
 #veil.on{opacity:1}
+#switcher{position:fixed;inset:0;z-index:66;display:flex;align-items:center;overflow:hidden;opacity:0;pointer-events:none;transition:opacity .19s ease}
+#switcher.on{opacity:1;pointer-events:auto}
+#swTrack{display:flex;align-items:stretch;transition:transform .18s cubic-bezier(.25,.9,.3,1.25);will-change:transform}
+.switem{flex:none;display:flex;flex-direction:column;align-items:center;gap:5px;padding:14px 20px;border-left:1px solid rgba(255,255,255,.16);opacity:.38;transition:opacity .15s ease}
+.switem:last-child{border-right:1px solid rgba(255,255,255,.16)}
+.switem i{font-style:normal;font-family:var(--sg);font-size:9px;letter-spacing:.3em;color:var(--faint);font-weight:700}
+.switem span{font-family:var(--anton);font-size:27px;letter-spacing:.05em;color:#fff;white-space:nowrap}
+.switem.on{opacity:1}
+.switem.on span{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
 #flash{position:fixed;left:0;right:0;top:34%;z-index:45;text-align:center;font-family:var(--anton);font-size:52px;letter-spacing:.05em;color:transparent;-webkit-text-stroke:2px rgba(255,255,255,.9);opacity:0;transition:opacity .25s;pointer-events:none;text-shadow:none}
 #flash.show{opacity:.95}
 .layernote{flex:none;padding:12px 20px 2px;font-size:12px;line-height:1.55;color:var(--dim);font-weight:500}
@@ -182,18 +190,19 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
     <div class="logo">INSPO<span class="box">BOX</span></div>
     <div id="counter">— / —</div>
     <div id="tapHint">TAP A PIECE TO LOCK ITS GENRE</div>
-    <div id="buildTag">BUILD V19</div>
+    <div id="buildTag">BUILD V20</div>
   </div>
   <div class="topbtns">
     <button class="chipbtn" id="boxBtn">BOX <span class="n" id="boxCount">0</span></button>
   </div>
 </header>
 <div id="veil"></div>
+<div id="switcher"><div id="swTrack"></div></div>
 <div id="flash"></div>
 
 <div id="dots"></div>
 <main id="deck"></main>
-<button id="igniteBtn" aria-label="Ignite — open the idea starter"><svg viewBox="0 0 48 48" width="27" height="27" aria-hidden="true"><path d="M24 3 L27.3 16.1 L38.8 9.2 L31.9 20.7 L45 24 L31.9 27.3 L38.8 38.8 L27.3 31.9 L24 45 L20.7 31.9 L9.2 38.8 L16.1 27.3 L3 24 L16.1 20.7 L9.2 9.2 L20.7 16.1 Z" fill="#fff" stroke="#fff" stroke-width="2.5" stroke-linejoin="round"/></svg></button>
+<button id="igniteBtn" aria-label="Ignite — open the idea starter"><svg viewBox="0 0 48 48" width="22" height="22" aria-hidden="true"><path d="M24 3 L27.3 16.1 L38.8 9.2 L31.9 20.7 L45 24 L31.9 27.3 L38.8 38.8 L27.3 31.9 L24 45 L20.7 31.9 L9.2 38.8 L16.1 27.3 L3 24 L16.1 20.7 L9.2 9.2 L20.7 16.1 Z" fill="#fff" stroke="#fff" stroke-width="2.5" stroke-linejoin="round"/></svg><span>IGNITE</span></button>
 
 <!-- IDEA STARTER -->
 <section class="layer" id="starter" aria-hidden="true">
@@ -309,7 +318,6 @@ function renderDeck(startId) {
         : `<img class="bgimg" src="${esc(p.img)}" alt="" ${i > 1 ? 'loading="lazy"' : ""}>`}
       <div class="scrim"></div>
       <div class="prog" style="width:${Math.round(((i + 1) / feed.length) * 100)}%"></div>
-      <svg class="shapes" width="80" height="112" viewBox="0 0 86 120" fill="none" stroke="#fff" stroke-width="2"><circle cx="58" cy="22" r="15"/><path d="M8 78 L30 40 L52 78 Z"/><path d="M6 104 q10 -12 20 0 q10 12 20 0 q10 -12 20 0"/></svg>
       <div class="vtitle" data-open-index title="All movements">${esc(mvName(p.movement).toUpperCase())}</div>
       <button class="savebtn ${isSavedPiece(p.id) ? "saved" : ""}" data-save="${p.id}" aria-label="Save to your box">${isSavedPiece(p.id) ? "✓" : "+"}</button>
       <div class="panel">
@@ -340,20 +348,6 @@ function updateChrome(total) {
   $$(".rail button").forEach((b) => b.classList.toggle("on", !!cur && b.dataset.media === cur.media));
   $("#tapHint").style.display = state.movement === "all" ? "" : "none";
   document.body.classList.toggle("locked", state.movement !== "all");
-  positionIgnite();
-}
-function positionIgnite() {
-  // The spark button floats in the left rail under the genre title. Panel
-  // heights vary per piece, so measuring the current panel mid-scroll made
-  // the button hop between cards. Instead: park it once per deck, a fixed
-  // gap above the TALLEST panel in the deck (offsetTop is layout geometry,
-  // independent of scroll position) — it never moves while scrolling and
-  // can never overlap any card's info panel.
-  const btn = $("#igniteBtn"); if (!btn) return;
-  let minTop = Infinity;
-  $$("#deck .piece .panel").forEach((p) => { minTop = Math.min(minTop, p.offsetTop); });
-  if (!isFinite(minTop)) return;
-  btn.style.top = Math.max(330, Math.round(minTop) - 68) + "px";
 }
 let deckObs = null;
 function bindDeck(feed) {
@@ -518,53 +512,103 @@ function scrollToPiece(i) {
 }
 let flashTimer = null;
 function flash(txt) { const f = $("#flash"); f.textContent = txt; f.classList.add("show"); clearTimeout(flashTimer); flashTimer = setTimeout(() => f.classList.remove("show"), 780); }
-function jumpToMedia(id) {
-  if (id === state.media) return;
-  goMedia(id);
-}
-function goMedia(next) {
+function landOn(next) {
   const cur = deckList[state.current];
   const cell = scopeFeed().filter((p) => p.media === next);
   if (!cell.length) return;
   const target = (cur && cell.find((p) => p.movement === cur.movement)) || cell[0];
-  const veil = $("#veil");
-  veil.classList.add("on");
-  flash(mdName(next).toUpperCase());
-  setTimeout(() => {
-    state.media = next;
-    renderDeck(target && target.id);
-    setTimeout(() => veil.classList.remove("on"), 70);
-  }, 195);
+  state.media = next;
+  renderDeck(target && target.id);
 }
-let lastStepAt = 0;
-function disciplineStep(dir) {
-  const now = Date.now();
-  if (now - lastStepAt < 700) return;
-  lastStepAt = now;
+function jumpToMedia(id) {
+  if (id === state.media) return;
+  if (!presentMedia().includes(id)) { landOn(id); return; }
+  openSwitcher(id, 300);
+}
+/* ---- discipline switcher: dotted blackout + ticking segment strip ----
+   A horizontal swipe fades the screen to dotted black and raises a strip
+   of the available disciplines side by side, active one centered. Keep
+   swiping and the selection ticks through them; letting go (or pausing)
+   lands the deck on the highlighted discipline. */
+const sw = { open: false, pending: null, list: [], timer: null };
+function presentMedia() {
   const order = DATA.media.map((m) => m.id);
-  const present = order.filter((id) => scopeFeed().some((p) => p.media === id));
-  if (present.length < 2) { flash(mdName(state.media).toUpperCase()); return; }
-  const next = present[(present.indexOf(state.media) + dir + present.length) % present.length];
-  goMedia(next);
+  return order.filter((id) => scopeFeed().some((p) => p.media === id));
 }
-let swX = null, swY = null, swFired = false;
-$("#deck").addEventListener("pointerdown", (e) => { swX = e.clientX; swY = e.clientY; swFired = false; });
+function openSwitcher(target, commitMs) {
+  const list = presentMedia();
+  if (!target && list.length < 2) { flash(mdName(state.media).toUpperCase()); return; }
+  sw.list = list;
+  sw.pending = target || state.media;
+  $("#swTrack").innerHTML = list.map((id, i) => `<div class="switem ${id === sw.pending ? "on" : ""}" data-sw="${id}"><i>${String(i + 1).padStart(2, "0")}</i><span>${esc(mdName(id).toUpperCase())}</span></div>`).join("");
+  $("#veil").classList.add("on");
+  $("#switcher").classList.add("on");
+  sw.open = true;
+  requestAnimationFrame(centerStrip);
+  armSwitcher(commitMs || 950);
+}
+function centerStrip() {
+  const track = $("#swTrack"); if (!track) return;
+  const el = track.querySelector(`[data-sw="${sw.pending}"]`); if (!el) return;
+  $$("#swTrack .switem").forEach((it) => it.classList.toggle("on", it.dataset.sw === sw.pending));
+  const cx = el.offsetLeft + el.offsetWidth / 2;
+  track.style.transform = `translateX(${Math.round(window.innerWidth / 2 - cx)}px)`;
+}
+function armSwitcher(ms) { clearTimeout(sw.timer); sw.timer = setTimeout(commitSwitcher, ms); }
+function stepPending(dir) {
+  if (!sw.list.length) return;
+  const i = sw.list.indexOf(sw.pending);
+  sw.pending = sw.list[(i + dir + sw.list.length) % sw.list.length];
+  centerStrip();
+  if (navigator.vibrate) navigator.vibrate(6);
+  armSwitcher(950);
+}
+function commitSwitcher() {
+  clearTimeout(sw.timer);
+  if (!sw.open) return;
+  sw.open = false;
+  $("#switcher").classList.remove("on");
+  const target = sw.pending;
+  if (target && target !== state.media) {
+    setTimeout(() => { landOn(target); setTimeout(() => $("#veil").classList.remove("on"), 60); }, 130);
+  } else {
+    $("#veil").classList.remove("on");
+  }
+}
+function disciplineStep(dir) {
+  if (sw.open) { stepPending(dir); return; }
+  openSwitcher(null);
+  if (sw.open) stepPending(dir);
+}
+$("#switcher").addEventListener("click", commitSwitcher);
+let swX = null, swY = null, swTickX = null;
+$("#deck").addEventListener("pointerdown", (e) => { swX = e.clientX; swY = e.clientY; swTickX = null; });
 $("#deck").addEventListener("pointermove", (e) => {
-  if (swX === null || swFired) return;
+  if (swX === null) return;
   const dx = e.clientX - swX, dy = e.clientY - swY;
-  if (Math.abs(dx) > 52 && Math.abs(dx) > Math.abs(dy) * 1.4) { swFired = true; disciplineStep(dx < 0 ? 1 : -1); }
+  if (swTickX === null) {
+    if (Math.abs(dx) > 52 && Math.abs(dx) > Math.abs(dy) * 1.4) { swTickX = e.clientX; disciplineStep(dx < 0 ? 1 : -1); }
+  } else {
+    const ddx = e.clientX - swTickX;
+    if (Math.abs(ddx) > 64 && Math.abs(dx) > Math.abs(dy) * 1.4) { swTickX = e.clientX; stepPending(ddx < 0 ? 1 : -1); }
+  }
 });
-const swReset = () => { swX = null; };
+const swReset = () => { if (swTickX !== null && sw.open) armSwitcher(170); swX = null; swTickX = null; };
 $("#deck").addEventListener("pointerup", swReset);
 $("#deck").addEventListener("pointercancel", swReset);
-let tX = null, tY = null, tFired = false;
-$("#deck").addEventListener("touchstart", (e) => { const t = e.touches[0]; tX = t.clientX; tY = t.clientY; tFired = false; }, { passive: true });
+let tX = null, tY = null, tTickX = null;
+$("#deck").addEventListener("touchstart", (e) => { const t = e.touches[0]; tX = t.clientX; tY = t.clientY; tTickX = null; }, { passive: true });
 $("#deck").addEventListener("touchmove", (e) => {
-  if (tX === null || tFired) return;
+  if (tX === null) return;
   const t = e.touches[0], dx = t.clientX - tX, dy = t.clientY - tY;
-  if (Math.abs(dx) > 24 && Math.abs(dx) > Math.abs(dy) * 1.25) { tFired = true; e.preventDefault(); disciplineStep(dx < 0 ? 1 : -1); }
+  if (tTickX === null) {
+    if (Math.abs(dx) > 24 && Math.abs(dx) > Math.abs(dy) * 1.25) { tTickX = t.clientX; e.preventDefault(); disciplineStep(dx < 0 ? 1 : -1); }
+  } else {
+    const ddx = t.clientX - tTickX;
+    if (Math.abs(ddx) > 64 && Math.abs(dx) > Math.abs(dy) * 1.25) { tTickX = t.clientX; e.preventDefault(); stepPending(ddx < 0 ? 1 : -1); }
+  }
 }, { passive: false });
-const tReset = () => { tX = null; };
+const tReset = () => { if (tTickX !== null && sw.open) armSwitcher(170); tX = null; tTickX = null; };
 $("#deck").addEventListener("touchend", tReset);
 $("#deck").addEventListener("touchcancel", tReset);
 let tapX = null, tapY = null;

@@ -6,10 +6,8 @@
       <stop offset="1" stop-color="#FF3CAC"/>
     </linearGradient>
   </defs>
-  <rect x="6" y="6" width="500" height="500" rx="88" fill="#07070C"/>
-  <rect x="118" y="150" width="276" height="212" rx="26" fill="none" stroke="url(#g)" stroke-width="34"/>
-  <path d="M256 108 L270 141 L306 143 L278 165 L287 200 L256 180 L225 200 L234 165 L206 143 L242 141 Z" fill="#FFFFFF"/>
-  <circle cx="140" cy="392" r="13" fill="#FF2E4D"/>
-  <circle cx="256" cy="392" r="13" fill="#FF8A1F"/>
-  <circle cx="372" cy="392" r="13" fill="#FF3CAC"/>
+  <rect width="512" height="512" rx="92" fill="url(#g)"/>
+  <g transform="translate(102 102) scale(6.4167)">
+    <path d="M24 3 L27.3 16.1 L38.8 9.2 L31.9 20.7 L45 24 L31.9 27.3 L38.8 38.8 L27.3 31.9 L24 45 L20.7 31.9 L9.2 38.8 L16.1 27.3 L3 24 L16.1 20.7 L9.2 9.2 L20.7 16.1 Z" fill="#fff" stroke="#fff" stroke-width="2.5" stroke-linejoin="round"/>
+  </g>
 </svg>
