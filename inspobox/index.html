@@ -39,7 +39,6 @@ img{display:block}
 #dots i.on{height:22px;border-radius:3px;background:linear-gradient(180deg,#FF2E4D,#FF8A1F)}
 #igniteBtn{position:fixed;left:16px;top:522px;z-index:41;width:56px;height:56px;border-radius:15px;background:var(--grad);display:flex;align-items:center;justify-content:center;box-shadow:0 5px 0 #6E0B1E,0 16px 34px rgba(255,46,77,.35)}
 #igniteBtn:active{transform:translateY(3px);box-shadow:0 2px 0 #6E0B1E,0 10px 22px rgba(255,46,77,.3)}
-@media (max-height:740px){#igniteBtn{top:auto;bottom:calc(198px + env(safe-area-inset-bottom))}}
 
 /* ---------- deck ---------- */
 #deck{height:100dvh;overflow-y:auto;scroll-snap-type:y mandatory;overscroll-behavior:none}
@@ -183,7 +182,7 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
     <div class="logo">INSPO<span class="box">BOX</span></div>
     <div id="counter">— / —</div>
     <div id="tapHint">TAP A PIECE TO LOCK ITS GENRE</div>
-    <div id="buildTag">BUILD V16</div>
+    <div id="buildTag">BUILD V17</div>
   </div>
   <div class="topbtns">
     <button class="chipbtn" id="boxBtn">BOX <span class="n" id="boxCount">0</span></button>
@@ -276,7 +275,19 @@ async function load() {
 let deckList = [];
 function scopeFeed() { return DATA.feed.filter((p) => state.movement === "all" || p.movement === state.movement); }
 function deckFeed() {
-  return scopeFeed().filter((p) => p.media === state.media);
+  if (state.movement !== "all") return scopeFeed().filter((p) => p.media === state.media);
+  // Home is a genre tour: one representative piece per movement, never a
+  // repeat. The current discipline is preferred; a movement with no piece
+  // in it borrows its first piece from the next discipline over. Locking a
+  // genre is what opens its full stack of examples.
+  const order = [state.media, ...DATA.media.map((m) => m.id).filter((id) => id !== state.media)];
+  const reps = [];
+  for (const mv of DATA.movements) {
+    const pieces = DATA.feed.filter((p) => p.movement === mv.id);
+    const rep = order.map((id) => pieces.find((p) => p.media === id)).find(Boolean);
+    if (rep) reps.push(rep);
+  }
+  return reps;
 }
 function mvName(id) { const m = DATA.movements.find((x) => x.id === id); return m ? m.name : id; }
 function mdName(id) { const m = DATA.media.find((x) => x.id === id); return m ? m.name : id; }
@@ -329,7 +340,20 @@ function updateChrome(total) {
   $$(".rail button").forEach((b) => b.classList.toggle("on", !!cur && b.dataset.media === cur.media));
   $("#tapHint").style.display = state.movement === "all" ? "" : "none";
   document.body.classList.toggle("locked", state.movement !== "all");
+  positionIgnite();
 }
+function positionIgnite() {
+  // The spark button floats in the left rail under the genre title, but the
+  // info panel's height varies with its title — so park the button a fixed
+  // gap above the current piece's panel instead of at a fixed height.
+  const btn = $("#igniteBtn"); if (!btn) return;
+  const piece = $$("#deck .piece")[state.current];
+  const panel = piece && piece.querySelector(".panel");
+  if (!panel) return;
+  btn.style.top = Math.max(330, Math.round(panel.getBoundingClientRect().top) - 68) + "px";
+}
+let igniteTimer = null;
+$("#deck").addEventListener("scroll", () => { clearTimeout(igniteTimer); igniteTimer = setTimeout(positionIgnite, 130); }, { passive: true });
 let deckObs = null;
 function bindDeck(feed) {
   if (deckObs) deckObs.disconnect();
