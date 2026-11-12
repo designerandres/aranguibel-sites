@@ -153,12 +153,31 @@ export async function onRequestPost(context) {
     styleId: body.styleId, movementId: body.movementId, studioId: body.studioId,
     reroll: Math.max(0, Math.min(50, body.reroll | 0)),
   });
-  try {
-    const concept = await callAnthropic(env, built);
-    return json({ ok: true, concept });
-  } catch (e) {
-    return json({ ok: false, error: String(e && e.message || e) }, 502);
-  }
+  // Stream the answer (NDJSON): a heartbeat line lands immediately and
+  // repeats every 4s while Claude thinks, so no proxy, edge, or cellular
+  // NAT along the path sees an idle connection to drop — the failure mode
+  // behind the silent edge 502s of 2026-11-12. The result (or the error)
+  // is the final line.
+  const enc = new TextEncoder();
+  let timer = null;
+  const stream = new ReadableStream({
+    async start(ctl) {
+      const beat = () => { try { ctl.enqueue(enc.encode(JSON.stringify({ wait: true }) + "\n")); } catch {} };
+      beat();
+      timer = setInterval(beat, 4000);
+      try {
+        const concept = await callAnthropic(env, built);
+        clearInterval(timer);
+        ctl.enqueue(enc.encode(JSON.stringify({ ok: true, concept }) + "\n"));
+      } catch (e) {
+        clearInterval(timer);
+        ctl.enqueue(enc.encode(JSON.stringify({ ok: false, error: String(e && e.message || e) }) + "\n"));
+      }
+      ctl.close();
+    },
+    cancel() { clearInterval(timer); },
+  });
+  return new Response(stream, { headers: { "content-type": "application/x-ndjson", "cache-control": "no-store" } });
 }
 
 export async function onRequestGet() {

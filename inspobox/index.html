@@ -207,7 +207,7 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
     <div class="logo">INSPO<span class="box">BOX</span></div>
     <div id="counter">— / —</div>
     <div id="tapHint">TAP A PIECE TO LOCK ITS GENRE</div>
-    <div id="buildTag">BUILD V34</div>
+    <div id="buildTag">BUILD V35</div>
   </div>
   <div class="topbtns">
     <button class="chipbtn" id="boxBtn">BOX <span class="n" id="boxCount">0</span></button>
@@ -713,7 +713,7 @@ function jumpToMedia(id) {
    of the available disciplines side by side, active one centered. Keep
    swiping and the selection ticks through them; letting go (or pausing)
    lands the deck on the highlighted discipline. */
-const sw = { open: false, pending: null, list: [], timer: null, suppress: false };
+const sw = { open: false, pending: null, list: [], timer: null, suppress: false, watchdog: null };
 function presentMedia() {
   const order = DATA.media.map((m) => m.id);
   return order.filter((id) => scopeFeed().some((p) => p.media === id));
@@ -744,11 +744,16 @@ function centerStrip() {
    segment sits under the screen center becomes the pending pick; letting
    go snaps to it and commits. */
 sw.drag = null;
+function armWatchdog() {
+  clearTimeout(sw.watchdog);
+  sw.watchdog = setTimeout(() => { if (sw.drag) endDrag(); }, 4000);
+}
 function beginDrag(x) {
   if (!sw.open) { openSwitcher(null); if (!sw.open) return; }
   clearTimeout(sw.timer);
   $("#swTrack").classList.add("drag");
   sw.drag = { startX: x, baseTx: stripTxFor(sw.pending), startPending: sw.pending };
+  armWatchdog();
 }
 /* One more swipe past the first discipline while locked drops straight
    back to the home tour — the gesture that starts on the first segment
@@ -764,6 +769,7 @@ function unlockFromSwitcher() {
 }
 function dragStripTo(x) {
   if (!sw.drag) return;
+  armWatchdog();
   const track = $("#swTrack");
   const lo = stripTxFor(sw.list[sw.list.length - 1]) - 56, hi = stripTxFor(sw.list[0]) + 56;
   const rawTx = sw.drag.baseTx + (x - sw.drag.startX);
@@ -784,6 +790,7 @@ function dragStripTo(x) {
 function endDrag() {
   if (!sw.drag) return;
   sw.drag = null;
+  clearTimeout(sw.watchdog);
   $("#swTrack").classList.remove("drag");
   centerStrip();
   armSwitcher(230);
@@ -809,12 +816,22 @@ function commitSwitcher() {
     $("#veil").classList.remove("on");
   }
 }
+function cancelSwitcher() {
+  clearTimeout(sw.timer); clearTimeout(sw.watchdog);
+  sw.drag = null; sw.open = false;
+  sw.pending = state.media;
+  $("#swTrack").classList.remove("drag");
+  $("#switcher").classList.remove("on");
+  $("#veil").classList.remove("on");
+  centerStrip();
+}
 function disciplineStep(dir) {
   if (sw.open) { stepPending(dir); return; }
   openSwitcher(null);
   if (sw.open) stepPending(dir);
 }
 $("#switcher").addEventListener("click", commitSwitcher);
+$("#veil").addEventListener("click", cancelSwitcher);
 let swX = null, swY = null;
 $("#deck").addEventListener("pointerdown", (e) => { swX = e.clientX; swY = e.clientY; });
 $("#deck").addEventListener("pointermove", (e) => {
@@ -837,6 +854,13 @@ $("#deck").addEventListener("touchmove", (e) => {
 const tReset = () => { endDrag(); tX = null; sw.suppress = false; };
 $("#deck").addEventListener("touchend", tReset);
 $("#deck").addEventListener("touchcancel", tReset);
+/* The same releases, heard at window level: a finger lifted outside the
+   deck (over the fixed chrome, or in a spot iOS retargets) still ends the
+   drag instead of wedging the switcher open. */
+window.addEventListener("pointerup", swReset);
+window.addEventListener("pointercancel", swReset);
+window.addEventListener("touchend", tReset);
+window.addEventListener("touchcancel", tReset);
 let tapX = null, tapY = null;
 $("#deck").addEventListener("pointerdown", (e) => { tapX = e.clientX; tapY = e.clientY; });
 $("#deck").addEventListener("pointerup", (e) => {
@@ -849,7 +873,7 @@ $("#deck").addEventListener("pointerup", (e) => {
   if (state.movement === "all") { state.movement = p.movement; renderIndex(); renderDeck(p.id); flash(mvName(p.movement).toUpperCase() + " — LOCKED"); }
   else flash(mvName(p.movement).toUpperCase());
 });
-window.INSPOBOX = { disciplineStep, jumpToMedia, fetchLive: () => maybeFetchLive(), getLive: () => Object.fromEntries(Object.entries(liveCols).map(([k, c]) => [k, { n: c.pieces.length, done: c.done }])), getState: () => ({ movement: state.movement, current: state.current, count: deckList.length, media: state.media }), getConcept: () => lastConcept };
+window.INSPOBOX = { disciplineStep, jumpToMedia, getSw: () => ({ open: sw.open, dragging: !!sw.drag, pending: sw.pending }), fetchLive: () => maybeFetchLive(), getLive: () => Object.fromEntries(Object.entries(liveCols).map(([k, c]) => [k, { n: c.pieces.length, done: c.done }])), getState: () => ({ movement: state.movement, current: state.current, count: deckList.length, media: state.media }), getConcept: () => lastConcept };
 
 /* ---------------- idea starter ---------------- */
 const sel = { style: "cgi", movement: "surreal", studio: "animation" };
@@ -962,6 +986,19 @@ function acceptDynamic(dc, prompt) {
   };
   renderConcept();
 }
+async function readFinalLine(res) {
+  let text = "";
+  try {
+    if (res.body && res.body.getReader) {
+      const reader = res.body.getReader();
+      const dec = new TextDecoder();
+      for (;;) { const { done, value } = await reader.read(); if (done) break; text += dec.decode(value, { stream: true }); }
+    } else text = await res.text();
+  } catch { /* a truncated stream still yields whatever arrived */ }
+  const lines = text.split("\n").map((l) => l.trim()).filter(Boolean);
+  for (let i = lines.length - 1; i >= 0; i--) { try { const o = JSON.parse(lines[i]); if (!o.wait) return o; } catch {} }
+  return null;
+}
 async function ignite() {
   if (generating) return;
   generating = true;
@@ -979,8 +1016,8 @@ async function ignite() {
       lastGenWhy = ("HTTP " + res.status + (detail ? " · " + detail : " · edge error (function didn't answer)")).slice(0, 200);
       throw new Error(lastGenWhy);
     }
-    const data = await res.json();
-    if (!data.ok || !data.concept) { lastGenWhy = ("bad payload · " + (data.error || "no concept returned")).slice(0, 200); throw new Error(lastGenWhy); }
+    const data = await readFinalLine(res);
+    if (!data || !data.ok || !data.concept) { lastGenWhy = ("bad payload · " + ((data && data.error) || "stream ended without a result")).slice(0, 200); throw new Error(lastGenWhy); }
     acceptDynamic(data.concept, promptEl.value.trim());
   } catch (e) {
     const why = timedOut ? "request timed out after 40s" : (lastGenWhy || String(e && e.message || e));
