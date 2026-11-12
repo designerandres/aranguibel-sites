@@ -214,7 +214,7 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
     <div class="logo">INSPO<span class="box">BOX</span></div>
     <div id="counter">— / —</div>
     <div id="tapHint">TAP A PIECE TO LOCK ITS GENRE</div>
-    <div id="buildTag">BUILD V47</div>
+    <div id="buildTag">BUILD V48</div>
   </div>
   <div class="topbtns">
     <button class="chipbtn" id="boxBtn">BOX <span class="n" id="boxCount">0</span></button>
@@ -701,10 +701,25 @@ $$(".layer").forEach((layer) => {
     zone.addEventListener("mousedown", (e) => { begin(e.clientY); const mm = (ev) => move(ev.clientY); const mu = () => { end(); removeEventListener("mousemove", mm); removeEventListener("mouseup", mu); }; addEventListener("mousemove", mm); addEventListener("mouseup", mu); });
   }
 });
-// story prompt sheet: backdrop tap closes; COPY ships the full prompt text
+// story prompt sheet: backdrop tap closes; COPY ships ONLY the prompt
+// paragraph — no title line, no instruction line, no BREAKDOWN (Andres,
+// Nov 12). The sheet and the PROMPT download keep the full package.
+function clipboardText(full) {
+  const lines = String(full).split("\n");
+  const i = lines.findIndex((l) => l.startsWith("PROMPT —"));
+  if (i < 0) return full;
+  const para = [];
+  for (let j = i + 1; j < lines.length; j++) {
+    const l = lines[j];
+    if (l === "BREAKDOWN") break;
+    if (!l.trim()) { if (para.length) break; continue; }
+    para.push(l);
+  }
+  return para.length ? para.join("\n") : full;
+}
 $("#promptLayer [data-sheetback]").addEventListener("click", () => closeLayer("#promptLayer"));
 $("#copyPromptBtn").addEventListener("click", async (e) => {
-  const btn = e.currentTarget, txt = $("#promptText").textContent;
+  const btn = e.currentTarget, txt = clipboardText($("#promptText").textContent);
   let ok = false;
   try { await navigator.clipboard.writeText(txt); ok = true; } catch {}
   if (!ok) { try { const ta = document.createElement("textarea"); ta.value = txt; ta.style.position = "fixed"; ta.style.opacity = "0"; document.body.appendChild(ta); ta.select(); ok = document.execCommand("copy"); ta.remove(); } catch {} }
