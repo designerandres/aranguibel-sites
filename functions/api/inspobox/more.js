@@ -369,8 +369,8 @@ export async function fetchHomeBatch({ cursor, exclude, media }, fetchFn, env) {
   const absorb = (page, ver, src, fresh) => {
     for (const item of page.items || []) {
       const p = toPiece(item, ver.n, src, "world"); // placeholder — the grouping is classified below, at filing
-      p.media = classifyMedia(p, ver.mt);
       if (!p || seen.has(p.uuid)) continue;
+      p.media = classifyMedia(p, ver.mt);
       seen.add(p.uuid);
       examined++;
       // Style-tagged media focus (v54): the style must be the SUBJECT.
@@ -404,7 +404,9 @@ export async function fetchHomeBatch({ cursor, exclude, media }, fetchFn, env) {
     if (!st.f.m) {
       const qs = new URLSearchParams({ query: entry.q, limit: "6", sort: "Highest Rated", period: entry.period, nsfw: "false" });
       qs.append("types", "LORA"); qs.append("types", "Checkpoint");
-      const models = await civGet(fetchFn, "/models?" + qs.toString()); fCalls++;
+      let models;
+      try { models = await civGet(fetchFn, "/models?" + qs.toString()); } catch (e) { if (e && e.code === 429) throw e; break; }
+      fCalls++;
       st.f.m = orderModels((models.items || []).map(mapModel).filter(Boolean));
       st.f.v = 0; st.f.c = null;
       if (!st.f.m.length) { st.f.i++; st.f.m = null; continue; }
@@ -413,7 +415,9 @@ export async function fetchHomeBatch({ cursor, exclude, media }, fetchFn, env) {
     const ver = st.f.m[st.f.v];
     const qs = new URLSearchParams({ modelVersionId: String(ver.v), limit: "30", nsfw: "false", sort: "Most Reactions", period: entry.period, withMeta: "true" });
     if (st.f.c) qs.set("cursor", st.f.c);
-    const page = await civGet(fetchFn, "/images?" + qs.toString()); fCalls++;
+    let page;
+    try { page = await civGet(fetchFn, "/images?" + qs.toString()); } catch (e) { if (e && e.code === 429) throw e; break; }
+    fCalls++;
     absorb(page, ver, entry.src, true);
     st.f.c = (page.metadata && page.metadata.nextCursor) || null;
     if (!st.f.c) st.f.v++;
@@ -422,7 +426,9 @@ export async function fetchHomeBatch({ cursor, exclude, media }, fetchFn, env) {
     if (!st.m) {
       const qs = new URLSearchParams({ query: walk[st.q].q, limit: "6", sort: "Most Downloaded", nsfw: "false" });
       qs.append("types", "LORA"); qs.append("types", "Checkpoint");
-      const models = await civGet(fetchFn, "/models?" + qs.toString()); calls++;
+      let models;
+      try { models = await civGet(fetchFn, "/models?" + qs.toString()); } catch (e) { if (e && e.code === 429) throw e; break; }
+      calls++;
       st.m = orderModels((models.items || []).map(mapModel).filter(Boolean));
       st.v = 0; st.c = null;
       if (!st.m.length) { st.q++; st.m = null; continue; }
@@ -431,7 +437,9 @@ export async function fetchHomeBatch({ cursor, exclude, media }, fetchFn, env) {
     const ver = st.m[st.v];
     const qs = new URLSearchParams({ modelVersionId: String(ver.v), limit: "30", nsfw: "false", sort: "Most Reactions", period: st.v % 2 ? "Month" : "AllTime", withMeta: "true" });
     if (st.c) qs.set("cursor", st.c);
-    const page = await civGet(fetchFn, "/images?" + qs.toString()); calls++;
+    let page;
+    try { page = await civGet(fetchFn, "/images?" + qs.toString()); } catch (e) { if (e && e.code === 429) throw e; break; }
+    calls++;
     absorb(page, ver, walk[st.q].src, false);
     st.c = (page.metadata && page.metadata.nextCursor) || null;
     if (!st.c) st.v++;
@@ -503,7 +511,9 @@ export async function fetchMoreBatch({ movement, media, cursor, exclude }, fetch
     if (!st.m) {
       const qs = new URLSearchParams({ query: queries[st.q], limit: "6", sort: "Most Downloaded", nsfw: "false" });
       qs.append("types", "LORA"); qs.append("types", "Checkpoint");
-      const models = await civGet(fetchFn, "/models?" + qs.toString()); calls++;
+      let models;
+      try { models = await civGet(fetchFn, "/models?" + qs.toString()); } catch (e) { if (e && e.code === 429) throw e; break; }
+      calls++;
       st.m = orderModels((models.items || []).map(mapModel).filter(Boolean));
       st.v = 0; st.c = null;
       if (!st.m.length) { st.q++; st.m = null; continue; }
@@ -512,7 +522,9 @@ export async function fetchMoreBatch({ movement, media, cursor, exclude }, fetch
     const ver = st.m[st.v];
     const qs = new URLSearchParams({ modelVersionId: String(ver.v), limit: "30", nsfw: "false", sort: "Most Reactions", period: st.v % 2 ? "Month" : "AllTime", withMeta: "true" });
     if (st.c) qs.set("cursor", st.c);
-    const page = await civGet(fetchFn, "/images?" + qs.toString()); calls++;
+    let page;
+    try { page = await civGet(fetchFn, "/images?" + qs.toString()); } catch (e) { if (e && e.code === 429) throw e; break; }
+    calls++;
     let cands = [];
     for (const item of page.items || []) {
       const p = toPiece(item, ver.n, movement, media);

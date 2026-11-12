@@ -215,7 +215,7 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
     <div class="logo">INSPO<span class="box">BOX</span></div>
     <div id="counter">— / —</div>
     <div id="tapHint">TAP A PIECE TO LOCK ITS GENRE</div>
-    <div id="buildTag">BUILD V59</div>
+    <div id="buildTag">BUILD V60</div>
   </div>
   <div class="topbtns">
     <button class="chipbtn" id="boxBtn">BOX <span class="n" id="boxCount">0</span></button>
@@ -609,12 +609,21 @@ async function maybeFetchHome(force) {
     }
     const fresh = (data.pieces || []).filter((p) => !col.pieces.some((x) => x.id === p.id));
     if (fresh.length) {
+      col.emptyPulls = 0;
       col.pieces.push(...fresh); recordSeen(fresh);
       if (state.movement === "all" && state.media === media) {
         if (deckList.length) appendPieces(fresh); else renderDeck();
       }
     } else if (!col.done && state.movement === "all" && state.media === media && deckList.length) {
       col.loading = false; maybeFetchHome(true); return;
+    } else if (!col.done && !deckList.length && state.movement === "all" && state.media === media) {
+      // v60: a batch can file everything into OTHER groupings (all of it
+      // banked) and leave this river empty-handed. Pull the next batch
+      // instead of sitting on CASTING THE NET; after a few empty pulls,
+      // fall back to the genre tour so the screen never wedges.
+      col.emptyPulls = (col.emptyPulls || 0) + 1;
+      if (col.emptyPulls <= 4) { col.loading = false; maybeFetchHome(true); return; }
+      col.failed = true; renderDeck();
     }
   } catch (e) {
     col.lastError = String(e && e.message || e); col.coolUntil = Date.now() + 25000;
