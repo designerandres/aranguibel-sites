@@ -88,53 +88,63 @@ function b64(buf) {
 
 export async function gateOne(env, piece, fetchFn) {
   const ctl = new AbortController();
-  const to = setTimeout(() => ctl.abort(), 12000);
+  const to = setTimeout(() => ctl.abort(), 15000);
   try {
     const imgUrl = String(piece.img).replace("/width=1200/", "/width=640/");
-    const imgRes = await fetchFn(imgUrl, { signal: ctl.signal, headers: { "user-agent": "INSPOBOX live feed" } });
-    if (!imgRes.ok) return false;
+    let imgRes;
+    try { imgRes = await fetchFn(imgUrl, { signal: ctl.signal, headers: { "user-agent": "INSPOBOX live feed" } }); }
+    catch { return { fits: false, why: "image download failed" }; }
+    if (!imgRes.ok) return { fits: false, why: "image download " + imgRes.status };
     const mt = (imgRes.headers && imgRes.headers.get && imgRes.headers.get("content-type") || "image/jpeg").split(";")[0].trim();
     const mediaType = ["image/jpeg", "image/png", "image/gif", "image/webp"].includes(mt) ? mt : "image/jpeg";
     const imgData = b64(await imgRes.arrayBuffer());
-    const res = await fetchFn("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      signal: ctl.signal,
-      headers: { "x-api-key": env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json" },
-      body: JSON.stringify({
-        model: "claude-haiku-5-5",
-        max_tokens: 40,
-        messages: [{ role: "user", content: [
-          { type: "image", source: { type: "base64", media_type: mediaType, data: imgData } },
-          { type: "text", text: gatePrompt(piece.movement) },
-        ] }],
-      }),
-    });
-    if (!res.ok) return false;
-    const data = await res.json().catch(() => null);
-    const text = ((data && data.content) || []).filter((b) => b.type === "text").map((b) => b.text).join("");
-    const m = text.match(/\{[\s\S]*\}/);
-    if (!m) return false;
-    return JSON.parse(m[0]).fits === true;
-  } catch { return false; } finally { clearTimeout(to); }
+    let why = "";
+    for (const model of ["claude-haiku-5-5", "claude-sonnet-5-5"]) {
+      const res = await fetchFn("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        signal: ctl.signal,
+        headers: { "x-api-key": env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json" },
+        body: JSON.stringify({
+          model,
+          max_tokens: 40,
+          messages: [{ role: "user", content: [
+            { type: "image", source: { type: "base64", media_type: mediaType, data: imgData } },
+            { type: "text", text: gatePrompt(piece.movement) },
+          ] }],
+        }),
+      });
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => null);
+        const errMsg = (errBody && errBody.error && (errBody.error.type + ": " + errBody.error.message)) || "";
+        why = model + " " + res.status + (errMsg ? " " + errMsg.slice(0, 70) : "");
+        continue;
+      }
+      const data = await res.json().catch(() => null);
+      const text = ((data && data.content) || []).filter((b) => b.type === "text").map((b) => b.text).join("");
+      const m = text.match(/\{[\s\S]*\}/);
+      if (!m) { why = model + " unparseable verdict"; continue; }
+      try { return { fits: JSON.parse(m[0]).fits === true, why: "" }; }
+      catch { why = model + " unparseable verdict"; continue; }
+    }
+    return { fits: false, why };
+  } catch { return { fits: false, why: "gate timed out" }; } finally { clearTimeout(to); }
 }
 
 // Gate a list of candidates in parallel waves of 9 (keeps burst rate sane).
 export async function gatePieces(env, candidates, fetchFn) {
   const kept = [];
-  for (let i = 0; i < candidates.length; i += 9) {
+  let why = "";
+  for (let i = 0; i < candidates.length; i += 6) {
     const wave = candidates.slice(i, i + 6);
     const verdicts = await Promise.all(wave.map((p) => gateOne(env, p, fetchFn)));
-    wave.forEach((p, j) => { if (verdicts[j]) { p.gated = true; kept.push(p); } });
+    wave.forEach((p, j) => {
+      if (verdicts[j].fits) { p.gated = true; kept.push(p); }
+      else if (!why && verdicts[j].why) why = verdicts[j].why;
+    });
   }
-  return kept;
+  return { kept, why };
 }
 
-// One batch of live pieces. `cursor` is the opaque state from the previous
-// response ({q, v, c, m}); `exclude` is a list of image uuids the client
-// already has (curated + this session). Pure w.r.t. fetchFn for testability.
-// When `env.ANTHROPIC_API_KEY` is present, candidates pass the Claude
-// genre-fit gate before they can be returned; without a key the batch is
-// served ungated (mechanical filters only).
 export async function fetchMoreBatch({ movement, media, cursor, exclude }, fetchFn, env) {
   const queries = QUERIES[movement];
   if (!queries) return { pieces: [], cursor: cursor || null, done: true };
@@ -142,9 +152,9 @@ export async function fetchMoreBatch({ movement, media, cursor, exclude }, fetch
   const st = cursor && typeof cursor === "object" ? { q: 0, v: 0, c: null, m: null, ...cursor } : { q: 0, v: 0, c: null, m: null };
   const pieces = [];
   const gate = env && env.ANTHROPIC_API_KEY ? (cands) => gatePieces(env, cands, fetchFn) : null;
-  let calls = 0, examined = 0;
+  let calls = 0, examined = 0, gateWhy = "";
   while (pieces.length < BATCH && calls < 5 && examined < 12) {
-    if (st.q >= queries.length) return { pieces, cursor: st, done: true, stats: { examined, passed: pieces.length, gated: !!gate, civCalls: calls } };
+    if (st.q >= queries.length) return { pieces, cursor: st, done: true, stats: { examined, passed: pieces.length, gated: !!gate, civCalls: calls, gateWhy } };
     if (!st.m) {
       const qs = new URLSearchParams({ query: queries[st.q], limit: "6", sort: "Most Downloaded", nsfw: "false" });
       qs.append("types", "LORA"); qs.append("types", "Checkpoint");
@@ -166,13 +176,15 @@ export async function fetchMoreBatch({ movement, media, cursor, exclude }, fetch
     if (gate) {
       cands = cands.slice(0, Math.max(0, 12 - examined));
       examined += cands.length;
-      cands = await gate(cands);
+      const g = await gate(cands);
+      if (g.why && !gateWhy) gateWhy = g.why;
+      cands = g.kept;
     }
     for (const p of cands) { pieces.push(p); if (pieces.length >= BATCH) break; }
     st.c = (page.metadata && page.metadata.nextCursor) || null;
     if (!st.c) st.v++;
   }
-  return { pieces, cursor: st, done: st.q >= queries.length, stats: { examined, passed: pieces.length, gated: !!gate, civCalls: calls } };
+  return { pieces, cursor: st, done: st.q >= queries.length, stats: { examined, passed: pieces.length, gated: !!gate, civCalls: calls, gateWhy } };
 }
 
 export async function onRequestPost({ request, env }) {
