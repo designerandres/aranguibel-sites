@@ -226,7 +226,7 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
     <div class="logo">INSPO<span class="box">BOX</span></div>
     <div id="counter">— / —</div>
     <div id="tapHint">TAP A PIECE TO LOCK ITS STYLE</div>
-    <div id="buildTag">BUILD V68</div>
+    <div id="buildTag">BUILD V69</div>
   </div>
   <div class="topbtns">
     <button class="chipbtn" id="boxBtn">BOX <span class="n" id="boxCount">0</span></button>
@@ -351,6 +351,30 @@ async function load() {
   buildSelects(); renderDeck(); renderIndex(); renderBox(); renderSparks();
 }
 
+/* ---------------- session image cache ----------------
+   v69 (Andres's direction): images load ONCE per session. Live pieces
+   point at Civitai's CDN, which the service worker cannot cache
+   (cross-origin responses are opaque), so every deck rebuild used to
+   re-download them — tabbing away and back reloaded every picture.
+   Now each live image is fetched once into a blob URL held for the
+   session; renders use the blob. Curated images are same-origin and
+   already service-worker cached. */
+const imgCache = new Map();
+const imgPending = new Set();
+function imgSrc(p) { return (p && p.img && imgCache.get(p.img)) || (p && p.img) || ""; }
+function cacheSessionImage(p) {
+  if (!p || !p.session || !p.img || imgCache.has(p.img) || imgPending.has(p.img)) return;
+  imgPending.add(p.img);
+  fetch(p.img).then((r) => (r && (r.ok || r.type === "opaque")) ? r.blob() : null).then((b) => {
+    imgPending.delete(p.img);
+    if (!b) return;
+    if (imgCache.size >= 150) { const k = imgCache.keys().next().value; URL.revokeObjectURL(imgCache.get(k)); imgCache.delete(k); }
+    const u = URL.createObjectURL(b);
+    imgCache.set(p.img, u);
+    $$("#deck .piece").forEach((el) => { if (el.dataset.id === p.id) { const im = el.querySelector(".bgimg"); if (im && im.getAttribute("src") !== u) im.src = u; } });
+  }).catch(() => imgPending.delete(p.img));
+}
+
 /* ---------------- deck ---------------- */
 let deckList = [];
 function scopeFeed() { return DATA.feed.filter((p) => state.movement === "all" || p.movement === state.movement); }
@@ -365,13 +389,46 @@ function tourFeed() {
   }
   return reps;
 }
+/* The river's foundation (v69): the lane's STYLED curated pieces,
+   interleaved round-robin by style with a per-session shuffle, capped
+   at 24. Until v68 the river was live-only, which made its depth host
+   to fortune: a batch yields only a few deck pieces after verdicts,
+   banking and caps, so lanes opened with as few as 3 pieces and took
+   minutes of chained pulls to deepen. The curated bench is verified,
+   local and instant — it now leads every river, and live pieces weave
+   into it as they are verdicted. Unstyled curated pieces stay out
+   (the river shows styles, not filler). */
+const riverBases = {};
+function riverBase(lane) {
+  if (riverBases[lane]) return riverBases[lane];
+  const ids = new Set(laneStyles(lane).map((x) => x.id));
+  const byStyle = {};
+  for (const p of DATA.feed) if (p.media === lane && ids.has(p.movement)) (byStyle[p.movement] = byStyle[p.movement] || []).push(p);
+  for (const k of Object.keys(byStyle)) { const a = byStyle[k]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); const t = a[i]; a[i] = a[j]; a[j] = t; } }
+  const keys = Object.keys(byStyle);
+  const out = [];
+  let guard = 0;
+  while (out.length < 24 && guard++ < 500) {
+    let progressed = false;
+    for (const k of keys) if (byStyle[k].length) { out.push(byStyle[k].shift()); progressed = true; if (out.length >= 24) break; }
+    if (!progressed) break;
+  }
+  riverBases[lane] = out;
+  return out;
+}
 function deckFeed() {
   if (state.movement !== "all") return scopeFeed().filter((p) => p.media === state.media);
-  // Home is a river (v53): fresh Civitai pieces harvested across all
-  // thirteen genre pools and filed by their own prompts, interleaved so
-  // every movement takes a turn. Filled by maybeFetchHome; the seen list
-  // keeps later opens from re-serving what earlier ones showed.
+  // Home is a river: the curated foundation (above) with live pieces
+  // woven in as maybeFetchHome verdicts them.
   const col = homeCol();
+  if (!col.baseMerged) {
+    const base = riverBase(state.media);
+    if (base.length) {
+      const baseIds = new Set(base.map((p) => p.id));
+      col.pieces = base.concat(col.pieces.filter((p) => !baseIds.has(p.id)));
+      col.baseMerged = true;
+    }
+  }
   if (col.pieces.length) return col.pieces.slice();
   return col.failed ? tourFeed() : [];
 }
@@ -399,7 +456,7 @@ function pieceHtml(p, i, total) {
     <section class="piece" data-id="${p.id}" data-idx="${i}">
       ${p.video
         ? `<video class="bgvid" src="${esc(p.video)}" poster="${esc(p.img)}" muted loop playsinline preload="metadata"></video>`
-        : `<img class="bgimg" src="${esc(p.img)}" alt="" decoding="async">`}
+        : `<img class="bgimg" src="${esc(imgSrc(p))}" alt="" decoding="async">`}
       <div class="scrim"></div>
       <div class="prog" style="width:${Math.round(((i + 1) / total) * 100)}%"></div>
       <div class="vtitle ${vtSize(p.media, p.movement)}" data-open-index title="All styles">${esc(styleName(p.media, p.movement).toUpperCase())}</div>
@@ -436,6 +493,7 @@ function renderDeck(startId) {
     const ix = feed.findIndex((p) => p.id === startId);
     if (ix > 0) { const el = $$(".piece", deck)[ix]; if (el) { deck.scrollTop = el.offsetTop; state.current = ix; updateChrome(feed.length); } }
   }
+  for (const p of feed) cacheSessionImage(p);
   bindDeck(feed);
   if (state.movement === "all") hydrateHome(); else hydrateLive();
 }
@@ -578,7 +636,7 @@ async function maybeFetchLive(force) {
     }
     if (data.stats && data.stats.gated && data.stats.examined >= 8 && data.stats.passed === 0 && !col.flashedCull) { col.flashedCull = true; showToast("LIVE CHECK", "0 of " + data.stats.examined + " images examined fit this style — the judge culled the whole batch." + (data.stats.gateWhy ? " Judge reports: " + data.stats.gateWhy : "")); }
     const fresh = (data.pieces || []).filter((p) => !deckList.some((x) => x.id === p.id));
-    if (fresh.length) { col.pieces.push(...fresh); recordSeen(fresh); col.empties = 0; if (liveKey() === key) insertPieces(fresh); }
+    if (fresh.length) { col.pieces.push(...fresh); recordSeen(fresh); col.empties = 0; for (const p of fresh) cacheSessionImage(p); if (liveKey() === key) insertPieces(fresh); }
     else if (!col.done && ++col.empties < 3 && liveKey() === key) { col.loading = false; maybeFetchLive(); return; }
   } catch (e) {
     col.lastError = String(e && e.message || e); col.coolUntil = Date.now() + 25000;
@@ -623,7 +681,7 @@ async function maybeFetchHome(force, chained) {
         const hc = homeColFor(md);
         for (const p of arr) if (!hc.pieces.some((x) => x.id === p.id)) { hc.pieces.push(p); filed.push(p); }
       }
-      if (filed.length) recordSeen(filed);
+      if (filed.length) { recordSeen(filed); for (const p of filed) cacheSessionImage(p); }
     }
     // Banked surplus (v57): pieces the river classified but capped out of
     // the deck are filed into their genre's locked column, ready-made.
@@ -639,8 +697,9 @@ async function maybeFetchHome(force, chained) {
     if (fresh.length) {
       col.emptyPulls = 0;
       col.pieces.push(...fresh); recordSeen(fresh);
+      for (const p of fresh) cacheSessionImage(p);
       if (state.movement === "all" && state.media === media) {
-        if (deckList.length) appendPieces(fresh); else renderDeck();
+        if (deckList.length) insertPieces(fresh); else renderDeck();
         // v67 start depth: a lane's river opens with a real bench, not
         // one shallow batch — keep pulling (bounded) until this lane
         // holds at least 19 pieces or its walk is done.
@@ -725,7 +784,7 @@ function renderBox() {
   }
   list.innerHTML = box.map((b, i) => b.type === "piece" ? `
     <div class="boxitem">
-      <img src="${esc(b.img)}" alt="">
+      <img src="${esc(imgCache.get(b.img) || b.img)}" alt="">
       <div class="bt"><div class="bk">${esc(styleName(b.media, b.movement).toUpperCase())} · ${esc(mdName(b.media).toUpperCase())}</div>
       <div class="bti">${esc(b.title)}</div>${b.url ? `<a class="bb" href="${esc(b.url)}" target="_blank" rel="noopener">${esc(b.by || "")}</a>` : `<div class="bb">${esc(b.by || "")}</div>`}</div>
       <button class="del" data-del="${i}">✕</button>
