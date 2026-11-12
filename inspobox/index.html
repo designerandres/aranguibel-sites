@@ -38,9 +38,6 @@ img{display:block}
 .chipbtn{display:flex;align-items:center;gap:7px;padding:10px 14px;border-radius:999px;background:var(--glass);backdrop-filter:blur(18px) saturate(1.5);-webkit-backdrop-filter:blur(18px) saturate(1.5);border:1px solid var(--glassline);font-family:var(--unb);font-weight:900;font-size:11px;letter-spacing:.05em}
 .chipbtn .n{background:var(--grad);border-radius:999px;min-width:19px;height:19px;display:flex;align-items:center;justify-content:center;font-size:10.5px;padding:0 5px}
 #counter{font-family:var(--anton);font-size:15px;letter-spacing:.08em;color:var(--dim);padding-top:9px}
-#dots{position:fixed;right:13px;top:50%;transform:translateY(-50%);z-index:40;display:flex;flex-direction:column;gap:7px;align-items:center}
-#dots i{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.4);display:block;transition:all .3s}
-#dots i.on{height:22px;border-radius:3px;background:linear-gradient(180deg,#FF2E4D,#FF8A1F)}
 #igniteBtn{position:fixed;left:14px;right:14px;bottom:calc(14px + env(safe-area-inset-bottom));z-index:41;height:54px;border-radius:15px;background:var(--grad);display:flex;align-items:center;justify-content:center;gap:10px;font-family:var(--unb);font-weight:900;font-size:16px;letter-spacing:.22em;color:#fff;box-shadow:0 5px 0 #6E0B1E,0 16px 34px rgba(255,46,77,.35)}
 #igniteBtn:active{transform:translateY(3px);box-shadow:0 2px 0 #6E0B1E,0 10px 22px rgba(255,46,77,.3)}
 
@@ -218,7 +215,7 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
     <div class="logo">INSPO<span class="box">BOX</span></div>
     <div id="counter">— / —</div>
     <div id="tapHint">TAP A PIECE TO LOCK ITS GENRE</div>
-    <div id="buildTag">BUILD V54</div>
+    <div id="buildTag">BUILD V55</div>
   </div>
   <div class="topbtns">
     <button class="chipbtn" id="boxBtn">BOX <span class="n" id="boxCount">0</span></button>
@@ -229,7 +226,6 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
 <div id="flash"></div>
 <div id="toast" role="status"><div class="ttag" id="toastTag"></div><div class="tmsg" id="toastMsg"></div><button id="toastX" aria-label="Dismiss notification">✕</button></div>
 
-<div id="dots"></div>
 <main id="deck"></main>
 <button id="igniteBtn" aria-label="Ignite — open the idea starter"><svg viewBox="0 0 48 48" width="22" height="22" aria-hidden="true"><path d="M24 3 L27.3 16.1 L38.8 9.2 L31.9 20.7 L45 24 L31.9 27.3 L38.8 38.8 L27.3 31.9 L24 45 L20.7 31.9 L9.2 38.8 L16.1 27.3 L3 24 L16.1 20.7 L9.2 9.2 L20.7 16.1 Z" fill="#fff" stroke="#fff" stroke-width="2.5" stroke-linejoin="round"/></svg><span>IGNITE</span></button>
 
@@ -397,17 +393,16 @@ function renderDeck(startId) {
   if (!feed.length) {
     if (state.movement === "all" && !homeCol().failed) {
       deck.innerHTML = `<div class="deckempty"><div class="big">CASTING THE NET</div><p>Pulling a fresh river from today's pools — every piece filed by its own prompt.</p></div>`;
-      $("#dots").innerHTML = ""; $("#counter").textContent = "00 / 00";
+      $("#counter").textContent = "00 / 00";
       maybeFetchHome(true);
       return;
     }
     deck.innerHTML = `<div class="deckempty"><div class="big">NOTHING HERE… YET</div><p>This genre has no pieces in the current drop. The next curation pass fills gaps like this.</p><button class="chipbtn" id="clearFilters">UNLOCK — SHOW EVERYTHING</button></div>`;
     $("#clearFilters").addEventListener("click", () => { state.movement = "all"; renderIndex(); renderDeck(); });
-    $("#dots").innerHTML = ""; $("#counter").textContent = "0 / 0";
+    $("#counter").textContent = "0 / 0";
     return;
   }
   deck.innerHTML = feed.map((p, i) => pieceHtml(p, i, feed.length)).join("");
-  $("#dots").innerHTML = feed.map((_, i) => `<i class="${i === 0 ? "on" : ""}"></i>`).join("");
   state.current = 0; updateChrome(feed.length);
   deck.scrollTop = 0;
   if (startId) {
@@ -424,7 +419,6 @@ function railHtml() {
 }
 function updateChrome(total) {
   $("#counter").textContent = String(state.current + 1).padStart(2, "0") + " / " + String(total).padStart(2, "0");
-  $$("#dots i").forEach((d, i) => d.classList.toggle("on", i === state.current));
   const cur = deckList[state.current];
   $$(".rail button").forEach((b) => b.classList.toggle("on", !!cur && b.dataset.media === cur.media));
   $("#tapHint").style.display = state.movement === "all" ? "" : "none";
@@ -488,7 +482,6 @@ function appendPieces(pieces) {
   const deck = $("#deck");
   const base = deckList.length;
   pieces.forEach((p, j) => { deckList.push(p); deck.insertAdjacentHTML("beforeend", pieceHtml(p, base + j, deckList.length)); });
-  $("#dots").insertAdjacentHTML("beforeend", pieces.map(() => "<i></i>").join(""));
   reindexDeck();
   watchPieces([...deck.querySelectorAll(".piece")].slice(base));
   updateChrome(deckList.length);
@@ -512,7 +505,6 @@ function insertPieces(fresh) {
   const els = $$("#deck .piece");
   for (let i = els.length - 1; i >= startAt; i--) els[i].remove();
   deck.insertAdjacentHTML("beforeend", merged.map((p, j) => pieceHtml(p, startAt + j, deckList.length)).join(""));
-  $("#dots").innerHTML = deckList.map(() => "<i></i>").join("");
   reindexDeck();
   watchPieces($$("#deck .piece").slice(startAt));
   updateChrome(deckList.length);
