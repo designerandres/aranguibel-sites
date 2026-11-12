@@ -10,8 +10,9 @@ import { getDoc, putDoc } from "../../_lib/docStore.js";
 // v65 filing model: a piece's lockable category is its STYLE within its
 // LANE (one of the five subject groupings). The vision judge files style —
 // metadata text classification may only shape which pools get walked, it
-// never assigns the displayed style. A piece vision could not file shows
-// in its lane's river as unstyled (no style lock).
+// never assigns the displayed style. Since v66 both endpoints file
+// fail-closed: a live piece the judge could not reach is not served at
+// all; only an honest style-"none" verdict shows unstyled.
 const CIV = "https://civitai.com/api/v1";
 const BATCH = 8;
 
@@ -107,9 +108,9 @@ export function mediumHits(prompt) { return countTerms(prompt, MEDIUM_TERMS); }
 
 // The grouping taxonomy (v59) — the horizontal strip. These are SUBJECT
 // groupings: what the piece is OF. Ties break toward the most specific
-// reading: design > architecture > prop > character > world. In v65 this
-// text classifier is only the fail-open grouping; the vision verdict
-// rules whenever it runs.
+// reading: design > architecture > prop > character > world. Retained
+// for pool-shaping signals only — since v66 nothing in the live
+// endpoints files by it; the vision verdict is the only filing authority.
 export const MEDIA_VOCAB = {
   "character": ["character design", "warrior", "knight", "sorceress", "portrait", "figure", "creature", "monster", "android", "cyborg", "vampire", "elf", "dwarf", "orc", "goblin", "dragon", "beast", "animal", "cat", "dog", "bird", "horse", "wolf", "fox", "woman", "man", "girl", "boy", "lady", "gentleman", "king", "queen", "witch", "wizard", "fairy", "angel", "demon", "skeleton", "zombie", "mermaid", "centaur", "minotaur", "phoenix"],
   "world": ["landscape", "scenery", "environment", "vista", "panorama", "panoramic", "valley", "mountain", "forest", "desert", "ocean", "sea", "island", "jungle", "tundra", "canyon", "waterfall", "meadow", "coast", "shore", "cliff", "cave", "village", "town", "kingdom", "realm", "planet", "terrain", "countryside", "wilderness", "aerial view", "overlook", "cityscape", "horizon", "fields", "underwater world"],
@@ -179,8 +180,8 @@ export function freshEntries(lane, rot) {
 // Server-side fencing: a style id outside the chosen grouping's set is
 // discarded to "none" (its theme, if any, still counts); a "none"
 // grouping culls the piece from live display. Infrastructure failures
-// return nulls and the piece flows on its metadata grouping, unstyled
-// and unbadged (fail-open, the standing rule); a real verdict RULES.
+// return null-grouping verdicts and callers skip the piece entirely
+// (fail-closed, v66); a real verdict RULES.
 export const MEDIA_IDS = LANE_IDS;
 export function promptHint(raw) {
   const clean = String(raw || "").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().slice(0, 300);
@@ -303,6 +304,10 @@ export async function persistNoneThemes(env, tally) {
 }
 
 const HOME_BATCH = 16;
+// Vision budget for one river batch: the harvest stops here so EVERY
+// harvested candidate gets a vision verdict attempt (v66 — the river
+// files fail-closed; see the filing loop below).
+const HOME_VISION_BUDGET = 18;
 
 // The home river (v65): one walk across the requested LANE's style
 // pools, round-robin. Candidates are pre-filtered by their metadata
@@ -338,13 +343,13 @@ export async function fetchHomeBatch({ cursor, exclude, media }, fetchFn, env) {
       if (fresh) p.fresh = true;
       p._mt = ver.mt;
       harvest.push(p);
-      if (harvest.length >= 40) break;
+      if (harvest.length >= HOME_VISION_BUDGET) break;
     }
   };
   if (!st.f) st.f = { i: 0, m: null, v: 0, c: null, done: false };
   const freshWalk = freshEntries(primary, st.rot || 0);
   let fCalls = 0;
-  while (harvest.length < 24 && fCalls < 5 && !st.f.done) {
+  while (harvest.length < HOME_VISION_BUDGET && fCalls < 5 && !st.f.done) {
     if (st.f.i >= freshWalk.length) { st.f.done = true; break; }
     const entry = freshWalk[st.f.i];
     if (!st.f.m) {
@@ -368,7 +373,7 @@ export async function fetchHomeBatch({ cursor, exclude, media }, fetchFn, env) {
     st.f.c = (page.metadata && page.metadata.nextCursor) || null;
     if (!st.f.c) st.f.v++;
   }
-  while (harvest.length < 24 && calls < 10 && st.q < walk.length) {
+  while (harvest.length < HOME_VISION_BUDGET && calls < 10 && st.q < walk.length) {
     if (!st.m) {
       const qs = new URLSearchParams({ query: walk[st.q].q, limit: "6", sort: "Most Downloaded", nsfw: "false" });
       qs.append("types", "LORA"); qs.append("types", "Checkpoint");
@@ -390,22 +395,24 @@ export async function fetchHomeBatch({ cursor, exclude, media }, fetchFn, env) {
     st.c = (page.metadata && page.metadata.nextCursor) || null;
     if (!st.c) st.v++;
   }
-  // Vision-first filing: one verdict per harvested candidate (capped).
-  // Verdict rules; "none" grouping and quality failures leave the river;
-  // infra failures keep the metadata grouping, unstyled.
-  let visionChecked = 0, visionCulled = 0, unstyled = 0;
+  // Vision-first filing (v66): the harvest is capped at the vision
+  // budget, so every harvested candidate gets a verdict attempt — and
+  // the river files FAIL-CLOSED, exactly like the locked columns. A
+  // candidate with no verdict (judge infra failure, or no judge key)
+  // is skipped, never metadata-filed: an unverdicted piece must not
+  // render under a guessed lane or style. Honest verdicts rule; style
+  // "none" still decks unstyled in its verdicted lane; "none"
+  // grouping and quality failures still cull.
+  let visionChecked = 0, visionCulled = 0, unstyled = 0, unverified = 0;
   const noneThemes = {};
-  const toVerify = harvest.slice(0, 18);
+  const toVerify = harvest.slice(0, HOME_VISION_BUDGET);
   const verdicts = (env && env.ANTHROPIC_API_KEY) ? await visionClassifyBatch(env, toVerify, fetchFn) : new Map();
   for (const p of harvest) {
     const v = verdicts.get(p);
     delete p._mt;
     if (!v || v.grouping === null) {
-      // fail-open: metadata grouping, no style, river only
-      p.media = classifyMedia(p, "");
-      p.movement = null;
-      unstyled++;
-      (buckets[p.media] = buckets[p.media] || []).push(p); total++;
+      // fail-closed: no verdict, no filing (counted, never decked)
+      unverified++;
       continue;
     }
     visionChecked++;
@@ -453,7 +460,7 @@ export async function fetchHomeBatch({ cursor, exclude, media }, fetchFn, env) {
   }
   for (const mv of Object.keys(banked)) { banked[mv] = banked[mv].slice(0, BANK_CAP); bankedCount += banked[mv].length; }
   for (const md of Object.keys(bankedHome)) { bankedHome[md] = bankedHome[md].slice(0, BANK_CAP); bankedHomeCount += bankedHome[md].length; }
-  return { pieces, banked, bankedHome, cursor: st, done: st.q >= walk.length, stats: { examined, passed: pieces.length, civCalls: calls, styles: Object.keys(counts).length, charCapped, skipped, banked: bankedCount, bankedHome: bankedHomeCount, freshFiled, visionChecked, visionCulled, unstyled, noneThemes } };
+  return { pieces, banked, bankedHome, cursor: st, done: st.q >= walk.length, stats: { examined, passed: pieces.length, civCalls: calls, styles: Object.keys(counts).length, charCapped, skipped, banked: bankedCount, bankedHome: bankedHomeCount, freshFiled, visionChecked, visionCulled, unstyled, unverified, noneThemes } };
 }
 
 // A locked column (v65): contract is {media: lane, movement: style id

@@ -14,6 +14,8 @@
 @font-face{font-family:'Unbounded';src:url(/inspobox/fonts/unbounded.woff2) format('woff2');font-weight:900;font-display:swap}
 @font-face{font-family:'Space Grotesk';src:url(/inspobox/fonts/sg500.woff2) format('woff2');font-weight:500;font-display:swap}
 @font-face{font-family:'Space Grotesk';src:url(/inspobox/fonts/sg700.woff2) format('woff2');font-weight:700;font-display:swap}
+.vtitle.sz2{font-size:47px}
+.vtitle.sz3{font-size:39px}
 </style>
 <style>
 :root{
@@ -49,7 +51,7 @@ img{display:block}
 .piece .bgvid{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .piece .scrim{position:absolute;inset:0;background:linear-gradient(180deg,rgba(5,5,10,.40) 0%,transparent 26%,transparent 44%,rgba(5,5,10,.88) 84%)}
 .piece .prog{position:absolute;top:0;left:0;height:3px;background:var(--grad);z-index:3}
-.vtitle{position:absolute;left:12px;top:158px;writing-mode:vertical-rl;transform:rotate(180deg);font-family:var(--anton);font-size:58px;letter-spacing:.03em;color:#fff;text-shadow:5px 5px 0 rgba(255,46,77,.85);z-index:2;cursor:pointer}
+.vtitle{position:absolute;left:12px;top:158px;max-height:calc(100dvh - 400px);overflow:hidden;writing-mode:vertical-rl;transform:rotate(180deg);font-family:var(--anton);font-size:58px;letter-spacing:.03em;color:#fff;text-shadow:5px 5px 0 rgba(255,46,77,.85);z-index:2;cursor:pointer}
 .savebtn{position:absolute;right:16px;top:108px;z-index:5;width:44px;height:44px;border-radius:50%;background:var(--glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--glassline);font-size:23px;font-weight:500;display:flex;align-items:center;justify-content:center}
 .savebtn.saved{background:var(--grad);border-color:transparent}
 .searchbtn{position:absolute;right:16px;top:164px;z-index:5;width:44px;height:44px;border-radius:50%;background:var(--glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--glassline);display:flex;align-items:center;justify-content:center;color:inherit}
@@ -224,7 +226,7 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
     <div class="logo">INSPO<span class="box">BOX</span></div>
     <div id="counter">— / —</div>
     <div id="tapHint">TAP A PIECE TO LOCK ITS STYLE</div>
-    <div id="buildTag">BUILD V65</div>
+    <div id="buildTag">BUILD V66</div>
   </div>
   <div class="topbtns">
     <button class="chipbtn" id="boxBtn">BOX <span class="n" id="boxCount">0</span></button>
@@ -386,6 +388,7 @@ function styleName(lane, id) {
   for (const l of Object.keys(DATA.laneStyles || {})) { const e = styleEntry(l, id); if (e) return e.name; }
   return mvName(id);
 }
+function vtSize(media, id) { const n = styleName(media, id).length; return n >= 21 ? "sz3" : n >= 16 ? "sz2" : ""; }
 function styleNameAny(id) { return styleName(state.media, id); }
 const tagLine = (styleName, movementId, studioName, ip, ip2) => `${styleName.toUpperCase()}${movementId === "none" ? "" : " ✕ " + mvName(movementId).toUpperCase()} · ${studioName.toUpperCase()} — ${ip.toUpperCase()}${ip2 ? " ✕ " + ip2.toUpperCase() + " · MASHUP" : ""}`;
 function mdName(id) { const m = DATA.media.find((x) => x.id === id); return m ? m.name : id; }
@@ -399,7 +402,7 @@ function pieceHtml(p, i, total) {
         : `<img class="bgimg" src="${esc(p.img)}" alt="" decoding="async">`}
       <div class="scrim"></div>
       <div class="prog" style="width:${Math.round(((i + 1) / total) * 100)}%"></div>
-      <div class="vtitle" data-open-index title="All styles">${esc(styleName(p.media, p.movement).toUpperCase())}</div>
+      <div class="vtitle ${vtSize(p.media, p.movement)}" data-open-index title="All styles">${esc(styleName(p.media, p.movement).toUpperCase())}</div>
       <button class="savebtn ${isSavedPiece(p.id) ? "saved" : ""}" data-save="${p.id}" aria-label="Save to your box">${isSavedPiece(p.id) ? "✓" : "+"}</button>
       <button class="searchbtn" data-search aria-label="Search by movement"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 L21 21"/></svg></button>
       <div class="panel">
