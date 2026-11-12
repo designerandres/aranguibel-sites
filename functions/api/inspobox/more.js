@@ -97,6 +97,23 @@ export function scoreAll(piece, modelName) {
   return out;
 }
 
+// Subject + medium signals (v54). Civitai showcase galleries are
+// dominated by character generations whatever the style — the prompt
+// reveals the SUBJECT as plainly as the style. CHARACTER_TERMS mark a
+// character-led piece (Danbooru tag soup is unmistakable); MEDIUM_TERMS
+// mark designed-media subject matter — the places, objects, graphics and
+// spaces the app's disciplines are actually about.
+const CHARACTER_TERMS = ["1girl", "2girls", "1boy", "solo", "waifu", "anime", "manga", "long hair", "short hair", "hair ornament", "hairclip", "hairband", "school uniform", "thighhighs", "blush", "looking at viewer", "cat ears", "maid outfit", "bikini", "swimsuit", "cleavage", "ponytail", "twintails", "heterochromia", "ahoge", "choker", "pleated skirt", "vtuber", "genshin impact", "honkai", "azur lane", "arknights", "blue archive", "portrait of a woman", "beautiful girl", "beautiful woman", "young woman"];
+const MEDIUM_TERMS = ["architecture", "building", "interior", "cityscape", "skyline", "poster", "typography", "logo", "branding", "packaging", "product design", "furniture", "vehicle", "airship", "city", "street", "landscape", "temple", "church", "cathedral", "castle", "tower", "bridge", "statue", "sculpture", "editorial", "house", "palace", "theater", "theatre", "library", "museum", "cafe", "restaurant", "hotel", "lobby", "facade", "staircase", "courtyard", "rooftop", "garden", "machine", "spaceship"];
+function countTerms(prompt, terms) {
+  const hay = String(prompt || "").toLowerCase();
+  let n = 0;
+  for (const t of terms) if (hay.includes(t)) n++;
+  return n;
+}
+export function subjectHits(prompt) { return countTerms(prompt, CHARACTER_TERMS); }
+export function mediumHits(prompt) { return countTerms(prompt, MEDIUM_TERMS); }
+
 // Neighbor genres whose galleries most often hide this genre's pieces
 // (dieselpunk lives under art-moderne, neon-noir under cyberpunk, ...).
 // The live walk covers the genre's own pool first, then the neighbors',
@@ -219,11 +236,11 @@ export function walkAll(rot) {
   return all.map((_, i) => all[(i + (rot || 0)) % all.length]);
 }
 
-export function classifySlot(scores) {
+export function classifySlot(scores, minTop = 4, margin = 2) {
   const entries = Object.entries(scores).sort((a, b) => b[1] - a[1]);
   if (!entries.length) return null;
   const [top, second] = [entries[0], entries[1]];
-  if (top[1] >= 3 && (!second || top[1] > second[1])) return top[0];
+  if (top[1] >= minTop && (!second || top[1] >= second[1] + margin)) return top[0];
   return null;
 }
 
@@ -235,8 +252,7 @@ const HOME_BATCH = 16;
 export async function classifyAmbiguous(env, items, fetchFn) {
   if (!items.length || !env || !env.ANTHROPIC_API_KEY) return {};
   const list = items.slice(0, 16);
-  const names = Object.keys(QUERIES).join(", ");
-  const text = "Classify each numbered image-generation prompt into exactly one of these movements: " + names + ", or none if it fits no movement. Reply with ONLY a JSON array like [{\"i\":0,\"m\":\"gothic\"}].\n\n" + list.map((p, i) => i + ". " + String(p.prompt || "").slice(0, 220)).join("\n");
+  const text = "Each numbered image-generation prompt comes with the small set of movements its own vocabulary already plausibly matches. For each one, choose the single best movement FROM ITS OWN SET, or none if the style is not truly the subject of the prompt. A character portrait with a plain or simple background is NOT minimalist — minimalist means deliberate geometric reduction, spare architecture, or abstract composition as the subject. Reply with ONLY a JSON array like [{\"i\":0,\"m\":\"gothic\"}].\n\n" + list.map((p, i) => i + ". " + String(p.prompt || "").slice(0, 220) + " [choose: " + (p.cands || []).join(", ") + " — or none]").join("\n");
   for (const model of ["claude-haiku-5-5", "claude-sonnet-5-5"]) {
     try {
       const ctl = new AbortController();
@@ -256,7 +272,7 @@ export async function classifyAmbiguous(env, items, fetchFn) {
       if (a < 0 || b <= a) continue;
       const arr = JSON.parse(txt.slice(a, b + 1));
       const out = {};
-      for (const r of arr) if (r && Number.isInteger(r.i) && list[r.i] && (QUERIES[r.m] || r.m === "none")) out[r.i] = r.m;
+      for (const r of arr) if (r && Number.isInteger(r.i) && list[r.i] && (r.m === "none" || (list[r.i].cands || []).includes(r.m))) out[r.i] = r.m;
       return out;
     } catch { /* try the next model */ }
   }
@@ -268,7 +284,7 @@ export async function fetchHomeBatch({ cursor, exclude, media }, fetchFn, env) {
   const st = cursor && typeof cursor === "object" ? { q: 0, v: 0, c: null, m: null, rot: 0, ...cursor } : { q: 0, v: 0, c: null, m: null, rot: Math.floor(Math.random() * 1024) };
   const walk = walkAll(st.rot || 0);
   const buckets = {};
-  let total = 0, calls = 0, examined = 0;
+  let total = 0, calls = 0, examined = 0, charFiled = 0, charCapped = 0, skipped = 0;
   const ambiguous = [];
   while (total < HOME_BATCH && calls < 10 && st.q < walk.length) {
     if (!st.m) {
@@ -290,10 +306,25 @@ export async function fetchHomeBatch({ cursor, exclude, media }, fetchFn, env) {
       if (!p || seen.has(p.uuid)) continue;
       seen.add(p.uuid);
       examined++;
+      // Style-tagged media focus (v54): the style must be the SUBJECT.
+      // Character-led pieces (the Civitai showcase default) file only
+      // when their style signal is dominant, and at most 2 per batch;
+      // everything else needs designed-media subject matter in the
+      // prompt, or an overwhelming style score.
       const scores = scoreAll(p, ver.n);
+      const topScore = Math.max(0, ...Object.values(scores));
       const slot = classifySlot(scores);
-      if (slot) { p.movement = slot; p.meta = true; (buckets[slot] = buckets[slot] || []).push(p); total++; }
-      else if (p.prompt && Math.max(0, ...Object.values(scores)) >= 2 && ambiguous.length < 16) ambiguous.push(p);
+      const charStrong = subjectHits(p.prompt) >= 2;
+      const med = mediumHits(p.prompt);
+      if (slot && (med >= 1 || topScore >= 6)) {
+        if (charStrong && charFiled >= 2) { charCapped++; }
+        else { p.movement = slot; p.meta = true; (buckets[slot] = buckets[slot] || []).push(p); total++; if (charStrong) charFiled++; }
+      }
+      else if (!slot && p.prompt && topScore >= 2 && !charStrong && med >= 1 && ambiguous.length < 16) {
+        p.cands = Object.entries(scores).filter(([, v]) => v >= 2).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([k]) => k);
+        if (p.cands.length) ambiguous.push(p); else skipped++;
+      }
+      else skipped++;
       if (total >= HOME_BATCH) break;
     }
     st.c = (page.metadata && page.metadata.nextCursor) || null;
@@ -303,7 +334,7 @@ export async function fetchHomeBatch({ cursor, exclude, media }, fetchFn, env) {
   if (ambiguous.length && total < HOME_BATCH) {
     const verdicts = await classifyAmbiguous(env, ambiguous, fetchFn);
     for (const [ix, mv] of Object.entries(verdicts)) {
-      if (mv === "none") continue;
+      if (mv === "none" || claude >= 6) continue;
       const p = ambiguous[Number(ix)];
       p.movement = mv; p.claude = true;
       (buckets[mv] = buckets[mv] || []).push(p); total++; claude++;
@@ -318,7 +349,7 @@ export async function fetchHomeBatch({ cursor, exclude, media }, fetchFn, env) {
   while (pieces.length < total && guard++ < 500) {
     for (const mv of mvs) { if (buckets[mv].length) pieces.push(buckets[mv].shift()); if (pieces.length >= total) break; }
   }
-  return { pieces, cursor: st, done: st.q >= walk.length, stats: { examined, passed: pieces.length, claude, civCalls: calls, genres: mvs.length } };
+  return { pieces, cursor: st, done: st.q >= walk.length, stats: { examined, passed: pieces.length, claude, civCalls: calls, genres: mvs.length, charCapped, skipped } };
 }
 
 export async function fetchMoreBatch({ movement, media, cursor, exclude }, fetchFn, env) {
