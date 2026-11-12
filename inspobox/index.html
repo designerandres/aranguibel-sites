@@ -215,7 +215,7 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
     <div class="logo">INSPO<span class="box">BOX</span></div>
     <div id="counter">— / —</div>
     <div id="tapHint">TAP A PIECE TO LOCK ITS GENRE</div>
-    <div id="buildTag">BUILD V57</div>
+    <div id="buildTag">BUILD V58</div>
   </div>
   <div class="topbtns">
     <button class="chipbtn" id="boxBtn">BOX <span class="n" id="boxCount">0</span></button>
@@ -382,7 +382,7 @@ function pieceHtml(p, i, total) {
       <button class="searchbtn" data-search aria-label="Search by movement"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 L21 21"/></svg></button>
       <div class="panel">
         <div class="ptitle">${esc(p.title)}</div>
-        ${p.url ? `<a class="pby" href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.by)}${p.session ? ` <span class="ext">· LIVE${p.gated ? " ✓" : ""}</span>` : ""} <span class="ext">↗</span></a>` : `<div class="pby">${esc(p.by)}${p.session ? ` <span class="ext">· LIVE${p.gated ? " ✓" : ""}</span>` : ""}</div>`}
+        ${p.url ? `<a class="pby" href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.by)}${p.session ? ` <span class="ext">· ${p.fresh ? "TODAY" : "LIVE"}${p.gated ? " ✓" : ""}</span>` : ""}</a>` : `<div class="pby">${esc(p.by)}${p.session ? ` <span class="ext">· ${p.fresh ? "TODAY" : "LIVE"}${p.gated ? " ✓" : ""}</span>` : ""}</div>`}
         <div class="rail">${railHtml()}</div>
       </div>
     </section>`;
@@ -621,12 +621,12 @@ $("#deck").addEventListener("click", (e) => {
   const mediaBtn = e.target.closest("[data-media]");
   if (mediaBtn) { jumpToMedia(mediaBtn.dataset.media); return; }
   const searchBtn = e.target.closest("[data-search]");
-  if (searchBtn) { resetIdxFilter(); openLayer("#indexLayer"); return; }
+  if (searchBtn) { openIndex(); return; }
   const saveBtn = e.target.closest("[data-save]");
   if (saveBtn) { toggleSavePiece(saveBtn.dataset.save); return; }
   if (e.target.closest("[data-open-index]")) {
     if (state.movement !== "all") { const keepId = deckList[state.current] && deckList[state.current].id; state.movement = "all"; renderIndex(); renderDeck(keepId); flash("UNLOCKED"); }
-    else { resetIdxFilter(); openLayer("#indexLayer"); }
+    else { openIndex(); }
   }
 });
 
@@ -652,7 +652,7 @@ function renderBox() {
     <div class="boxitem">
       <img src="${esc(b.img)}" alt="">
       <div class="bt"><div class="bk">${esc(mvName(b.movement).toUpperCase())} · ${esc(mdName(b.media).toUpperCase())}</div>
-      <div class="bti">${esc(b.title)}</div>${b.url ? `<a class="bb" href="${esc(b.url)}" target="_blank" rel="noopener">${esc(b.by || "")} ↗</a>` : `<div class="bb">${esc(b.by || "")}</div>`}</div>
+      <div class="bti">${esc(b.title)}</div>${b.url ? `<a class="bb" href="${esc(b.url)}" target="_blank" rel="noopener">${esc(b.by || "")}</a>` : `<div class="bb">${esc(b.by || "")}</div>`}</div>
       <button class="del" data-del="${i}">✕</button>
     </div>` : `
     <div class="boxitem sparkitem">
@@ -757,6 +757,7 @@ function renderIndex() {
     </button>`).join("");
 }
 function resetIdxFilter() { const inp = $("#idxSearch"); if (inp) inp.value = ""; $$("#indexGrid .tile").forEach((t) => { t.style.display = ""; }); }
+function openIndex() { resetIdxFilter(); openLayer("#indexLayer"); const inp = $("#idxSearch"); if (inp) inp.focus({ preventScroll: true }); }
 $("#idxSearch").addEventListener("input", (e) => {
   const q = e.target.value.trim().toLowerCase();
   $$("#indexGrid .tile").forEach((t) => { t.style.display = !q || (t.dataset.name || "").includes(q) ? "" : "none"; });

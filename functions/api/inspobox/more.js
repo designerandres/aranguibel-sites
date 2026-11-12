@@ -271,6 +271,21 @@ export function walkAll(rot) {
   return all.map((_, i) => all[(i + (rot || 0)) % all.length]);
 }
 
+// The fresh lane (v58): "highest rated <genre> of the last 24 hours."
+// Civitai has no cross-site genre search — the images endpoint filters
+// only within a gallery — so the lane is built from the models search:
+// each genre's canonical query with period=Day and sort="Highest Rated",
+// then a Week pass as fallback (a niche genre may publish nothing on a
+// given day). Entries carry their period through to the images call, so
+// a TODAY piece really is from the window on its badge.
+export function freshEntries(rot) {
+  const mvs = Object.keys(QUERIES);
+  const ordered = mvs.map((_, i) => mvs[(i + (rot || 0)) % mvs.length]);
+  const out = [];
+  for (const period of ["Day", "Week"]) for (const mv of ordered) out.push({ q: QUERIES[mv][0], src: mv, period });
+  return out;
+}
+
 export function classifySlot(scores, minTop = 4, margin = 2) {
   const entries = Object.entries(scores).sort((a, b) => b[1] - a[1]);
   if (!entries.length) return null;
@@ -321,22 +336,10 @@ export async function fetchHomeBatch({ cursor, exclude, media }, fetchFn, env) {
   const buckets = {};
   let total = 0, calls = 0, examined = 0, charFiled = 0, charCapped = 0, skipped = 0;
   const ambiguous = [];
-  while (total < HOME_BATCH && calls < 10 && st.q < walk.length) {
-    if (!st.m) {
-      const qs = new URLSearchParams({ query: walk[st.q].q, limit: "6", sort: "Most Downloaded", nsfw: "false" });
-      qs.append("types", "LORA"); qs.append("types", "Checkpoint");
-      const models = await civGet(fetchFn, "/models?" + qs.toString()); calls++;
-      st.m = orderModels((models.items || []).map(mapModel).filter(Boolean));
-      st.v = 0; st.c = null;
-      if (!st.m.length) { st.q++; st.m = null; continue; }
-    }
-    if (st.v >= st.m.length) { st.q++; st.m = null; st.c = null; continue; }
-    const ver = st.m[st.v];
-    const qs = new URLSearchParams({ modelVersionId: String(ver.v), limit: "30", nsfw: "false", sort: "Most Reactions", period: st.v % 2 ? "Month" : "AllTime", withMeta: "true" });
-    if (st.c) qs.set("cursor", st.c);
-    const page = await civGet(fetchFn, "/images?" + qs.toString()); calls++;
+  let freshFiled = 0;
+  const absorb = (page, ver, src, fresh) => {
     for (const item of page.items || []) {
-      const p = toPiece(item, ver.n, walk[st.q].src, media || "design");
+      const p = toPiece(item, ver.n, src, media || "design");
       if (!p || seen.has(p.uuid)) continue;
       seen.add(p.uuid);
       examined++;
@@ -352,15 +355,54 @@ export async function fetchHomeBatch({ cursor, exclude, media }, fetchFn, env) {
       const med = mediumHits(p.prompt);
       if (slot && (med >= 1 || topScore >= 6)) {
         if (charStrong && charFiled >= 2) { charCapped++; }
-        else { p.movement = slot; p.meta = true; (buckets[slot] = buckets[slot] || []).push(p); total++; if (charStrong) charFiled++; }
+        else { p.movement = slot; p.meta = true; if (fresh) { p.fresh = true; freshFiled++; } (buckets[slot] = buckets[slot] || []).push(p); total++; if (charStrong) charFiled++; }
       }
       else if (!slot && p.prompt && topScore >= 2 && !charStrong && med >= 1 && ambiguous.length < 16) {
         p.cands = Object.entries(scores).filter(([, v]) => v >= 2).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([k]) => k);
-        if (p.cands.length) ambiguous.push(p); else skipped++;
+        if (p.cands.length) { if (fresh) p.fresh = true; ambiguous.push(p); } else skipped++;
       }
       else skipped++;
       if (total >= HOME_BATCH) break;
     }
+  };
+  if (!st.f) st.f = { i: 0, m: null, v: 0, c: null, done: false };
+  const freshWalk = freshEntries(st.rot || 0);
+  let fCalls = 0;
+  while (total < HOME_BATCH && fCalls < 5 && !st.f.done) {
+    if (st.f.i >= freshWalk.length) { st.f.done = true; break; }
+    const entry = freshWalk[st.f.i];
+    if (!st.f.m) {
+      const qs = new URLSearchParams({ query: entry.q, limit: "6", sort: "Highest Rated", period: entry.period, nsfw: "false" });
+      qs.append("types", "LORA"); qs.append("types", "Checkpoint");
+      const models = await civGet(fetchFn, "/models?" + qs.toString()); fCalls++;
+      st.f.m = orderModels((models.items || []).map(mapModel).filter(Boolean));
+      st.f.v = 0; st.f.c = null;
+      if (!st.f.m.length) { st.f.i++; st.f.m = null; continue; }
+    }
+    if (st.f.v >= st.f.m.length) { st.f.i++; st.f.m = null; st.f.c = null; continue; }
+    const ver = st.f.m[st.f.v];
+    const qs = new URLSearchParams({ modelVersionId: String(ver.v), limit: "30", nsfw: "false", sort: "Most Reactions", period: entry.period, withMeta: "true" });
+    if (st.f.c) qs.set("cursor", st.f.c);
+    const page = await civGet(fetchFn, "/images?" + qs.toString()); fCalls++;
+    absorb(page, ver, entry.src, true);
+    st.f.c = (page.metadata && page.metadata.nextCursor) || null;
+    if (!st.f.c) st.f.v++;
+  }
+  while (total < HOME_BATCH && calls < 10 && st.q < walk.length) {
+    if (!st.m) {
+      const qs = new URLSearchParams({ query: walk[st.q].q, limit: "6", sort: "Most Downloaded", nsfw: "false" });
+      qs.append("types", "LORA"); qs.append("types", "Checkpoint");
+      const models = await civGet(fetchFn, "/models?" + qs.toString()); calls++;
+      st.m = orderModels((models.items || []).map(mapModel).filter(Boolean));
+      st.v = 0; st.c = null;
+      if (!st.m.length) { st.q++; st.m = null; continue; }
+    }
+    if (st.v >= st.m.length) { st.q++; st.m = null; st.c = null; continue; }
+    const ver = st.m[st.v];
+    const qs = new URLSearchParams({ modelVersionId: String(ver.v), limit: "30", nsfw: "false", sort: "Most Reactions", period: st.v % 2 ? "Month" : "AllTime", withMeta: "true" });
+    if (st.c) qs.set("cursor", st.c);
+    const page = await civGet(fetchFn, "/images?" + qs.toString()); calls++;
+    absorb(page, ver, walk[st.q].src, false);
     st.c = (page.metadata && page.metadata.nextCursor) || null;
     if (!st.c) st.v++;
   }
@@ -398,7 +440,7 @@ export async function fetchHomeBatch({ cursor, exclude, media }, fetchFn, env) {
   const banked = {};
   let bankedCount = 0;
   for (const mv of mvs) if (buckets[mv].length) { banked[mv] = buckets[mv].slice(0, BANK_CAP); bankedCount += banked[mv].length; }
-  return { pieces, banked, cursor: st, done: st.q >= walk.length, stats: { examined, passed: pieces.length, claude, civCalls: calls, genres: mvs.length, charCapped, skipped, banked: bankedCount } };
+  return { pieces, banked, cursor: st, done: st.q >= walk.length, stats: { examined, passed: pieces.length, claude, civCalls: calls, genres: mvs.length, charCapped, skipped, banked: bankedCount, freshFiled } };
 }
 
 export async function fetchMoreBatch({ movement, media, cursor, exclude }, fetchFn, env) {
