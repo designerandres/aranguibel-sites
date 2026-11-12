@@ -8,9 +8,13 @@
 <link rel="manifest" href="/inspobox/manifest.webmanifest">
 <link rel="icon" href="/inspobox/icons/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/inspobox/icons/icon-180.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Grotesk:wght@500;700&family=Unbounded:wght@700;900&display=swap" rel="stylesheet">
+<style>
+@font-face{font-family:'Anton';src:url(/inspobox/fonts/anton.woff2) format('woff2');font-display:swap}
+@font-face{font-family:'Unbounded';src:url(/inspobox/fonts/unbounded700.woff2) format('woff2');font-weight:700;font-display:swap}
+@font-face{font-family:'Unbounded';src:url(/inspobox/fonts/unbounded.woff2) format('woff2');font-weight:900;font-display:swap}
+@font-face{font-family:'Space Grotesk';src:url(/inspobox/fonts/sg500.woff2) format('woff2');font-weight:500;font-display:swap}
+@font-face{font-family:'Space Grotesk';src:url(/inspobox/fonts/sg700.woff2) format('woff2');font-weight:700;font-display:swap}
+</style>
 <style>
 :root{
   --bg:#07070C; --ink:#FFFFFF; --dim:rgba(255,255,255,.66); --faint:rgba(255,255,255,.45);
@@ -203,7 +207,7 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
     <div class="logo">INSPO<span class="box">BOX</span></div>
     <div id="counter">— / —</div>
     <div id="tapHint">TAP A PIECE TO LOCK ITS GENRE</div>
-    <div id="buildTag">BUILD V32</div>
+    <div id="buildTag">BUILD V33</div>
   </div>
   <div class="topbtns">
     <button class="chipbtn" id="boxBtn">BOX <span class="n" id="boxCount">0</span></button>
