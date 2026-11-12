@@ -207,7 +207,7 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
     <div class="logo">INSPO<span class="box">BOX</span></div>
     <div id="counter">— / —</div>
     <div id="tapHint">TAP A PIECE TO LOCK ITS GENRE</div>
-    <div id="buildTag">BUILD V33</div>
+    <div id="buildTag">BUILD V34</div>
   </div>
   <div class="topbtns">
     <button class="chipbtn" id="boxBtn">BOX <span class="n" id="boxCount">0</span></button>
@@ -352,6 +352,23 @@ const tagLine = (styleName, movementId, studioName, ip, ip2) => `${styleName.toU
 function mdName(id) { const m = DATA.media.find((x) => x.id === id); return m ? m.name : id; }
 function isSavedPiece(id) { return box.some((b) => b.type === "piece" && b.id === id); }
 
+function pieceHtml(p, i, total) {
+  return `
+    <section class="piece" data-id="${p.id}" data-idx="${i}">
+      ${p.video
+        ? `<video class="bgvid" src="${esc(p.video)}" poster="${esc(p.img)}" muted loop playsinline preload="metadata"></video>`
+        : `<img class="bgimg" src="${esc(p.img)}" alt="" decoding="async">`}
+      <div class="scrim"></div>
+      <div class="prog" style="width:${Math.round(((i + 1) / total) * 100)}%"></div>
+      <div class="vtitle" data-open-index title="All movements">${esc(mvName(p.movement).toUpperCase())}</div>
+      <button class="savebtn ${isSavedPiece(p.id) ? "saved" : ""}" data-save="${p.id}" aria-label="Save to your box">${isSavedPiece(p.id) ? "✓" : "+"}</button>
+      <div class="panel">
+        <div class="ptitle">${esc(p.title)}</div>
+        ${p.url ? `<a class="pby" href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.by)}${p.session ? ` <span class="ext">· LIVE</span>` : ""} <span class="ext">↗</span></a>` : `<div class="pby">${esc(p.by)}${p.session ? ` <span class="ext">· LIVE</span>` : ""}</div>`}
+        <div class="rail">${railHtml()}</div>
+      </div>
+    </section>`;
+}
 function renderDeck(startId) {
   const feed = deckFeed(); deckList = feed;
   const deck = $("#deck");
@@ -361,21 +378,7 @@ function renderDeck(startId) {
     $("#dots").innerHTML = ""; $("#counter").textContent = "0 / 0";
     return;
   }
-  deck.innerHTML = feed.map((p, i) => `
-    <section class="piece" data-id="${p.id}" data-idx="${i}">
-      ${p.video
-        ? `<video class="bgvid" src="${esc(p.video)}" poster="${esc(p.img)}" muted loop playsinline preload="metadata"></video>`
-        : `<img class="bgimg" src="${esc(p.img)}" alt="" decoding="async">`}
-      <div class="scrim"></div>
-      <div class="prog" style="width:${Math.round(((i + 1) / feed.length) * 100)}%"></div>
-      <div class="vtitle" data-open-index title="All movements">${esc(mvName(p.movement).toUpperCase())}</div>
-      <button class="savebtn ${isSavedPiece(p.id) ? "saved" : ""}" data-save="${p.id}" aria-label="Save to your box">${isSavedPiece(p.id) ? "✓" : "+"}</button>
-      <div class="panel">
-        <div class="ptitle">${esc(p.title)}</div>
-        ${p.url ? `<a class="pby" href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.by)} <span class="ext">↗</span></a>` : `<div class="pby">${esc(p.by)}</div>`}
-        <div class="rail">${railHtml()}</div>
-      </div>
-    </section>`).join("");
+  deck.innerHTML = feed.map((p, i) => pieceHtml(p, i, feed.length)).join("");
   $("#dots").innerHTML = feed.map((_, i) => `<i class="${i === 0 ? "on" : ""}"></i>`).join("");
   state.current = 0; updateChrome(feed.length);
   deck.scrollTop = 0;
@@ -384,6 +387,7 @@ function renderDeck(startId) {
     if (ix > 0) { const el = $$(".piece", deck)[ix]; if (el) { deck.scrollTop = el.offsetTop; state.current = ix; updateChrome(feed.length); } }
   }
   bindDeck(feed);
+  hydrateLive();
 }
 function railHtml() {
   const order = DATA.media.map((m) => m.id);
@@ -406,13 +410,17 @@ function bindDeck(feed) {
       const v = e.target.querySelector("video");
       if (e.isIntersecting) {
         state.current = Number(e.target.dataset.idx);
-        updateChrome(feed.length);
+        updateChrome(deckList.length);
+        maybeFetchLive();
         if (v) v.play().catch(() => {});
       } else if (v) v.pause();
     }
   }, { root: $("#deck"), threshold: 0.6 });
-  $$(".piece", $("#deck")).forEach((el) => {
-    deckObs.observe(el);
+  watchPieces($$(".piece", $("#deck")));
+}
+function watchPieces(els) {
+  els.forEach((el) => {
+    if (deckObs) deckObs.observe(el);
     const img = el.querySelector("img.bgimg");
     if (img) {
       if (img.complete && img.naturalWidth) img.classList.add("ld");
@@ -420,6 +428,54 @@ function bindDeck(feed) {
     }
   });
 }
+/* Live feed: while a genre is locked, nearing the end of its stack pulls
+   the next batch from Civitai via the gated /api/inspobox/more endpoint.
+   Pieces live only in memory (per genre + discipline column) — a reload
+   clears them; the curated drop underneath never changes. */
+const liveCols = {};
+function liveKey() { return state.movement + "|" + state.media; }
+function liveCol() { const k = liveKey(); return liveCols[k] || (liveCols[k] = { cursor: null, done: false, loading: false, pieces: [], empties: 0 }); }
+function excludeUuids() {
+  const out = [];
+  for (const p of DATA.feed) if (p.movement === state.movement && p.img) { const u = p.img.split("/").pop().replace(/\.jpg$/, ""); if (u) out.push(u); }
+  for (const col of Object.values(liveCols)) for (const p of col.pieces) if (p.uuid) out.push(p.uuid);
+  return out;
+}
+function appendPieces(pieces) {
+  const deck = $("#deck");
+  const base = deckList.length;
+  pieces.forEach((p, j) => { deckList.push(p); deck.insertAdjacentHTML("beforeend", pieceHtml(p, base + j, base + pieces.length)); });
+  $("#dots").insertAdjacentHTML("beforeend", pieces.map(() => "<i></i>").join(""));
+  watchPieces([...deck.querySelectorAll(".piece")].slice(base));
+  updateChrome(deckList.length);
+}
+function hydrateLive() {
+  if (state.movement === "all") return;
+  const col = liveCol();
+  if (col.pieces.length) appendPieces(col.pieces);
+  maybeFetchLive();
+}
+async function maybeFetchLive() {
+  if (state.movement === "all") return;
+  const col = liveCol();
+  if (col.done || col.loading) return;
+  if (state.current < deckList.length - 3) return;
+  col.loading = true;
+  const key = liveKey();
+  try {
+    const ctl = new AbortController(); const to = setTimeout(() => ctl.abort(), 30000);
+    const res = await fetch("/api/inspobox/more", { method: "POST", headers: { "content-type": "application/json" }, signal: ctl.signal, body: JSON.stringify({ movement: state.movement, media: state.media, cursor: col.cursor, exclude: excludeUuids() }) });
+    clearTimeout(to);
+    const data = await res.json().catch(() => null);
+    if (!res.ok || !data || !data.ok) { col.done = true; return; }
+    col.cursor = data.cursor; col.done = !!data.done;
+    const fresh = (data.pieces || []).filter((p) => !deckList.some((x) => x.id === p.id));
+    if (fresh.length) { col.pieces.push(...fresh); col.empties = 0; if (liveKey() === key) appendPieces(fresh); }
+    else if (!col.done && ++col.empties < 3 && liveKey() === key) { col.loading = false; maybeFetchLive(); return; }
+  } catch { col.done = true; }
+  col.loading = false;
+}
+
 /* Snap hardening: iOS can leave the deck resting between pieces when the
    viewport height shifts (URL bar, rotation). Once scrolling settles, if
    the deck is not aligned to the current piece, put it back. */
@@ -448,7 +504,7 @@ $("#deck").addEventListener("click", (e) => {
 
 /* ---------------- box ---------------- */
 function toggleSavePiece(id) {
-  const p = DATA.feed.find((x) => x.id === id);
+  const p = DATA.feed.find((x) => x.id === id) || deckList.find((x) => x.id === id);
   if (!p) return;
   const ix = box.findIndex((b) => b.type === "piece" && b.id === id);
   if (ix >= 0) box.splice(ix, 1);
@@ -793,7 +849,7 @@ $("#deck").addEventListener("pointerup", (e) => {
   if (state.movement === "all") { state.movement = p.movement; renderIndex(); renderDeck(p.id); flash(mvName(p.movement).toUpperCase() + " — LOCKED"); }
   else flash(mvName(p.movement).toUpperCase());
 });
-window.INSPOBOX = { disciplineStep, jumpToMedia, getState: () => ({ movement: state.movement, current: state.current, count: deckList.length, media: state.media }), getConcept: () => lastConcept };
+window.INSPOBOX = { disciplineStep, jumpToMedia, fetchLive: () => maybeFetchLive(), getLive: () => Object.fromEntries(Object.entries(liveCols).map(([k, c]) => [k, { n: c.pieces.length, done: c.done }])), getState: () => ({ movement: state.movement, current: state.current, count: deckList.length, media: state.media }), getConcept: () => lastConcept };
 
 /* ---------------- idea starter ---------------- */
 const sel = { style: "cgi", movement: "surreal", studio: "animation" };
@@ -910,23 +966,24 @@ async function ignite() {
   if (generating) return;
   generating = true;
   lastGenWhy = "";
+  let timedOut = false;
   showConjuring();
   try {
     const ctl = new AbortController();
-    const to = setTimeout(() => ctl.abort(), 30000);
+    const to = setTimeout(() => { timedOut = true; ctl.abort(); }, 40000);
     const res = await fetch("/api/inspobox/generate", { method: "POST", signal: ctl.signal, headers: { "content-type": "application/json" }, body: JSON.stringify({ prompt: promptEl.value.trim(), styleId: sel.style, movementId: sel.movement, studioId: sel.studio, reroll: rerolls }) });
     clearTimeout(to);
     if (!res.ok) {
       let detail = "";
       try { const b = await res.json(); detail = b.error || b.message || ""; } catch (_) { try { detail = (await res.text()).slice(0, 160); } catch (_) {} }
-      lastGenWhy = ("HTTP " + res.status + (detail ? " · " + detail : "")).slice(0, 200);
+      lastGenWhy = ("HTTP " + res.status + (detail ? " · " + detail : " · edge error (function didn't answer)")).slice(0, 200);
       throw new Error(lastGenWhy);
     }
     const data = await res.json();
     if (!data.ok || !data.concept) { lastGenWhy = ("bad payload · " + (data.error || "no concept returned")).slice(0, 200); throw new Error(lastGenWhy); }
     acceptDynamic(data.concept, promptEl.value.trim());
   } catch (e) {
-    const why = (e && e.name === "AbortError") ? "request timed out after 30s" : (lastGenWhy || String(e && e.message || e));
+    const why = timedOut ? "request timed out after 40s" : (lastGenWhy || String(e && e.message || e));
     generateLocal(why);
   }
   generating = false;

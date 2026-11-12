@@ -101,28 +101,40 @@ export function parseConceptText(text, grounding) {
 }
 
 export async function callAnthropic(env, built) {
-  const models = [...new Set([env.ANTHROPIC_MODEL, "claude-sonnet-5-5", "claude-haiku-5-5"].filter(Boolean))];
+  // Haiku first: this is a small structured-JSON task and latency is the
+  // whole game — a slow first attempt used to eat the entire budget and the
+  // edge dropped the connection before any answer came back (seen live on
+  // 2026-11-12 as client-side "Load failed" / bare HTTP 502 fallbacks).
+  // Total budget 26s so the function always answers with real JSON.
+  const models = [...new Set([env.ANTHROPIC_MODEL, "claude-haiku-5-5", "claude-sonnet-5-5"].filter(Boolean))];
+  const deadline = Date.now() + 26000;
   let lastErr = "no models";
   for (const model of models) {
+    const remain = deadline - Date.now();
+    if (remain < 4000) break;
     const ctl = new AbortController();
-    const to = setTimeout(() => ctl.abort(), 25000);
+    const to = setTimeout(() => ctl.abort(), Math.min(15000, remain));
     try {
       const res = await fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
         signal: ctl.signal,
         headers: { "x-api-key": env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json" },
-        body: JSON.stringify({ model, max_tokens: 900, temperature: 0.9, system: built.system, messages: [{ role: "user", content: built.user }] }),
+        body: JSON.stringify({ model, max_tokens: 650, temperature: 0.9, system: built.system, messages: [{ role: "user", content: built.user }] }),
       });
       const data = await res.json().catch(() => null);
       if (!res.ok) {
-        lastErr = (data && data.error && (data.error.type + ": " + data.error.message)) || ("http " + res.status);
-        if (res.status === 404 || (data && data.error && data.error.type === "not_found_error")) continue; // try the next model id
-        throw new Error(lastErr);
+        lastErr = model + ": " + ((data && data.error && (data.error.type + ": " + data.error.message)) || ("http " + res.status));
+        if (res.status === 401 || res.status === 403) throw new Error(lastErr); // a bad key fails every model — say so fast
+        continue; // 404 / 429 / 5xx — try the next model while budget remains
       }
       const text = (data.content || []).filter((b) => b.type === "text").map((b) => b.text).join("");
       const concept = parseConceptText(text, built.grounding);
-      if (!concept) throw new Error("unparseable concept");
+      if (!concept) { lastErr = model + ": unparseable concept"; continue; }
       return concept;
+    } catch (e) {
+      if (e && /: (authentication_error|permission_error)/.test(e.message || "")) throw e;
+      lastErr = model + ": " + (e && e.name === "AbortError" ? "timed out" : String(e && e.message || e));
+      // timeouts and network errors fall through to the next model
     } finally { clearTimeout(to); }
   }
   throw new Error(lastErr);
