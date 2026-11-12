@@ -200,7 +200,7 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
     <div class="logo">INSPO<span class="box">BOX</span></div>
     <div id="counter">— / —</div>
     <div id="tapHint">TAP A PIECE TO LOCK ITS GENRE</div>
-    <div id="buildTag">BUILD V25</div>
+    <div id="buildTag">BUILD V26</div>
   </div>
   <div class="topbtns">
     <button class="chipbtn" id="boxBtn">BOX <span class="n" id="boxCount">0</span></button>
@@ -450,10 +450,11 @@ function buildPrompt(item) {
     const st = (DATA.atoms.styles || []).find((s) => s.id === c.styleId);
     const mv = (DATA.atoms.moves || {})[c.movementId] || {};
     const lines = [];
-    if (c.person) lines.push(sent(cap(c.subject)));
+    if (c.role && !c.person) lines.push(sent(`Transform the person in the reference image into ${c.role}, ${c.look || "dressed to belong in this world"}`));
+    else if (c.person) lines.push(sent(cap(c.subject)));
     if (st) lines.push(sent(cap(st.look)));
     if (mv.dress) lines.push(sent(`Dress the world in ${mv.dress}; light: ${mv.light}`));
-    lines.push(sent(c.person
+    lines.push(sent((c.person || c.role)
       ? `From ${c.studio}'s ${c.ip}${c.ip2 ? `, crossed with ${c.ip2} in a mashup` : ""}: set in ${c.place}`
       : `From ${c.studio}'s ${c.ip}${c.ip2 ? `, crossed with ${c.ip2} in a mashup` : ""}: ${cap(c.subject)}, in ${c.place}`));
     lines.push(`0-3s OPEN: ${sent(cap(c.open))}`);
@@ -469,7 +470,7 @@ function buildPrompt(item) {
       `IP: ${c.ip || "—"}${c.ip2 ? " ✕ " + c.ip2 + " (mashup)" : ""}`,
       c.seed ? `Seed: ${c.seed}` : null,
       `Subject: ${c.subject || "—"}`,
-      c.person ? `Newcomer: ${c.person} — ${c.role || "—"}` : null,
+      c.person ? `Newcomer: ${c.person} — ${c.role || "—"}` : (c.role ? `Character: ${c.role}` : null),
       c.look ? `Look: ${c.look}` : null,
       `Setting: ${c.place || "—"}`,
       `Open (0-3s): ${c.open}`,
@@ -786,14 +787,15 @@ function generate() {
     const others = D.studios.filter((s) => s.id !== studio.id);
     ipB = pick(r, D.packs[pick(r, others).id]);
   } else ipA = pick(r, pack);
-  // v25: the hero is an ordinary person dropped into this world as a NEW
-  // character — a persona in a role the IP's world would give a newcomer,
-  // dressed by that world. The IP's own cast no longer headlines the concept.
-  const person = pick(r, D.people);
+  // v26: the subject is a character WITHIN this world — a role the world
+  // would give a newcomer, dressed by that world — with no invented identity.
+  // The prompt is a transformation template: whoever's reference image is
+  // attached in the genAI tool becomes this character. Beats address the
+  // hero only as "the newcomer".
   const role = ipA.roles ? pick(r, ipA.roles) : "a brand-new face in this world";
   const look = ipA.looks ? pick(r, ipA.looks) : "dressed to belong here at first sight";
-  const H = person.name;
-  const subject = `${person.name}, ${person.who} — now ${role}, ${look}`;
+  const H = "the newcomer";
+  const subject = `${role.charAt(0).toUpperCase() + role.slice(1)} — ${look}`;
   const place = pick(r, ipA.places);
   const open = fillTok(pick(r, ipA.opens), { H });
   let pivot, final;
@@ -815,7 +817,7 @@ function generate() {
     seedLine: prompt || null,
     styleId: style.id, style: style.name, movementId: sel.movement, movement: mvName(sel.movement),
     studio: studio.name, ip: ipA.name, ip2: ipB ? ipB.name : null, mashup: !!ipB,
-    subject, person: person.name, role, look, place, open, pivot, final, tags,
+    subject, person: null, role, look, place, open, pivot, final, tags,
   };
   renderConcept();
 }
