@@ -148,6 +148,20 @@ a.bb{color:var(--dim);text-decoration:underline dotted rgba(255,255,255,.35);tex
 
 /* ---------- box ---------- */
 #boxList{flex:1;overflow-y:auto;padding:14px 16px calc(24px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:11px}
+.boxtabs{display:flex;gap:8px;padding:12px 16px 2px}
+.btab{flex:1;padding:9px 0;border-radius:999px;border:1px solid rgba(255,255,255,.18);background:rgba(16,14,24,.55);color:#B9B9C9;font:700 11px "Space Grotesk",sans-serif;letter-spacing:.18em;cursor:pointer}
+.btab .n{color:#FF8A1F}
+.btab.on{background:linear-gradient(92deg,#FF2E4D 10%,#FF5A1F 55%,#FF3CAC 118%);border-color:transparent;color:#fff}
+.btab.on .n{color:#fff}
+.boxitem img.bthumb{cursor:zoom-in}
+#viewer{position:fixed;inset:0;z-index:60;background:rgba(3,3,7,.97);display:flex;flex-direction:column;opacity:0;pointer-events:none;transition:opacity .25s}
+#viewer.show{opacity:1;pointer-events:auto}
+#viewerImg{flex:1;min-height:0;width:100%;object-fit:contain}
+#viewerCap{padding:14px 18px calc(16px + env(safe-area-inset-bottom));text-align:center}
+#viewerCap .vk{font:700 10px "Space Grotesk",sans-serif;letter-spacing:.22em;color:#FF8A1F}
+#viewerCap .vt{font-family:Anton,sans-serif;font-size:24px;letter-spacing:.02em;color:#F4F2FF;margin-top:5px}
+#viewerCap .vb{font-size:12px;color:#9d9dab;margin-top:4px}
+#viewerX{position:absolute;top:calc(12px + env(safe-area-inset-top));right:14px;width:38px;height:38px;border-radius:50%;border:1px solid rgba(255,255,255,.25);background:rgba(10,9,18,.6);color:#fff;font-size:15px;cursor:pointer;z-index:2}
 .boxitem{display:flex;gap:12px;border-radius:14px;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.11);padding:11px;align-items:stretch;text-align:left;width:100%}
 .boxitem img{width:62px;border-radius:9px;object-fit:cover;flex:none}
 .boxitem .bt{flex:1;min-width:0}
@@ -176,7 +190,12 @@ a.bb{color:var(--dim);text-decoration:underline dotted rgba(255,255,255,.35);tex
 .star{position:absolute;pointer-events:none}
 body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF3CAC 105%);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none}
 #tapHint{font-size:8.5px;letter-spacing:.26em;font-weight:700;color:var(--faint);margin-top:5px}
-#buildTag{font-size:7.5px;letter-spacing:.3em;font-weight:700;color:#33333F;margin-top:4px}
+#buildTag{font-size:7.5px;letter-spacing:.3em;font-weight:700;color:#33333F}
+.buildrow{display:flex;align-items:center;gap:8px;margin-top:4px}
+#errBtn{display:inline-flex;align-items:center;gap:4px;background:rgba(255,90,31,.14);border:1px solid rgba(255,138,31,.55);color:#FF8A1F;border-radius:999px;padding:2px 8px;font:700 10px/1.5 "Space Grotesk",sans-serif;cursor:pointer}
+#errBtn[hidden]{display:none}
+#errBtn.pulse{animation:errpulse .5s ease}
+@keyframes errpulse{0%{transform:scale(1)}35%{transform:scale(1.25)}100%{transform:scale(1)}}
 #veil{position:fixed;inset:0;background:#050508;background-image:radial-gradient(rgba(255,255,255,.13) 1px, transparent 1.5px);background-size:22px 22px;opacity:0;pointer-events:none;transition:opacity .19s ease;z-index:65}
 #veil.on{opacity:1}
 #switcher{position:fixed;inset:0;z-index:66;display:flex;align-items:center;overflow:hidden;opacity:0;pointer-events:none;transition:opacity .19s ease}
@@ -226,7 +245,7 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
     <div class="logo">INSPO<span class="box">BOX</span></div>
     <div id="counter">— / —</div>
     <div id="tapHint">TAP A PIECE TO LOCK ITS STYLE</div>
-    <div id="buildTag">BUILD V69</div>
+    <div class="buildrow"><div id="buildTag">BUILD V70</div><button id="errBtn" hidden aria-label="Show feed notices">⚠<span id="errCount"></span></button></div>
   </div>
   <div class="topbtns">
     <button class="chipbtn" id="boxBtn">BOX <span class="n" id="boxCount">0</span></button>
@@ -288,8 +307,10 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
     <div class="logo">INSPO<span class="box">BOX</span></div>
     <div style="display:flex;align-items:center;gap:12px"><span class="mode">YOUR BOX</span><button class="xbtn" data-close>✕</button></div>
   </div>
+  <div class="boxtabs"><button class="btab on" id="tabRefs">REFERENCES <span class="n" id="refsCount">0</span></button><button class="btab" id="tabIdeas">IDEAS <span class="n" id="ideasCount">0</span></button></div>
   <div id="boxList"></div>
 </section>
+<div id="viewer" aria-hidden="true"><button id="viewerX" aria-label="Close full-screen view">✕</button><img id="viewerImg" alt=""><div id="viewerCap"><div class="vk" id="viewerK"></div><div class="vt" id="viewerT"></div><div class="vb" id="viewerB"></div></div></div>
 
 <!-- STORY PROMPT SHEET -->
 <section class="layer sheetlayer" id="promptLayer" aria-hidden="true">
@@ -775,16 +796,26 @@ function toggleSavePiece(id) {
   $$(`[data-save="${id}"]`).forEach((b) => { const on = ix < 0; b.classList.toggle("saved", on); b.textContent = on ? "✓" : "+"; });
   renderBox();
 }
+let boxTab = "refs";
 function renderBox() {
   $("#boxCount").textContent = box.length;
+  const refs = box.filter((b) => b.type === "piece").length;
+  const ideas = box.length - refs;
+  $("#refsCount").textContent = refs;
+  $("#ideasCount").textContent = ideas;
+  $("#tabRefs").classList.toggle("on", boxTab === "refs");
+  $("#tabIdeas").classList.toggle("on", boxTab === "ideas");
   const list = $("#boxList");
-  if (!box.length) {
-    list.innerHTML = `<div class="boxempty"><div class="t">THE BOX IS EMPTY</div><p style="margin-top:9px;font-size:13px;line-height:1.6">Tap + on any piece in the feed, or save a spark from the Idea Starter, and it lands here.</p></div>`;
+  const entries = box.map((b, i) => ({ b, i })).filter(({ b }) => boxTab === "refs" ? b.type === "piece" : b.type === "spark");
+  if (!entries.length) {
+    list.innerHTML = boxTab === "refs"
+      ? `<div class="boxempty"><div class="t">NO REFERENCES YET</div><p style="margin-top:9px;font-size:13px;line-height:1.6">Tap + on any piece in the feed and it lands here, permanently.</p></div>`
+      : `<div class="boxempty"><div class="t">NO IDEAS YET</div><p style="margin-top:9px;font-size:13px;line-height:1.6">Save a spark from the Idea Starter and it lands here, permanently.</p></div>`;
     return;
   }
-  list.innerHTML = box.map((b, i) => b.type === "piece" ? `
+  list.innerHTML = entries.map(({ b, i }) => b.type === "piece" ? `
     <div class="boxitem">
-      <img src="${esc(imgCache.get(b.img) || b.img)}" alt="">
+      <img class="bthumb" data-view="${i}" src="${esc(imgCache.get(b.img) || b.img)}" alt="">
       <div class="bt"><div class="bk">${esc(styleName(b.media, b.movement).toUpperCase())} · ${esc(mdName(b.media).toUpperCase())}</div>
       <div class="bti">${esc(b.title)}</div>${b.url ? `<a class="bb" href="${esc(b.url)}" target="_blank" rel="noopener">${esc(b.by || "")}</a>` : `<div class="bb">${esc(b.by || "")}</div>`}</div>
       <button class="del" data-del="${i}">✕</button>
@@ -796,7 +827,24 @@ function renderBox() {
       <div class="bb">${esc(b.body || "")}</div>
     </div>`).join("");
 }
+$("#tabRefs").addEventListener("click", () => { boxTab = "refs"; renderBox(); });
+$("#tabIdeas").addEventListener("click", () => { boxTab = "ideas"; renderBox(); });
+function openViewer(i) {
+  const b = box[i];
+  if (!b || b.type !== "piece") return;
+  $("#viewerImg").src = imgCache.get(b.img) || b.img;
+  $("#viewerK").textContent = (styleName(b.media, b.movement) + " · " + mdName(b.media)).toUpperCase();
+  $("#viewerT").textContent = b.title || "";
+  $("#viewerB").textContent = b.by || "";
+  const v = $("#viewer");
+  v.classList.add("show"); v.setAttribute("aria-hidden", "false");
+}
+function closeViewer() { const v = $("#viewer"); v.classList.remove("show"); v.setAttribute("aria-hidden", "true"); }
+$("#viewerX").addEventListener("click", closeViewer);
+$("#viewer").addEventListener("click", (e) => { if (e.target.id === "viewer" || e.target.id === "viewerImg") closeViewer(); });
 $("#boxList").addEventListener("click", (e) => {
+  const vw = e.target.closest("[data-view]");
+  if (vw) { openViewer(Number(vw.dataset.view)); return; }
   const dl = e.target.closest("[data-dl]");
   if (dl) { copyBoxPrompt(Number(dl.dataset.dl), dl); return; }
   const del = e.target.closest("[data-del]");
@@ -995,9 +1043,31 @@ function scrollToPiece(i) {
 }
 let flashTimer = null;
 const toastEl = $("#toast");
+/* Notices (v70, Andres's direction): feed errors no longer pop a toast
+   over the art. They collect behind a small warning icon beside the
+   build tag, top-left; tapping the icon opens the toast with the
+   latest notice, and dismissing clears the queue. showToast keeps its
+   name so every error path records a notice instead of interrupting. */
+const notices = [];
 function showToast(tag, msg) {
-  $("#toastTag").textContent = tag;
-  $("#toastMsg").textContent = msg;
+  const last = notices[notices.length - 1];
+  if (!last || last.tag !== tag || last.msg !== String(msg)) notices.push({ tag, msg: String(msg) });
+  if (notices.length > 9) notices.splice(0, notices.length - 9);
+  syncErrBtn();
+  if (toastEl.classList.contains("show")) renderNotice();
+}
+function syncErrBtn() {
+  const b = $("#errBtn");
+  if (!notices.length) { b.hidden = true; return; }
+  b.hidden = false;
+  $("#errCount").textContent = notices.length > 1 ? " " + notices.length : "";
+  b.classList.remove("pulse"); void b.offsetWidth; b.classList.add("pulse");
+}
+function renderNotice() {
+  const n = notices[notices.length - 1];
+  if (!n) return hideToast();
+  $("#toastTag").textContent = n.tag;
+  $("#toastMsg").textContent = n.msg;
   const piece = document.querySelectorAll("#deck .piece")[state.current];
   const panel = piece ? piece.querySelector(".panel") : null;
   let bottom = 228;
@@ -1006,7 +1076,8 @@ function showToast(tag, msg) {
   toastEl.classList.add("show");
 }
 function hideToast() { toastEl.classList.remove("show"); }
-$("#toastX").addEventListener("click", hideToast);
+$("#errBtn").addEventListener("click", renderNotice);
+$("#toastX").addEventListener("click", () => { notices.length = 0; syncErrBtn(); hideToast(); });
 function flash(txt) { const f = $("#flash"); f.textContent = txt; f.classList.add("show"); clearTimeout(flashTimer); flashTimer = setTimeout(() => f.classList.remove("show"), 780); }
 function landOn(next) {
   if (next === state.media) return;
