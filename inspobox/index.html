@@ -168,7 +168,7 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
 #veil.on{opacity:1}
 #switcher{position:fixed;inset:0;z-index:66;display:flex;align-items:center;overflow:hidden;opacity:0;pointer-events:none;transition:opacity .19s ease}
 #switcher.on{opacity:1;pointer-events:auto}
-#swTrack{display:flex;align-items:stretch;transition:transform .18s cubic-bezier(.25,.9,.3,1.25);will-change:transform}
+#swTrack{display:flex;align-items:stretch;transition:transform .16s cubic-bezier(.3,1.15,.35,1);will-change:transform}
 .switem{flex:none;display:flex;flex-direction:column;align-items:center;gap:5px;padding:14px 20px;border-left:1px solid rgba(255,255,255,.16);opacity:.38;transition:opacity .15s ease}
 .switem:last-child{border-right:1px solid rgba(255,255,255,.16)}
 .switem i{font-style:normal;font-family:var(--sg);font-size:9px;letter-spacing:.3em;color:var(--faint);font-weight:700}
@@ -213,7 +213,7 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
     <div class="logo">INSPO<span class="box">BOX</span></div>
     <div id="counter">— / —</div>
     <div id="tapHint">TAP A PIECE TO LOCK ITS GENRE</div>
-    <div id="buildTag">BUILD V40</div>
+    <div id="buildTag">BUILD V41</div>
   </div>
   <div class="topbtns">
     <button class="chipbtn" id="boxBtn">BOX <span class="n" id="boxCount">0</span></button>
@@ -806,13 +806,18 @@ function dragStripTo(x) {
   const lo = stripTxFor(sw.list[sw.list.length - 1]) - 56, hi = stripTxFor(sw.list[0]) + 56;
   const rawTx = sw.drag.baseTx + (x - sw.drag.startX);
   if (state.movement !== "all" && sw.drag.startPending === sw.list[0] && sw.pending === sw.list[0] && rawTx > hi + 44) { unlockFromSwitcher(); return; }
-  const tx = Math.max(lo, Math.min(hi, rawTx));
-  track.style.transform = `translateX(${tx}px)`;
+  const tx0 = Math.max(lo, Math.min(hi, rawTx));
   let best = sw.pending, bd = Infinity;
   $$("#swTrack .switem").forEach((it) => {
-    const d = Math.abs(it.offsetLeft + it.offsetWidth / 2 + tx - window.innerWidth / 2);
+    const d = Math.abs(it.offsetLeft + it.offsetWidth / 2 + tx0 - window.innerWidth / 2);
     if (d < bd) { bd = d; best = it.dataset.sw; }
   });
+  /* detent: the strip is magnetized to the pending segment — between
+     anchors it trails the finger at 25%, so each discipline clicks into
+     center as the swipe crosses the midpoint instead of free-sliding */
+  const anchorTx = stripTxFor(best);
+  const tx = anchorTx + (tx0 - anchorTx) * 0.25;
+  track.style.transform = `translateX(${tx}px)`;
   if (best !== sw.pending) {
     sw.pending = best;
     $$("#swTrack .switem").forEach((it) => it.classList.toggle("on", it.dataset.sw === sw.pending));
@@ -825,7 +830,7 @@ function endDrag() {
   clearTimeout(sw.watchdog);
   $("#swTrack").classList.remove("drag");
   centerStrip();
-  armSwitcher(230);
+  armSwitcher(110);
 }
 function armSwitcher(ms) { clearTimeout(sw.timer); sw.timer = setTimeout(commitSwitcher, ms); }
 function stepPending(dir) {
@@ -843,7 +848,7 @@ function commitSwitcher() {
   $("#switcher").classList.remove("on");
   const target = sw.pending;
   if (target && target !== state.media) {
-    setTimeout(() => { landOn(target); setTimeout(() => $("#veil").classList.remove("on"), 60); }, 130);
+    setTimeout(() => { landOn(target); setTimeout(() => $("#veil").classList.remove("on"), 60); }, 60);
   } else {
     $("#veil").classList.remove("on");
   }
