@@ -119,7 +119,7 @@ export async function callAnthropic(env, built) {
         method: "POST",
         signal: ctl.signal,
         headers: { "x-api-key": env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json" },
-        body: JSON.stringify({ model, max_tokens: 650, temperature: 0.9, system: built.system, messages: [{ role: "user", content: built.user }] }),
+        body: JSON.stringify({ model, max_tokens: 650, system: built.system, messages: [{ role: "user", content: built.user }] }),
       });
       const data = await res.json().catch(() => null);
       if (!res.ok) {

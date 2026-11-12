@@ -207,7 +207,7 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
     <div class="logo">INSPO<span class="box">BOX</span></div>
     <div id="counter">— / —</div>
     <div id="tapHint">TAP A PIECE TO LOCK ITS GENRE</div>
-    <div id="buildTag">BUILD V36</div>
+    <div id="buildTag">BUILD V37</div>
   </div>
   <div class="topbtns">
     <button class="chipbtn" id="boxBtn">BOX <span class="n" id="boxCount">0</span></button>
@@ -232,7 +232,7 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
   <div id="starterBody">
     <svg class="star" style="top:6px;right:30px" width="24" height="24" viewBox="0 0 24 24"><path d="M12 0 L14.5 9.5 L24 12 L14.5 14.5 L12 24 L9.5 14.5 L0 12 L9.5 9.5 Z" fill="#FF2E4D"/></svg>
     <div class="skicker">✳ EVERY IDEA IS A DISNEY IDEA — 10 SECONDS, THREE BEATS</div>
-    <textarea id="promptInput" rows="2" placeholder="Spark a new idea" autocomplete="off"></textarea>
+    <textarea id="promptInput" rows="2" placeholder="Spark a new idea" autocomplete="off" autocorrect="on" autocapitalize="sentences" spellcheck="true"></textarea>
     <div class="selrow">
       <label class="selfield"><span class="slbl">VISUAL STYLE</span><select id="styleSel" aria-label="Visual style"></select></label>
       <label class="selfield"><span class="slbl">MOVEMENT</span><select id="moveSel" aria-label="Movement"></select></label>
@@ -876,7 +876,7 @@ $("#deck").addEventListener("pointerup", (e) => {
 window.INSPOBOX = { disciplineStep, jumpToMedia, getSw: () => ({ open: sw.open, dragging: !!sw.drag, pending: sw.pending }), fetchLive: () => maybeFetchLive(), getLive: () => Object.fromEntries(Object.entries(liveCols).map(([k, c]) => [k, { n: c.pieces.length, done: c.done }])), getState: () => ({ movement: state.movement, current: state.current, count: deckList.length, media: state.media }), getConcept: () => lastConcept };
 
 /* ---------------- idea starter ---------------- */
-const sel = { style: "cgi", movement: "surreal", studio: "animation" };
+const sel = { style: "cgi", movement: "none", studio: "animation" };
 let lastConcept = null, rerolls = 0;
 function buildSelects() {
   const fill = (id, items, val) => { const el = $(id); if (!el) return; el.innerHTML = items.map((x) => `<option value="${x.id}">${esc(x.name.toUpperCase())}</option>`).join(""); el.value = val; };

@@ -90,7 +90,6 @@ export async function gateOne(env, piece, fetchFn) {
       body: JSON.stringify({
         model: "claude-haiku-5-5",
         max_tokens: 40,
-        temperature: 0,
         messages: [{ role: "user", content: [
           { type: "image", source: { type: "url", url: piece.img } },
           { type: "text", text: gatePrompt(piece.movement) },
