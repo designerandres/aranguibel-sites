@@ -214,7 +214,7 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
     <div class="logo">INSPO<span class="box">BOX</span></div>
     <div id="counter">— / —</div>
     <div id="tapHint">TAP A PIECE TO LOCK ITS GENRE</div>
-    <div id="buildTag">BUILD V51</div>
+    <div id="buildTag">BUILD V52</div>
   </div>
   <div class="topbtns">
     <button class="chipbtn" id="boxBtn">BOX <span class="n" id="boxCount">0</span></button>
@@ -460,27 +460,55 @@ function excludeUuids() {
   for (const u of seenList()) out.push(u);
   return out;
 }
+function reindexDeck() {
+  $$("#deck .piece").forEach((el, i) => { el.dataset.idx = i; const pr = el.querySelector(".prog"); if (pr) pr.style.width = Math.round(((i + 1) / deckList.length) * 100) + "%"; });
+}
 function appendPieces(pieces) {
   const deck = $("#deck");
   const base = deckList.length;
-  pieces.forEach((p, j) => { deckList.push(p); deck.insertAdjacentHTML("beforeend", pieceHtml(p, base + j, base + pieces.length)); });
+  pieces.forEach((p, j) => { deckList.push(p); deck.insertAdjacentHTML("beforeend", pieceHtml(p, base + j, deckList.length)); });
   $("#dots").insertAdjacentHTML("beforeend", pieces.map(() => "<i></i>").join(""));
+  reindexDeck();
   watchPieces([...deck.querySelectorAll(".piece")].slice(base));
+  updateChrome(deckList.length);
+}
+/* Fresh live pieces are woven INTO the unseen tail of the stack (v52) —
+   starting two past the current piece and spread at a steady stride — so
+   new work shows up within a few swipes instead of hiding behind the
+   whole curated column. Pieces before the insertion point (everything
+   already seen, including the current one) are never touched. */
+function insertPieces(fresh) {
+  if (!fresh.length) return;
+  const deck = $("#deck");
+  const startAt = Math.min(state.current + 2, deckList.length);
+  const tail = deckList.slice(startAt);
+  const stride = Math.max(1, Math.floor(tail.length / Math.max(1, fresh.length)));
+  const merged = [];
+  let fi = 0;
+  tail.forEach((p, i) => { merged.push(p); if ((i + 1) % stride === 0 && fi < fresh.length) merged.push(fresh[fi++]); });
+  while (fi < fresh.length) merged.push(fresh[fi++]);
+  deckList = deckList.slice(0, startAt).concat(merged);
+  const els = $$("#deck .piece");
+  for (let i = els.length - 1; i >= startAt; i--) els[i].remove();
+  deck.insertAdjacentHTML("beforeend", merged.map((p, j) => pieceHtml(p, startAt + j, deckList.length)).join(""));
+  $("#dots").innerHTML = deckList.map(() => "<i></i>").join("");
+  reindexDeck();
+  watchPieces($$("#deck .piece").slice(startAt));
   updateChrome(deckList.length);
 }
 function hydrateLive() {
   if (state.movement === "all") return;
   const col = liveCol();
   if (col.pieces.length) appendPieces(col.pieces);
-  maybeFetchLive();
+  maybeFetchLive(!col.fetchedOnce);
 }
-async function maybeFetchLive() {
+async function maybeFetchLive(force) {
   if (state.movement === "all") return;
   const col = liveCol();
   if (col.done || col.loading) return;
-  if (state.current < deckList.length - 3) return;
+  if (!force && state.current < deckList.length - 8) return;
   if (col.coolUntil && Date.now() < col.coolUntil) return;
-  col.loading = true;
+  col.loading = true; col.fetchedOnce = true;
   const key = liveKey();
   try {
     const ctl = new AbortController(); const to = setTimeout(() => ctl.abort(), 45000);
@@ -498,7 +526,7 @@ async function maybeFetchLive() {
     if (data.stats) col.stats = data.stats;
     if (data.stats && data.stats.gated && data.stats.examined >= 8 && data.stats.passed === 0 && !col.flashedCull) { col.flashedCull = true; showToast("LIVE CHECK", "0 of " + data.stats.examined + " images examined fit the genre — the gate culled the whole batch." + (data.stats.gateWhy ? " Gate reports: " + data.stats.gateWhy : "")); }
     const fresh = (data.pieces || []).filter((p) => !deckList.some((x) => x.id === p.id));
-    if (fresh.length) { col.pieces.push(...fresh); recordSeen(fresh); col.empties = 0; if (liveKey() === key) appendPieces(fresh); }
+    if (fresh.length) { col.pieces.push(...fresh); recordSeen(fresh); col.empties = 0; if (liveKey() === key) insertPieces(fresh); }
     else if (!col.done && ++col.empties < 3 && liveKey() === key) { col.loading = false; maybeFetchLive(); return; }
   } catch (e) {
     col.lastError = String(e && e.message || e); col.coolUntil = Date.now() + 25000;
@@ -947,7 +975,7 @@ $("#deck").addEventListener("pointerup", (e) => {
   if (state.movement === "all") { state.movement = p.movement; renderIndex(); renderDeck(p.id); flash("LOCKED"); }
   else flash(mvName(p.movement).toUpperCase());
 });
-window.INSPOBOX = { disciplineStep, jumpToMedia, getSw: () => ({ open: sw.open, dragging: !!sw.drag, pending: sw.pending }), fetchLive: () => maybeFetchLive(), getLive: () => Object.fromEntries(Object.entries(liveCols).map(([k, c]) => [k, { n: c.pieces.length, done: c.done, err: c.lastError || "", stats: c.stats || null }])), getState: () => ({ movement: state.movement, current: state.current, count: deckList.length, media: state.media, seen: seenList().length }), getConcept: () => lastConcept };
+window.INSPOBOX = { disciplineStep, jumpToMedia, getSw: () => ({ open: sw.open, dragging: !!sw.drag, pending: sw.pending }), fetchLive: () => maybeFetchLive(true), getLive: () => Object.fromEntries(Object.entries(liveCols).map(([k, c]) => [k, { n: c.pieces.length, done: c.done, err: c.lastError || "", stats: c.stats || null }])), getState: () => ({ movement: state.movement, current: state.current, count: deckList.length, media: state.media, seen: seenList().length }), getConcept: () => lastConcept };
 
 /* ---------------- idea starter ---------------- */
 const sel = { style: "cgi", movement: "none", studio: "animation" };
