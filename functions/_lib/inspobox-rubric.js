@@ -19,3 +19,24 @@ export const RUBRIC = {
 };
 
 export const QUALITY_BAR = "Also reject, whatever the genre: watermark or logo overlays (a small corner artist signature is fine), garbled or gibberish text, visible AI artifacts (mangled hands/faces, waxy skin), presentation boards / design sheets / multi-panel layouts, unfinished grey blockouts, murky or blurry images, and recognizable trademarked or IP characters.";
+
+// Strong genre vocabulary for the live feed's metadata pre-pass: when a
+// candidate's own generation prompt (Civitai meta) or its model's name
+// carries enough of this vocabulary, the genre intent is explicit and the
+// piece passes without spending a vision call. Weak or absent metadata
+// still goes to the vision gate.
+export const AFFINITY = {
+  "surreal": ["surreal", "dreamscape", "dreamlike", "levitating", "melting clock", "dali", "magritte", "uncanny", "liminal", "backrooms", "biomorphic", "floating island", "impossible geometry"],
+  "art-deco": ["art deco", "gatsby", "chevron", "sunburst", "zigzag", "1920s", "flapper", "chrysler building", "jazz age", "decadence"],
+  "art-moderne": ["streamline moderne", "art moderne", "streamlined", "bauhaus", "dieselpunk", "ocean liner", "porthole", "streamline"],
+  "mid-century": ["mid century", "mid-century", "midcentury", "atomic age", "eames", "teak", "retro futurism", "1950s interior", "1960s interior"],
+  "pop": ["pop art", "warhol", "lichtenstein", "ben-day", "benday", "comic book", "screen print", "halftone", "pop culture"],
+  "afrofuturism": ["afrofuturism", "afrofuturist", "afro futurism", "wakanda", "african futurism", "ankara", "nubian", "kemet"],
+  "brutalist": ["brutalist", "brutalism", "beton brut", "raw concrete", "monolithic concrete", "concrete architecture"],
+  "cyberpunk": ["cyberpunk", "neon city", "blade runner", "neon noir", "augmented", "dystopian city", "cyber city", "neon rain"],
+  "film-noir": ["film noir", "noir style", "chiaroscuro", "venetian blind", "femme fatale", "hardboiled", "detective office", "noir lighting"],
+  "gothic": ["gothic", "cathedral", "pointed arch", "flying buttress", "gargoyle", "stained glass", "rib vault", "spires"],
+  "minimalist": ["minimalist", "minimalism", "negative space", "geometric abstraction", "monochrome geometry", "minimal architecture"],
+  "solarpunk": ["solarpunk", "solar punk", "green architecture", "vertical forest", "green roof", "solar panels", "eco futurism", "ecofuturism", "lush city"],
+  "steampunk": ["steampunk", "steam punk", "clockwork", "airship", "brass gears", "victorian machine", "zeppelin", "automaton"],
+};
