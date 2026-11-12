@@ -208,6 +208,119 @@ export async function gatePieces(env, candidates, fetchFn) {
   return { kept, why, errors };
 }
 
+// The home river (v53): one walk across ALL thirteen genre pools,
+// round-robin. Every candidate is filed by its own prompt — the genre is
+// wherever the classification lands, not the gallery it was found in.
+export function walkAll(rot) {
+  const mvs = Object.keys(QUERIES);
+  const maxQ = Math.max(...mvs.map((m) => QUERIES[m].length));
+  const all = [];
+  for (let qi = 0; qi < maxQ; qi++) for (const mv of mvs) if (QUERIES[mv][qi]) all.push({ q: QUERIES[mv][qi], src: mv });
+  return all.map((_, i) => all[(i + (rot || 0)) % all.length]);
+}
+
+export function classifySlot(scores) {
+  const entries = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+  if (!entries.length) return null;
+  const [top, second] = [entries[0], entries[1]];
+  if (top[1] >= 3 && (!second || top[1] > second[1])) return top[0];
+  return null;
+}
+
+const HOME_BATCH = 16;
+
+// Ambiguous prompts (a whisper of signal, no dominant genre) get ONE
+// batched TEXT classification call — prompts only, no images — so the
+// whole batch costs a fraction of a single vision check. Haiku first.
+export async function classifyAmbiguous(env, items, fetchFn) {
+  if (!items.length || !env || !env.ANTHROPIC_API_KEY) return {};
+  const list = items.slice(0, 16);
+  const names = Object.keys(QUERIES).join(", ");
+  const text = "Classify each numbered image-generation prompt into exactly one of these movements: " + names + ", or none if it fits no movement. Reply with ONLY a JSON array like [{\"i\":0,\"m\":\"gothic\"}].\n\n" + list.map((p, i) => i + ". " + String(p.prompt || "").slice(0, 220)).join("\n");
+  for (const model of ["claude-haiku-5-5", "claude-sonnet-5-5"]) {
+    try {
+      const ctl = new AbortController();
+      const to = setTimeout(() => ctl.abort(), 15000);
+      const res = await fetchFn("https://api.anthropic.com/v1/messages", {
+        method: "POST", signal: ctl.signal,
+        headers: { "x-api-key": env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json" },
+        body: JSON.stringify({ model, max_tokens: 700, messages: [{ role: "user", content: [{ type: "text", text }] }] }),
+      });
+      clearTimeout(to);
+      if (!res.ok) continue;
+      const data = await res.json().catch(() => null);
+      const blocks = (data && data.content) || [];
+      let txt = blocks.filter((b) => b.type === "text").map((b) => b.text).join("");
+      if (!txt.includes("[")) txt += blocks.filter((b) => b.type === "thinking").map((b) => b.thinking || "").join("");
+      const a = txt.indexOf("["), b = txt.lastIndexOf("]");
+      if (a < 0 || b <= a) continue;
+      const arr = JSON.parse(txt.slice(a, b + 1));
+      const out = {};
+      for (const r of arr) if (r && Number.isInteger(r.i) && list[r.i] && (QUERIES[r.m] || r.m === "none")) out[r.i] = r.m;
+      return out;
+    } catch { /* try the next model */ }
+  }
+  return {};
+}
+
+export async function fetchHomeBatch({ cursor, exclude, media }, fetchFn, env) {
+  const seen = new Set(exclude || []);
+  const st = cursor && typeof cursor === "object" ? { q: 0, v: 0, c: null, m: null, rot: 0, ...cursor } : { q: 0, v: 0, c: null, m: null, rot: Math.floor(Math.random() * 1024) };
+  const walk = walkAll(st.rot || 0);
+  const buckets = {};
+  let total = 0, calls = 0, examined = 0;
+  const ambiguous = [];
+  while (total < HOME_BATCH && calls < 10 && st.q < walk.length) {
+    if (!st.m) {
+      const qs = new URLSearchParams({ query: walk[st.q].q, limit: "6", sort: "Most Downloaded", nsfw: "false" });
+      qs.append("types", "LORA"); qs.append("types", "Checkpoint");
+      const models = await civGet(fetchFn, "/models?" + qs.toString()); calls++;
+      st.m = (models.items || []).map((md) => ({ v: (md.modelVersions || [])[0] && md.modelVersions[0].id, n: md.name })).filter((x) => x.v);
+      for (let i = st.m.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); const t = st.m[i]; st.m[i] = st.m[j]; st.m[j] = t; }
+      st.v = 0; st.c = null;
+      if (!st.m.length) { st.q++; st.m = null; continue; }
+    }
+    if (st.v >= st.m.length) { st.q++; st.m = null; st.c = null; continue; }
+    const ver = st.m[st.v];
+    const qs = new URLSearchParams({ modelVersionId: String(ver.v), limit: "30", nsfw: "false", sort: "Most Reactions", period: st.v % 2 ? "Month" : "AllTime", withMeta: "true" });
+    if (st.c) qs.set("cursor", st.c);
+    const page = await civGet(fetchFn, "/images?" + qs.toString()); calls++;
+    for (const item of page.items || []) {
+      const p = toPiece(item, ver.n, walk[st.q].src, media || "design");
+      if (!p || seen.has(p.uuid)) continue;
+      seen.add(p.uuid);
+      examined++;
+      const scores = scoreAll(p, ver.n);
+      const slot = classifySlot(scores);
+      if (slot) { p.movement = slot; p.meta = true; (buckets[slot] = buckets[slot] || []).push(p); total++; }
+      else if (p.prompt && Math.max(0, ...Object.values(scores)) >= 2 && ambiguous.length < 16) ambiguous.push(p);
+      if (total >= HOME_BATCH) break;
+    }
+    st.c = (page.metadata && page.metadata.nextCursor) || null;
+    if (!st.c) st.v++;
+  }
+  let claude = 0;
+  if (ambiguous.length && total < HOME_BATCH) {
+    const verdicts = await classifyAmbiguous(env, ambiguous, fetchFn);
+    for (const [ix, mv] of Object.entries(verdicts)) {
+      if (mv === "none") continue;
+      const p = ambiguous[Number(ix)];
+      p.movement = mv; p.claude = true;
+      (buckets[mv] = buckets[mv] || []).push(p); total++; claude++;
+      if (total >= HOME_BATCH) break;
+    }
+  }
+  // Round-robin interleave: every genre takes its turn, no genre twice in
+  // a row while another bucket still holds pieces.
+  const mvs = Object.keys(buckets).filter((k) => buckets[k].length);
+  const pieces = [];
+  let guard = 0;
+  while (pieces.length < total && guard++ < 500) {
+    for (const mv of mvs) { if (buckets[mv].length) pieces.push(buckets[mv].shift()); if (pieces.length >= total) break; }
+  }
+  return { pieces, cursor: st, done: st.q >= walk.length, stats: { examined, passed: pieces.length, claude, civCalls: calls, genres: mvs.length } };
+}
+
 export async function fetchMoreBatch({ movement, media, cursor, exclude }, fetchFn, env) {
   const rawQueries = QUERIES[movement];
   if (!rawQueries) return { pieces: [], cursor: cursor || null, done: true };
@@ -285,6 +398,14 @@ export async function onRequestPost({ request, env }) {
   let body;
   try { body = await request.json(); } catch { return json({ ok: false, error: "bad json" }, 400); }
   try {
+    if (body.home === true) {
+      const out = await fetchHomeBatch({
+        cursor: body.cursor || null,
+        exclude: Array.isArray(body.exclude) ? body.exclude.slice(0, 1000).map(String) : [],
+        media: String(body.media || "design"),
+      }, fetch, env);
+      return json({ ok: true, ...out });
+    }
     const out = await fetchMoreBatch({
       movement: String(body.movement || ""),
       media: String(body.media || "design"),

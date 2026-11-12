@@ -55,6 +55,10 @@ img{display:block}
 .vtitle{position:absolute;left:12px;top:158px;writing-mode:vertical-rl;transform:rotate(180deg);font-family:var(--anton);font-size:58px;letter-spacing:.03em;color:#fff;text-shadow:5px 5px 0 rgba(255,46,77,.85);z-index:2;cursor:pointer}
 .savebtn{position:absolute;right:16px;top:108px;z-index:5;width:44px;height:44px;border-radius:50%;background:var(--glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--glassline);font-size:23px;font-weight:500;display:flex;align-items:center;justify-content:center}
 .savebtn.saved{background:var(--grad);border-color:transparent}
+.searchbtn{position:absolute;right:16px;top:164px;z-index:5;width:44px;height:44px;border-radius:50%;background:var(--glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--glassline);display:flex;align-items:center;justify-content:center;color:inherit}
+.idxsearchrow{padding:2px 20px 12px}
+.idxsearchrow input{width:100%;box-sizing:border-box;background:rgba(255,255,255,.06);border:1px solid var(--glassline);border-radius:999px;padding:11px 16px;color:inherit;font-family:var(--sg);font-size:13px;letter-spacing:.08em;outline:none}
+.idxsearchrow input::placeholder{color:var(--dim)}
 .panel{position:absolute;left:14px;right:14px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:4;border-radius:14px;background:var(--glass);backdrop-filter:blur(22px) saturate(1.5);-webkit-backdrop-filter:blur(22px) saturate(1.5);border:1px solid var(--glassline);padding:16px 16px 12px}
 .ptitle{font-family:var(--anton);font-size:26px;line-height:1.06;margin-top:0;letter-spacing:.01em}
 .pby{font-size:12.5px;color:var(--dim);margin-top:5px;font-weight:500}
@@ -214,7 +218,7 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
     <div class="logo">INSPO<span class="box">BOX</span></div>
     <div id="counter">— / —</div>
     <div id="tapHint">TAP A PIECE TO LOCK ITS GENRE</div>
-    <div id="buildTag">BUILD V52</div>
+    <div id="buildTag">BUILD V53</div>
   </div>
   <div class="topbtns">
     <button class="chipbtn" id="boxBtn">BOX <span class="n" id="boxCount">0</span></button>
@@ -265,6 +269,7 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
     <div style="display:flex;align-items:center;gap:12px"><span class="mode">MOVEMENTS</span><button class="xbtn" data-close>✕</button></div>
   </div>
   <div class="layernote"><b>Tap any piece</b> in the feed to lock its genre — or pick one here. Every vertical stack is a single discipline — <b>left/right</b> swipes switch discipline. Tap the colored genre title on any piece to unlock (tapping the locked genre here works too).</div>
+  <div class="idxsearchrow"><input id="idxSearch" type="search" placeholder="SEARCH MOVEMENTS…" autocomplete="off" aria-label="Search movements"></div>
   <div id="indexGrid"></div>
 </section>
 
@@ -340,12 +345,10 @@ async function load() {
 /* ---------------- deck ---------------- */
 let deckList = [];
 function scopeFeed() { return DATA.feed.filter((p) => state.movement === "all" || p.movement === state.movement); }
-function deckFeed() {
-  if (state.movement !== "all") return scopeFeed().filter((p) => p.media === state.media);
-  // Home is a genre tour: one representative piece per movement, never a
-  // repeat. The current discipline is preferred; a movement with no piece
-  // in it borrows its first piece from the next discipline over. Locking a
-  // genre is what opens its full stack of examples.
+function tourFeed() {
+  // The original genre tour: one representative piece per movement. Since
+  // v53 it is only the offline floor — home shows it when the river's
+  // first pull fails, so home is never a dead screen.
   const order = [state.media, ...DATA.media.map((m) => m.id).filter((id) => id !== state.media)];
   const reps = [];
   for (const mv of DATA.movements) {
@@ -354,6 +357,16 @@ function deckFeed() {
     if (rep) reps.push(rep);
   }
   return reps;
+}
+function deckFeed() {
+  if (state.movement !== "all") return scopeFeed().filter((p) => p.media === state.media);
+  // Home is a river (v53): fresh Civitai pieces harvested across all
+  // thirteen genre pools and filed by their own prompts, interleaved so
+  // every movement takes a turn. Filled by maybeFetchHome; the seen list
+  // keeps later opens from re-serving what earlier ones showed.
+  const col = homeCol();
+  if (col.pieces.length) return col.pieces.slice();
+  return col.failed ? tourFeed() : [];
 }
 function mvName(id) { if (id === "none") return "None"; const m = DATA.movements.find((x) => x.id === id); return m ? m.name : id; }
 const tagLine = (styleName, movementId, studioName, ip, ip2) => `${styleName.toUpperCase()}${movementId === "none" ? "" : " ✕ " + mvName(movementId).toUpperCase()} · ${studioName.toUpperCase()} — ${ip.toUpperCase()}${ip2 ? " ✕ " + ip2.toUpperCase() + " · MASHUP" : ""}`;
@@ -370,6 +383,7 @@ function pieceHtml(p, i, total) {
       <div class="prog" style="width:${Math.round(((i + 1) / total) * 100)}%"></div>
       <div class="vtitle" data-open-index title="All movements">${esc(mvName(p.movement).toUpperCase())}</div>
       <button class="savebtn ${isSavedPiece(p.id) ? "saved" : ""}" data-save="${p.id}" aria-label="Save to your box">${isSavedPiece(p.id) ? "✓" : "+"}</button>
+      <button class="searchbtn" data-search aria-label="Search by movement"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 L21 21"/></svg></button>
       <div class="panel">
         <div class="ptitle">${esc(p.title)}</div>
         ${p.url ? `<a class="pby" href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.by)}${p.session ? ` <span class="ext">· LIVE${p.gated ? " ✓" : ""}</span>` : ""} <span class="ext">↗</span></a>` : `<div class="pby">${esc(p.by)}${p.session ? ` <span class="ext">· LIVE${p.gated ? " ✓" : ""}</span>` : ""}</div>`}
@@ -381,6 +395,12 @@ function renderDeck(startId) {
   const feed = deckFeed(); deckList = feed;
   const deck = $("#deck");
   if (!feed.length) {
+    if (state.movement === "all" && !homeCol().failed) {
+      deck.innerHTML = `<div class="deckempty"><div class="big">CASTING THE NET</div><p>Pulling a fresh river from today's pools — every piece filed by its own prompt.</p></div>`;
+      $("#dots").innerHTML = ""; $("#counter").textContent = "00 / 00";
+      maybeFetchHome(true);
+      return;
+    }
     deck.innerHTML = `<div class="deckempty"><div class="big">NOTHING HERE… YET</div><p>This genre has no pieces in the current drop. The next curation pass fills gaps like this.</p><button class="chipbtn" id="clearFilters">UNLOCK — SHOW EVERYTHING</button></div>`;
     $("#clearFilters").addEventListener("click", () => { state.movement = "all"; renderIndex(); renderDeck(); });
     $("#dots").innerHTML = ""; $("#counter").textContent = "0 / 0";
@@ -395,7 +415,7 @@ function renderDeck(startId) {
     if (ix > 0) { const el = $$(".piece", deck)[ix]; if (el) { deck.scrollTop = el.offsetTop; state.current = ix; updateChrome(feed.length); } }
   }
   bindDeck(feed);
-  hydrateLive();
+  if (state.movement === "all") hydrateHome(); else hydrateLive();
 }
 function railHtml() {
   const order = DATA.media.map((m) => m.id);
@@ -419,7 +439,7 @@ function bindDeck(feed) {
       if (e.isIntersecting) {
         state.current = Number(e.target.dataset.idx);
         updateChrome(deckList.length);
-        maybeFetchLive();
+        if (state.movement === "all") maybeFetchHome(); else maybeFetchLive();
         if (v) v.play().catch(() => {});
       } else if (v) v.pause();
     }
@@ -457,6 +477,7 @@ function excludeUuids() {
   const out = [];
   for (const p of DATA.feed) if (p.movement === state.movement && p.img) { const u = p.img.split("/").pop().replace(/\.jpg$/, ""); if (u) out.push(u); }
   for (const col of Object.values(liveCols)) for (const p of col.pieces) if (p.uuid) out.push(p.uuid);
+  for (const col of Object.values(homeCols)) for (const p of col.pieces) if (p.uuid) out.push(p.uuid);
   for (const u of seenList()) out.push(u);
   return out;
 }
@@ -535,6 +556,49 @@ async function maybeFetchLive(force) {
   col.loading = false;
 }
 
+const homeCols = {};
+function homeCol() { const k = state.media; return homeCols[k] || (homeCols[k] = { cursor: null, done: false, loading: false, pieces: [], fetchedOnce: false, failed: false, coolUntil: 0, lastError: "", flashedErr: false }); }
+function hydrateHome() { maybeFetchHome(!homeCol().fetchedOnce); }
+async function maybeFetchHome(force) {
+  if (state.movement !== "all") return;
+  const col = homeCol();
+  if (col.done || col.loading) return;
+  if (!force && col.pieces.length && state.current < deckList.length - 8) return;
+  if (col.coolUntil && Date.now() < col.coolUntil) return;
+  col.loading = true; col.fetchedOnce = true;
+  const media = state.media;
+  try {
+    const ctl = new AbortController(); const to = setTimeout(() => ctl.abort(), 45000);
+    const res = await fetch("/api/inspobox/more", { method: "POST", headers: { "content-type": "application/json" }, signal: ctl.signal, body: JSON.stringify({ home: true, media, cursor: col.cursor, exclude: excludeUuids() }) });
+    clearTimeout(to);
+    const data = await res.json().catch(() => null);
+    if (!res.ok || !data || !data.ok) {
+      const why = (data && data.error) || ("HTTP " + res.status);
+      col.lastError = why; col.coolUntil = Date.now() + 25000;
+      if (!col.pieces.length) { col.failed = true; if (state.movement === "all" && state.media === media) renderDeck(); }
+      else if (!col.flashedErr) { col.flashedErr = true; showToast("HOME RIVER", String(why)); }
+      col.loading = false;
+      return;
+    }
+    col.cursor = data.cursor; col.done = !!data.done; col.lastError = ""; col.failed = false;
+    if (data.stats) col.stats = data.stats;
+    const fresh = (data.pieces || []).filter((p) => !col.pieces.some((x) => x.id === p.id));
+    if (fresh.length) {
+      col.pieces.push(...fresh); recordSeen(fresh);
+      if (state.movement === "all" && state.media === media) {
+        if (deckList.length) appendPieces(fresh); else renderDeck();
+      }
+    } else if (!col.done && state.movement === "all" && state.media === media && deckList.length) {
+      col.loading = false; maybeFetchHome(true); return;
+    }
+  } catch (e) {
+    col.lastError = String(e && e.message || e); col.coolUntil = Date.now() + 25000;
+    if (!col.pieces.length) { col.failed = true; if (state.movement === "all" && state.media === media) renderDeck(); }
+    else if (!col.flashedErr) { col.flashedErr = true; showToast("HOME RIVER", col.lastError); }
+  }
+  col.loading = false;
+}
+
 /* Snap hardening: iOS can leave the deck resting between pieces when the
    viewport height shifts (URL bar, rotation). Once scrolling settles, if
    the deck is not aligned to the current piece, put it back. */
@@ -553,11 +617,13 @@ window.addEventListener("resize", () => { clearTimeout(snapTimer); snapTimer = s
 $("#deck").addEventListener("click", (e) => {
   const mediaBtn = e.target.closest("[data-media]");
   if (mediaBtn) { jumpToMedia(mediaBtn.dataset.media); return; }
+  const searchBtn = e.target.closest("[data-search]");
+  if (searchBtn) { resetIdxFilter(); openLayer("#indexLayer"); return; }
   const saveBtn = e.target.closest("[data-save]");
   if (saveBtn) { toggleSavePiece(saveBtn.dataset.save); return; }
   if (e.target.closest("[data-open-index]")) {
     if (state.movement !== "all") { const keepId = deckList[state.current] && deckList[state.current].id; state.movement = "all"; renderIndex(); renderDeck(keepId); flash("UNLOCKED"); }
-    else openLayer("#indexLayer");
+    else { resetIdxFilter(); openLayer("#indexLayer"); }
   }
 });
 
@@ -679,14 +745,19 @@ function renderIndex() {
   const counts = {};
   DATA.feed.forEach((p) => { counts[p.movement] = (counts[p.movement] || 0) + 1; });
   $("#indexGrid").innerHTML = `
-    <button class="tile alltile ${state.movement === "all" ? "on" : ""}" data-mv="all"><span class="tn"><span class="nm">ALL<br>MOVEMENTS</span><span class="tg" style="display:block">${DATA.feed.length} pieces · tap a genre to lock it</span></span></button>
+    <button class="tile alltile ${state.movement === "all" ? "on" : ""}" data-mv="all" data-name="all movements"><span class="tn"><span class="nm">ALL<br>MOVEMENTS</span><span class="tg" style="display:block">${DATA.feed.length} pieces · tap a genre to lock it</span></span></button>
     ` + DATA.movements.map((m) => `
-    <button class="tile ${state.movement === m.id ? "on" : ""} ${m.img ? "" : "gradtile"}" data-mv="${m.id}">
+    <button class="tile ${state.movement === m.id ? "on" : ""} ${m.img ? "" : "gradtile"}" data-mv="${m.id}" data-name="${esc(m.name.toLowerCase())}">
       ${m.img ? `<img src="${esc(m.img)}" alt="" loading="lazy">` : `<span class="bigletter">${esc(m.name.charAt(0))}</span><span class="soon">FIRST DROP SOON</span>`}<span class="tsc"></span>
       <span class="cnt">${counts[m.id] || 0}</span>${state.movement === m.id ? '<span class="lockb">LOCKED</span>' : ""}
       <span class="tn"><span class="nm">${esc(m.name.toUpperCase())}</span><span class="tg" style="display:block">${esc(m.tag)}</span></span>
     </button>`).join("");
 }
+function resetIdxFilter() { const inp = $("#idxSearch"); if (inp) inp.value = ""; $$("#indexGrid .tile").forEach((t) => { t.style.display = ""; }); }
+$("#idxSearch").addEventListener("input", (e) => {
+  const q = e.target.value.trim().toLowerCase();
+  $$("#indexGrid .tile").forEach((t) => { t.style.display = !q || (t.dataset.name || "").includes(q) ? "" : "none"; });
+});
 $("#indexGrid").addEventListener("click", (e) => {
   const t = e.target.closest("[data-mv]");
   if (!t) return;
@@ -975,7 +1046,7 @@ $("#deck").addEventListener("pointerup", (e) => {
   if (state.movement === "all") { state.movement = p.movement; renderIndex(); renderDeck(p.id); flash("LOCKED"); }
   else flash(mvName(p.movement).toUpperCase());
 });
-window.INSPOBOX = { disciplineStep, jumpToMedia, getSw: () => ({ open: sw.open, dragging: !!sw.drag, pending: sw.pending }), fetchLive: () => maybeFetchLive(true), getLive: () => Object.fromEntries(Object.entries(liveCols).map(([k, c]) => [k, { n: c.pieces.length, done: c.done, err: c.lastError || "", stats: c.stats || null }])), getState: () => ({ movement: state.movement, current: state.current, count: deckList.length, media: state.media, seen: seenList().length }), getConcept: () => lastConcept };
+window.INSPOBOX = { disciplineStep, jumpToMedia, getSw: () => ({ open: sw.open, dragging: !!sw.drag, pending: sw.pending }), fetchLive: () => maybeFetchLive(true), getLive: () => Object.fromEntries(Object.entries(liveCols).map(([k, c]) => [k, { n: c.pieces.length, done: c.done, err: c.lastError || "", stats: c.stats || null }])), getState: () => ({ movement: state.movement, current: state.current, count: deckList.length, media: state.media, seen: seenList().length }), getHome: () => { const c = homeCol(); return { n: c.pieces.length, done: c.done, failed: c.failed, stats: c.stats || null }; }, getConcept: () => lastConcept };
 
 /* ---------------- idea starter ---------------- */
 const sel = { style: "cgi", movement: "none", studio: "animation" };
