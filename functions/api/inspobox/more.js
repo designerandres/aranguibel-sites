@@ -78,15 +78,49 @@ export function toPiece(item, modelName, movement, media) {
 // Score: genre name in the text = 3; each distinct affinity term = 1.
 // >= 3 passes on metadata alone.
 export function metaScore(piece, modelName) {
-  const text = ((piece && piece.prompt) || "") + " " + (modelName || "") + " " + ((piece && piece.title) || "");
-  const hay = text.toLowerCase();
-  let score = 0;
-  const genre = String(piece.movement || "").replace(/-/g, " ");
-  if (genre && hay.includes(genre)) score += 3;
-  for (const term of AFFINITY[piece.movement] || []) {
-    if (hay.includes(term)) score += 1;
+  return scoreAll(piece, modelName)[piece.movement] || 0;
+}
+
+// Score a candidate's metadata against EVERY genre at once (v51): the
+// prompt is the artist's own declaration of intent, so it can file a piece
+// — including one found in the WRONG genre's gallery — better than a
+// gallery label can. Genre name in the text = 3; each affinity term = 1.
+export function scoreAll(piece, modelName) {
+  const hay = (((piece && piece.prompt) || "") + " " + (modelName || "") + " " + ((piece && piece.title) || "")).toLowerCase();
+  const out = {};
+  for (const mv of Object.keys(AFFINITY)) {
+    let score = 0;
+    if (hay.includes(mv.replace(/-/g, " "))) score += 3;
+    for (const term of AFFINITY[mv]) if (hay.includes(term)) score += 1;
+    if (score) out[mv] = score;
   }
-  return score;
+  return out;
+}
+
+// Neighbor genres whose galleries most often hide this genre's pieces
+// (dieselpunk lives under art-moderne, neon-noir under cyberpunk, ...).
+// The live walk covers the genre's own pool first, then the neighbors',
+// and classification — not the gallery label — decides what files here.
+const NEIGHBORS = {
+  "surreal": ["pop", "gothic"],
+  "art-deco": ["art-moderne", "pop"],
+  "art-moderne": ["art-deco", "mid-century"],
+  "mid-century": ["art-moderne", "pop"],
+  "pop": ["surreal", "mid-century"],
+  "afrofuturism": ["cyberpunk", "surreal"],
+  "brutalist": ["minimalist", "art-moderne"],
+  "cyberpunk": ["afrofuturism", "film-noir"],
+  "film-noir": ["cyberpunk", "gothic"],
+  "gothic": ["film-noir", "surreal"],
+  "minimalist": ["brutalist", "mid-century"],
+  "solarpunk": ["cyberpunk", "surreal"],
+  "steampunk": ["art-moderne", "gothic"],
+};
+export function walkList(movement, rot) {
+  const own = QUERIES[movement] || [];
+  const all = own.slice();
+  for (const nb of NEIGHBORS[movement] || []) for (const q of QUERIES[nb] || []) if (!all.includes(q)) all.push(q);
+  return all.map((_, i) => all[(i + (rot || 0)) % all.length]);
 }
 
 export function gatePrompt(movement) {
@@ -182,12 +216,13 @@ export async function fetchMoreBatch({ movement, media, cursor, exclude }, fetch
   // walk shuffled model lists, so repeat visits do not retrace the same
   // head of the same galleries (the rotation rides in the cursor).
   const st = cursor && typeof cursor === "object" ? { q: 0, v: 0, c: null, m: null, rot: 0, ...cursor } : { q: 0, v: 0, c: null, m: null, rot: Math.floor(Math.random() * 1024) };
-  const queries = rawQueries.map((_, i) => rawQueries[(i + (st.rot || 0)) % rawQueries.length]);
+  const queries = walkList(movement, st.rot || 0);
+  const ownCount = rawQueries.length;
   const pieces = [];
   const gate = env && env.ANTHROPIC_API_KEY ? (cands) => gatePieces(env, cands, fetchFn) : null;
-  let calls = 0, examined = 0, gateWhy = "", metaPassed = 0, gateErrors = 0;
+  let calls = 0, examined = 0, gateWhy = "", metaPassed = 0, gateErrors = 0, cross = 0, classCulled = 0;
   while (pieces.length < BATCH && calls < 5 && examined < 12) {
-    if (st.q >= queries.length) return { pieces, cursor: st, done: true, stats: { examined, passed: pieces.length, gated: !!gate, civCalls: calls, gateWhy, metaPassed, gateErrors } };
+    if (st.q >= queries.length) return { pieces, cursor: st, done: true, stats: { examined, passed: pieces.length, gated: !!gate, civCalls: calls, gateWhy, metaPassed, gateErrors, cross, classCulled } };
     if (!st.m) {
       const qs = new URLSearchParams({ query: queries[st.q], limit: "6", sort: "Most Downloaded", nsfw: "false" });
       qs.append("types", "LORA"); qs.append("types", "Checkpoint");
@@ -207,22 +242,40 @@ export async function fetchMoreBatch({ movement, media, cursor, exclude }, fetch
       const p = toPiece(item, ver.n, movement, media);
       if (p && !seen.has(p.uuid)) { seen.add(p.uuid); cands.push(p); }
     }
-    if (gate) {
+    // Classification first (v51): the prompt files the piece. Target-
+    // dominant metadata passes outright (cross-discovered pieces from a
+    // neighbor gallery count as refiled); metadata that confidently names
+    // a DIFFERENT genre culls without spending a vision call; everything
+    // ambiguous goes to the vision gate (or flows, when no gate is set).
+    {
+      const fromNeighbor = !rawQueries.includes(queries[st.q]); // rotation shuffles the combined walk, so tag by query ownership, not index
       const strong = [], rest = [];
-      for (const p of cands) { if (metaScore(p, ver.n) >= 3) { p.meta = true; strong.push(p); } else rest.push(p); }
+      for (const p of cands) {
+        const scores = scoreAll(p, ver.n);
+        const t = scores[movement] || 0;
+        let bestOther = 0;
+        for (const k in scores) if (k !== movement && scores[k] > bestOther) bestOther = scores[k];
+        if (t >= 3 && t >= bestOther) { p.meta = true; strong.push(p); if (fromNeighbor) cross++; }
+        else if (bestOther >= 4 && bestOther > t + 1) classCulled++;
+        else rest.push(p);
+      }
       metaPassed += strong.length;
-      const toGate = rest.slice(0, Math.max(0, 12 - examined));
-      examined += toGate.length;
-      const g = await gate(toGate);
-      if (g.why && !gateWhy) gateWhy = g.why;
-      gateErrors += g.errors || 0;
-      cands = strong.concat(g.kept);
+      if (gate) {
+        const toGate = rest.slice(0, Math.max(0, 12 - examined));
+        examined += toGate.length;
+        const g = await gate(toGate);
+        if (g.why && !gateWhy) gateWhy = g.why;
+        gateErrors += g.errors || 0;
+        cands = strong.concat(g.kept);
+      } else {
+        cands = strong.concat(rest);
+      }
     }
     for (const p of cands) { pieces.push(p); if (pieces.length >= BATCH) break; }
     st.c = (page.metadata && page.metadata.nextCursor) || null;
     if (!st.c) st.v++;
   }
-  return { pieces, cursor: st, done: st.q >= queries.length, stats: { examined, passed: pieces.length, gated: !!gate, civCalls: calls, gateWhy, metaPassed, gateErrors } };
+  return { pieces, cursor: st, done: st.q >= queries.length, stats: { examined, passed: pieces.length, gated: !!gate, civCalls: calls, gateWhy, metaPassed, gateErrors, cross, classCulled } };
 }
 
 export async function onRequestPost({ request, env }) {
