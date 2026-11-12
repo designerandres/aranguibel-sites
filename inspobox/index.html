@@ -215,7 +215,7 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
     <div class="logo">INSPO<span class="box">BOX</span></div>
     <div id="counter">— / —</div>
     <div id="tapHint">TAP A PIECE TO LOCK ITS GENRE</div>
-    <div id="buildTag">BUILD V58</div>
+    <div id="buildTag">BUILD V59</div>
   </div>
   <div class="topbtns">
     <button class="chipbtn" id="boxBtn">BOX <span class="n" id="boxCount">0</span></button>
@@ -307,7 +307,7 @@ function rng(seed) { let t = seed >>> 0; return () => { t += 0x6D2B79F5; let r =
 const pick = (r, arr) => arr[Math.floor(r() * arr.length)];
 
 let DATA = null;
-const state = { media: "design", movement: "all", current: 0 };
+const state = { media: "character", movement: "all", current: 0 };
 let box = store.get("inspobox.box.v1", []);
 let sparks = store.get("inspobox.sparks.v1", []);
 let genCount = store.get("inspobox.count.v1", 0);
@@ -319,6 +319,7 @@ async function load() {
   catch { res = null; }
   if (!res || res.status === 401 || res.status === 403) { $("#loading").style.display = "none"; $("#gate").classList.add("show"); return; }
   DATA = await res.json();
+  if (DATA && Array.isArray(DATA.media) && !DATA.media.some((m) => m.id === state.media)) state.media = DATA.media[0].id;
   // v27: pieces saved to the Box before self-hosting still point at Civitai;
   // remap them to the local copies (matched by image UUID) so an old save
   // never depends on Civitai's uptime again.
@@ -538,6 +539,16 @@ async function maybeFetchLive(force) {
     }
     col.cursor = data.cursor; col.done = !!data.done; col.lastError = "";
     if (data.stats) col.stats = data.stats;
+    // Cross-grouping bank (v59): pieces this fetch classified into other
+    // groupings are filed into those columns of the same genre.
+    if (Array.isArray(data.banked) && data.banked.length) {
+      const filed = [];
+      for (const p of data.banked) {
+        const lc = liveColFor(p.movement, p.media);
+        if (!lc.pieces.some((x) => x.id === p.id)) { lc.pieces.push(p); filed.push(p); }
+      }
+      if (filed.length) recordSeen(filed);
+    }
     if (data.stats && data.stats.gated && data.stats.examined >= 8 && data.stats.passed === 0 && !col.flashedCull) { col.flashedCull = true; showToast("LIVE CHECK", "0 of " + data.stats.examined + " images examined fit the genre — the gate culled the whole batch." + (data.stats.gateWhy ? " Gate reports: " + data.stats.gateWhy : "")); }
     const fresh = (data.pieces || []).filter((p) => !deckList.some((x) => x.id === p.id));
     if (fresh.length) { col.pieces.push(...fresh); recordSeen(fresh); col.empties = 0; if (liveKey() === key) insertPieces(fresh); }
@@ -550,7 +561,8 @@ async function maybeFetchLive(force) {
 }
 
 const homeCols = {};
-function homeCol() { const k = state.media; return homeCols[k] || (homeCols[k] = { cursor: null, done: false, loading: false, pieces: [], fetchedOnce: false, failed: false, coolUntil: 0, lastError: "", flashedErr: false }); }
+function homeCol() { return homeColFor(state.media); }
+function homeColFor(k) { return homeCols[k] || (homeCols[k] = { cursor: null, done: false, loading: false, pieces: [], fetchedOnce: false, failed: false, coolUntil: 0, lastError: "", flashedErr: false }); }
 function hydrateHome() { maybeFetchHome(!homeCol().fetchedOnce); }
 async function maybeFetchHome(force) {
   if (state.movement !== "all") return;
@@ -575,6 +587,16 @@ async function maybeFetchHome(force) {
     }
     col.cursor = data.cursor; col.done = !!data.done; col.lastError = ""; col.failed = false;
     if (data.stats) col.stats = data.stats;
+    // Banked home overflow (v59): pieces classified into OTHER groupings
+    // are filed into those groupings' home rivers.
+    if (data.bankedHome) {
+      const filed = [];
+      for (const [md, arr] of Object.entries(data.bankedHome)) {
+        const hc = homeColFor(md);
+        for (const p of arr) if (!hc.pieces.some((x) => x.id === p.id)) { hc.pieces.push(p); filed.push(p); }
+      }
+      if (filed.length) recordSeen(filed);
+    }
     // Banked surplus (v57): pieces the river classified but capped out of
     // the deck are filed into their genre's locked column, ready-made.
     if (data.banked) {

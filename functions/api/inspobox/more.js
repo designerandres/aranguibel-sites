@@ -149,6 +149,35 @@ function countTerms(prompt, terms) {
 export function subjectHits(prompt) { return countTerms(prompt, CHARACTER_TERMS); }
 export function mediumHits(prompt) { return countTerms(prompt, MEDIUM_TERMS); }
 
+// The grouping taxonomy (v59) — the horizontal strip, replacing
+// Design/Photo/Architecture/UI. These are SUBJECT groupings: what the
+// piece is OF, read from the same prompt evidence as the genre. A castle
+// in a valley files as architecture (the built thing is the subject);
+// the valley alone files as world; a poster OF a castle files as
+// graphics (the medium is the subject). Ties break toward the most
+// specific reading: graphics > architecture > prop > character > world.
+export const MEDIA_VOCAB = {
+  "character": ["character design", "warrior", "knight", "sorceress", "portrait", "figure", "creature", "monster", "android", "cyborg", "vampire", "elf", "dwarf", "orc", "goblin", "dragon", "beast", "animal", "cat", "dog", "bird", "horse", "wolf", "fox", "woman", "man", "girl", "boy", "lady", "gentleman", "king", "queen", "witch", "wizard", "fairy", "angel", "demon", "skeleton", "zombie", "mermaid", "centaur", "minotaur", "phoenix"],
+  "world": ["landscape", "scenery", "environment", "vista", "panorama", "panoramic", "valley", "mountain", "forest", "desert", "ocean", "sea", "island", "jungle", "tundra", "canyon", "waterfall", "meadow", "coast", "shore", "cliff", "cave", "village", "town", "kingdom", "realm", "planet", "terrain", "countryside", "wilderness", "aerial view", "overlook", "cityscape", "horizon", "fields", "underwater world"],
+  "architecture": ["architecture", "building", "cathedral", "church", "temple", "castle", "palace", "tower", "bridge", "interior", "facade", "dome", "spire", "skyscraper", "mansion", "cottage", "fortress", "library", "museum", "hotel", "lobby", "staircase", "archway", "courtyard", "station", "pavilion", "ruins", "house", "street", "skyline", "cathedral interior", "throne room", "hall", "plaza", "marketplace", "harbor", "lighthouse", "windmill", "pagoda", "mosque", "abbey", "monastery", "crypt", "dungeon"],
+  "prop": ["sword", "weapon", "gun", "rifle", "vehicle", "car", "motorcycle", "bicycle", "watch", "chair", "table", "lamp", "machine", "device", "gadget", "armor", "helmet", "shield", "book", "bottle", "key", "chest", "guitar", "camera", "backpack", "crown", "mask", "potion", "teapot", "vase", "sculpture", "statue", "still life", "product", "object", "dagger", "axe", "bow", "staff", "wand", "ring", "amulet", "spaceship", "airship", "train", "ship", "mecha", "mech", "jewelry", "necklace", "gem", "crystal", "orb", "lantern", "clock", "compass", "map"],
+  "graphics": ["poster", "typography", "logo", "illustration", "comic", "cover art", "album cover", "book cover", "signage", "banner", "advertisement", "vector", "flat design", "infographic", "pattern", "interface", "dashboard", "hud", "ui design", "manga", "print", "editorial", "branding", "packaging", "label", "postcard", "tarot", "playing card", "stamp design", "text"],
+};
+const MEDIA_PRIORITY = ["graphics", "architecture", "prop", "character", "world"];
+export function classifyMedia(piece, modelText) {
+  const hay = (((piece && piece.prompt) || "") + " " + ((piece && piece.title) || "") + " " + (modelText || "")).toLowerCase();
+  let best = null, bestScore = 0;
+  for (const cat of MEDIA_PRIORITY) {
+    let score = 0;
+    for (const t of MEDIA_VOCAB[cat]) if (hay.includes(t)) score++;
+    // character evidence also lives in the Danbooru vocabulary
+    if (cat === "character") score += Math.min(2, subjectHits(piece && piece.prompt));
+    if (score > bestScore) { bestScore = score; best = cat; }
+  }
+  if (best) return best;
+  return subjectHits(piece && piece.prompt) >= 2 ? "character" : "world";
+}
+
 // Neighbor genres whose galleries most often hide this genre's pieces
 // (dieselpunk lives under art-moderne, neon-noir under cyberpunk, ...).
 // The live walk covers the genre's own pool first, then the neighbors',
@@ -339,7 +368,8 @@ export async function fetchHomeBatch({ cursor, exclude, media }, fetchFn, env) {
   let freshFiled = 0;
   const absorb = (page, ver, src, fresh) => {
     for (const item of page.items || []) {
-      const p = toPiece(item, ver.n, src, media || "design");
+      const p = toPiece(item, ver.n, src, "world"); // placeholder — the grouping is classified below, at filing
+      p.media = classifyMedia(p, ver.mt);
       if (!p || seen.has(p.uuid)) continue;
       seen.add(p.uuid);
       examined++;
@@ -425,6 +455,7 @@ export async function fetchHomeBatch({ cursor, exclude, media }, fetchFn, env) {
   // stays diverse. Filing is bookkeeping on the same payload — no extra
   // calls, no extra spend.
   const HOME_GENRE_CAP = 3, BANK_CAP = 8;
+  const primary = MEDIA_VOCAB[media] ? media : "character";
   const mvs = Object.keys(buckets).filter((k) => buckets[k].length);
   const pieces = [];
   const counts = {};
@@ -433,14 +464,24 @@ export async function fetchHomeBatch({ cursor, exclude, media }, fetchFn, env) {
     let progressed = false;
     for (const mv of mvs) {
       if ((counts[mv] || 0) >= HOME_GENRE_CAP) continue;
-      if (buckets[mv].length) { pieces.push(buckets[mv].shift()); counts[mv] = (counts[mv] || 0) + 1; progressed = true; if (pieces.length >= HOME_BATCH) break; }
+      const ix = buckets[mv].findIndex((p) => p.media === primary);
+      if (ix >= 0) { pieces.push(buckets[mv].splice(ix, 1)[0]); counts[mv] = (counts[mv] || 0) + 1; progressed = true; if (pieces.length >= HOME_BATCH) break; }
     }
     if (!progressed) break;
   }
+  // Leftovers bank along the axis they overflowed: same-grouping pieces
+  // go to their genre's locked column; other-grouping pieces go to that
+  // grouping's home river, so switching the strip finds them waiting.
   const banked = {};
-  let bankedCount = 0;
-  for (const mv of mvs) if (buckets[mv].length) { banked[mv] = buckets[mv].slice(0, BANK_CAP); bankedCount += banked[mv].length; }
-  return { pieces, banked, cursor: st, done: st.q >= walk.length, stats: { examined, passed: pieces.length, claude, civCalls: calls, genres: mvs.length, charCapped, skipped, banked: bankedCount, freshFiled } };
+  const bankedHome = {};
+  let bankedCount = 0, bankedHomeCount = 0;
+  for (const mv of mvs) for (const p of buckets[mv]) {
+    if (p.media === primary) (banked[mv] = banked[mv] || []).push(p);
+    else (bankedHome[p.media] = bankedHome[p.media] || []).push(p);
+  }
+  for (const mv of Object.keys(banked)) { banked[mv] = banked[mv].slice(0, BANK_CAP); bankedCount += banked[mv].length; }
+  for (const md of Object.keys(bankedHome)) { bankedHome[md] = bankedHome[md].slice(0, BANK_CAP); bankedHomeCount += bankedHome[md].length; }
+  return { pieces, banked, bankedHome, cursor: st, done: st.q >= walk.length, stats: { examined, passed: pieces.length, claude, civCalls: calls, genres: mvs.length, charCapped, skipped, banked: bankedCount, bankedHome: bankedHomeCount, freshFiled } };
 }
 
 export async function fetchMoreBatch({ movement, media, cursor, exclude }, fetchFn, env) {
@@ -456,6 +497,7 @@ export async function fetchMoreBatch({ movement, media, cursor, exclude }, fetch
   const pieces = [];
   const gate = env && env.ANTHROPIC_API_KEY ? (cands) => gatePieces(env, cands, fetchFn) : null;
   let calls = 0, examined = 0, gateWhy = "", metaPassed = 0, gateErrors = 0, cross = 0, classCulled = 0;
+  const banked = [];
   while (pieces.length < BATCH && calls < 5 && examined < 12) {
     if (st.q >= queries.length) return { pieces, cursor: st, done: true, stats: { examined, passed: pieces.length, gated: !!gate, civCalls: calls, gateWhy, metaPassed, gateErrors, cross, classCulled } };
     if (!st.m) {
@@ -505,11 +547,20 @@ export async function fetchMoreBatch({ movement, media, cursor, exclude }, fetch
         cands = strong.concat(rest);
       }
     }
-    for (const p of cands) { pieces.push(p); if (pieces.length >= BATCH) break; }
+    // Grouping split (v59): a kept piece joins THIS column only when its
+    // classified grouping matches the one requested; the rest are banked
+    // under their own grouping for the client to file into that column —
+    // a character piece found while filling Architecture is filed as a
+    // character piece, never stamped over.
+    for (const p of cands) {
+      const m = classifyMedia(p, ver.mt);
+      if (m === media && pieces.length < BATCH) pieces.push(p);
+      else { p.media = m; banked.push(p); }
+    }
     st.c = (page.metadata && page.metadata.nextCursor) || null;
     if (!st.c) st.v++;
   }
-  return { pieces, cursor: st, done: st.q >= queries.length, stats: { examined, passed: pieces.length, gated: !!gate, civCalls: calls, gateWhy, metaPassed, gateErrors, cross, classCulled } };
+  return { pieces, banked, cursor: st, done: st.q >= queries.length, stats: { examined, passed: pieces.length, gated: !!gate, civCalls: calls, gateWhy, metaPassed, gateErrors, cross, classCulled, mediaBanked: banked.length } };
 }
 
 export async function onRequestPost({ request, env }) {
