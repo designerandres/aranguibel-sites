@@ -206,7 +206,7 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
     <div class="logo">INSPO<span class="box">BOX</span></div>
     <div id="counter">— / —</div>
     <div id="tapHint">TAP A PIECE TO LOCK ITS GENRE</div>
-    <div id="buildTag">BUILD V30</div>
+    <div id="buildTag">BUILD V31</div>
   </div>
   <div class="topbtns">
     <button class="chipbtn" id="boxBtn">BOX <span class="n" id="boxCount">0</span></button>
@@ -346,7 +346,8 @@ function deckFeed() {
   }
   return reps;
 }
-function mvName(id) { const m = DATA.movements.find((x) => x.id === id); return m ? m.name : id; }
+function mvName(id) { if (id === "none") return "None"; const m = DATA.movements.find((x) => x.id === id); return m ? m.name : id; }
+const tagLine = (styleName, movementId, studioName, ip, ip2) => `${styleName.toUpperCase()}${movementId === "none" ? "" : " ✕ " + mvName(movementId).toUpperCase()} · ${studioName.toUpperCase()} — ${ip.toUpperCase()}${ip2 ? " ✕ " + ip2.toUpperCase() + " · MASHUP" : ""}`;
 function mdName(id) { const m = DATA.media.find((x) => x.id === id); return m ? m.name : id; }
 function isSavedPiece(id) { return box.some((b) => b.type === "piece" && b.id === id); }
 
@@ -493,14 +494,12 @@ function buildPrompt(item) {
     const sent = (s) => { s = (s || "").trim(); return s ? (s.endsWith(".") ? s : s + ".") : ""; };
     const st = (DATA.atoms.styles || []).find((s) => s.id === c.styleId);
     const mv = (DATA.atoms.moves || {})[c.movementId] || {};
+    const STUDIO_LONG = { "Animation": "Walt Disney Animation", "Pixar": "Pixar Animation", "Marvel": "Marvel Studios", "Lucasfilm": "Lucasfilm", "Parks": "Disney Parks", "Live-Action": "Walt Disney live-action", "Lightstorm": "Lightstorm", "ESPN": "ESPN" };
     const lines = [];
+    lines.push(sent(`In the world of ${c.ip}${c.ip2 ? `, crossed with ${c.ip2} in a mashup,` : ""} from ${STUDIO_LONG[c.studio] || c.studio}, set in ${c.place}, visualized as ${st ? st.look : (c.style || "the chosen style")}`));
     if (c.role && !c.person) lines.push(sent(`Transform the person in the reference image into ${c.role}, ${c.look || "dressed to belong in this world"}`));
     else if (c.person) lines.push(sent(cap(c.subject)));
-    if (st) lines.push(sent(cap(st.look)));
     if (mv.dress) lines.push(sent(`Dress the world in ${mv.dress}; light: ${mv.light}`));
-    lines.push(sent((c.person || c.role)
-      ? `From ${c.studio}'s ${c.ip}${c.ip2 ? `, crossed with ${c.ip2} in a mashup` : ""}: set in ${c.place}`
-      : `From ${c.studio}'s ${c.ip}${c.ip2 ? `, crossed with ${c.ip2} in a mashup` : ""}: ${cap(c.subject)}, in ${c.place}`));
     lines.push(`0-3s OPEN: ${sent(cap(c.open))}`);
     lines.push(`3-7s PIVOT: ${sent(cap(c.pivot))}`);
     lines.push(`7-10s FINAL FRAME: ${sent(cap(c.final))}`);
@@ -804,6 +803,7 @@ function buildSelects() {
   const fill = (id, items, val) => { const el = $(id); if (!el) return; el.innerHTML = items.map((x) => `<option value="${x.id}">${esc(x.name.toUpperCase())}</option>`).join(""); el.value = val; };
   fill("#styleSel", DATA.atoms.styles, sel.style);
   fill("#moveSel", DATA.movements, sel.movement);
+  const mvSelEl = $("#moveSel"); mvSelEl.insertAdjacentHTML("afterbegin", `<option value="none">NONE</option>`); mvSelEl.value = sel.movement;
   fill("#studioSel", DATA.disney.studios, sel.studio);
 }
 $("#styleSel").addEventListener("change", (e) => { sel.style = e.target.value; });
@@ -869,7 +869,7 @@ function generateLocal(why) {
   const fmt = pick(r, A.aspects);
   const noun = pick(r, ipA.nouns);
   const title = r() < 0.6 ? `THE ${pick(r, A.titleAdj)} ${noun}` : `THE ${noun}`;
-  const tags = `${style.name.toUpperCase()} ✕ ${mvName(sel.movement).toUpperCase()} · ${studio.name.toUpperCase()} — ${ipA.name.toUpperCase()}${ipB ? " ✕ " + ipB.name.toUpperCase() + " · MASHUP" : ""}`;
+  const tags = tagLine(style.name, sel.movement, studio.name, ipA.name, ipB ? ipB.name : null);
   genCount += 1; store.set("inspobox.count.v1", genCount);
   lastConcept = {
     n: genCount, kind: fmt.kind, label: fmt.label, title,
@@ -895,7 +895,7 @@ function acceptDynamic(dc, prompt) {
   const studio = D.studios.find((s) => s.name === dc.studio) || D.studios.find((s) => s.id === sel.studio) || D.studios[0];
   const fmt = A.aspects.find((a) => a.label === dc.aspect) || A.aspects[0];
   const subject = `${cap1(dc.role)} — ${dc.look}`;
-  const tags = `${style.name.toUpperCase()} ✕ ${mvName(sel.movement).toUpperCase()} · ${studio.name.toUpperCase()} — ${dc.ip.toUpperCase()}${dc.ip2 ? " ✕ " + dc.ip2.toUpperCase() + " · MASHUP" : ""}`;
+  const tags = tagLine(style.name, sel.movement, studio.name, dc.ip, dc.ip2 || null);
   genCount += 1; store.set("inspobox.count.v1", genCount);
   lastConcept = {
     n: genCount, kind: fmt.kind, label: fmt.label, title: dc.title,

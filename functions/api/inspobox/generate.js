@@ -10,7 +10,7 @@ const CROSS = /\b(mashup|mash-up|crossover|cross-over|meets|versus|vs)\b/i;
 
 const SYSTEM = `You write concept cards for INSPOBOX's Idea Starter. Each concept is a 10-second video set entirely inside one Disney IP world (or exactly two, for a mashup). The hero is always a newcomer to that world — the person using this concept will feed their own reference photo into a video tool — so the hero is called only "the newcomer": never give them a name, age, gender, or appearance. Named characters from the world may appear as encounters, never as the hero.
 
-You are given the world pack (setting, characters, places, signature prop, example beats in the house voice), a visual style, a genre movement's dressing and light, and possibly the user's own seed line. If a seed line is present, genuinely use it: lift its concrete images, actions, objects and mood into this world's terms. If it is empty, invent freely within the world.
+You are given the world pack (setting, characters, places, signature prop, example beats in the house voice), a visual style, a genre movement's dressing and light (or none, when you are told to keep the world's native look), and possibly the user's own seed line. If a seed line is present, genuinely use it: lift its concrete images, actions, objects and mood into this world's terms. If it is empty, invent freely within the world.
 
 Write three beats: OPEN (0-3s) a hook in motion; PIVOT (3-7s) a turn or reveal; FINAL (7-10s) a held, poster-worthy closing frame. Present tense, vivid, specific. Each beat at most 200 characters. Choose the role and the look VERBATIM from the pack's lists. Choose the place from the pack's places, or invent a new place clearly inside this world. Title: "THE " plus one to three evocative words, ideally drawn from the world's nouns.
 
@@ -53,8 +53,9 @@ export function pickGrounding({ prompt, studioId }) {
 
 export function buildMessages({ prompt, styleId, movementId, studioId, reroll }) {
   const style = ATOMS.styles.find((s) => s.id === styleId) || ATOMS.styles[0];
-  const move = ATOMS.moves[movementId] || ATOMS.moves.surreal;
-  const moveName = (movementId || "surreal").replace(/-/g, " ");
+  const noMove = movementId === "none";
+  const move = noMove ? null : (ATOMS.moves[movementId] || ATOMS.moves.surreal);
+  const moveName = noMove ? "none" : (movementId || "surreal").replace(/-/g, " ");
   const g = pickGrounding({ prompt, studioId });
   const packBlock = (label, p) => [
     `${label}: ${p.name}`,
@@ -69,7 +70,7 @@ export function buildMessages({ prompt, styleId, movementId, studioId, reroll })
   ].join("\n");
   const lines = [
     `Visual style: ${style.name} — ${style.look}`,
-    `Movement: ${moveName} — dress the world in ${move.dress}; light: ${move.light}`,
+    noMove ? "Movement: none — do not dress the world in any genre movement; keep the world's own native look and light." : `Movement: ${moveName} — dress the world in ${move.dress}; light: ${move.light}`,
     `Studio: ${g.studio.name}`,
     packBlock("IP pack", g.ipA),
   ];
