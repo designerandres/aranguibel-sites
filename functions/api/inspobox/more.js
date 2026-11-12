@@ -272,6 +272,81 @@ export async function gateOne(env, piece, fetchFn) {
 }
 
 // Gate a list of candidates in parallel waves of 9 (keeps burst rate sane).
+// Vision-first filing (v61, Andres's direction after the diagnosis: the
+// label was describing the gallery, not the picture). One Claude vision
+// call per DISPLAYED piece decides everything from the image itself:
+//  - genre: CLOSED set — exactly one of the 13 movement ids, or "none"
+//    when none honestly fits (a wrong label is worse than no label; the
+//    app files pieces into the 13 folders, so filing needs the taxonomy).
+//  - media: one of the 5 subject groupings.
+//  - style: Claude's OWN free-text phrase for what the image actually
+//    looks like. Shown on the piece as a descriptor, and logged in stats
+//    — a phrase that keeps recurring outside the 13 is a candidate new
+//    genre to propose, never a folder invented on the fly.
+//  - ok: the shared quality bar (watermarks, artifacts, IP characters…).
+// Infrastructure failures return nulls and the piece flows on its
+// metadata filing (fail-open, per the standing rule); a real verdict
+// RULES — it overrides the metadata genre and grouping outright.
+export const GENRE_IDS = ["surreal", "art-deco", "art-moderne", "mid-century", "pop", "afrofuturism", "brutalist", "cyberpunk", "film-noir", "gothic", "minimalist", "solarpunk", "steampunk"];
+export const MEDIA_IDS = ["character", "world", "architecture", "prop", "graphics"];
+export function classifyPrompt() {
+  const genres = GENRE_IDS.map((id) => "- " + id + ": " + (RUBRIC[id] || "")).join("\n");
+  return "You are the filing editor for INSPOBOX, a design-inspiration app. Look at this image and file it by WHAT IT ACTUALLY SHOWS — never by what it might have been generated with.\n\nGENRES (choose exactly one id, or none):\n" + genres + "\n\nGROUPINGS (choose exactly one): character = a person, creature, or being is the subject; world = an environment, landscape, or place is the subject with no single building or object dominating; architecture = a building, structure, or interior is the subject; prop = a single object, product, vehicle, or item is the subject; graphics = a poster, typography, logo, flat illustration, print, or interface — the graphic itself is the subject.\n\n" + QUALITY_BAR + "\n\nBegin your reply with ONLY this JSON object, nothing before it: {\"genre\": \"<genre id or none>\", \"media\": \"<grouping id>\", \"style\": \"<your own short phrase for the style this image actually is, e.g. 'muted liminal-space photograph'>\", \"ok\": true}. Set ok=false only for a quality-bar failure. Choose genre none when no listed genre honestly fits — do not force the nearest one.";
+}
+
+export async function visionClassify(env, piece, fetchFn) {
+  const fail = (why) => ({ genre: null, media: null, style: "", ok: null, why });
+  if (!env || !env.ANTHROPIC_API_KEY) return fail("no_key");
+  const ctl = new AbortController();
+  const to = setTimeout(() => ctl.abort(), 15000);
+  try {
+    const imgUrl = String(piece.img).replace("/width=1200/", "/width=640/");
+    let imgRes;
+    try { imgRes = await fetchFn(imgUrl, { signal: ctl.signal, headers: { "user-agent": "INSPOBOX live feed" } }); }
+    catch { return fail("image download failed"); }
+    if (!imgRes.ok) return fail("image download " + imgRes.status);
+    const mt = (imgRes.headers && imgRes.headers.get && imgRes.headers.get("content-type") || "image/jpeg").split(";")[0].trim();
+    const mediaType = ["image/jpeg", "image/png", "image/gif", "image/webp"].includes(mt) ? mt : "image/jpeg";
+    const imgData = b64(await imgRes.arrayBuffer());
+    let why = "";
+    for (const model of ["claude-haiku-5-5", "claude-sonnet-5-5"]) {
+      let res;
+      try {
+        res = await fetchFn("https://api.anthropic.com/v1/messages", {
+          method: "POST", signal: ctl.signal,
+          headers: { "x-api-key": env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json" },
+          body: JSON.stringify({ model, max_tokens: 768, messages: [{ role: "user", content: [{ type: "image", source: { type: "base64", media_type: mediaType, data: imgData } }, { type: "text", text: classifyPrompt() }] }] }),
+        });
+      } catch { continue; }
+      if (!res.ok) { why = model + " -> HTTP " + res.status; continue; }
+      const data = await res.json().catch(() => null);
+      const blocks = (data && data.content) || [];
+      let txt = blocks.filter((b) => b.type === "text").map((b) => b.text).join("");
+      if (!txt.includes("{")) txt += blocks.filter((b) => b.type === "thinking").map((b) => b.thinking || "").join("");
+      const a = txt.indexOf("{"), b = txt.lastIndexOf("}");
+      if (a < 0 || b <= a) { why = model + ": no JSON verdict"; continue; }
+      let v = null;
+      try { v = JSON.parse(txt.slice(a, b + 1)); } catch { why = model + ": unparseable verdict"; continue; }
+      if (!v || (v.genre !== "none" && !GENRE_IDS.includes(v.genre)) || !MEDIA_IDS.includes(v.media)) { why = model + ": verdict outside the taxonomy"; continue; }
+      return { genre: v.genre, media: v.media, style: String(v.style || "").slice(0, 80), ok: v.ok !== false, why: "" };
+    }
+    return fail(why || "no verdict");
+  } catch (e) {
+    return fail(String(e && e.message || e));
+  } finally { clearTimeout(to); }
+}
+
+// Vision-classify a batch in waves of 6 (mirrors gatePieces' pacing).
+export async function visionClassifyBatch(env, pieces, fetchFn) {
+  const out = new Map();
+  for (let i = 0; i < pieces.length; i += 6) {
+    const wave = pieces.slice(i, i + 6);
+    const verdicts = await Promise.all(wave.map((p) => visionClassify(env, p, fetchFn)));
+    wave.forEach((p, j) => out.set(p, verdicts[j]));
+  }
+  return out;
+}
+
 export async function gatePieces(env, candidates, fetchFn) {
   const kept = [];
   let why = "";
@@ -455,6 +530,30 @@ export async function fetchHomeBatch({ cursor, exclude, media }, fetchFn, env) {
       if (total >= HOME_BATCH) break;
     }
   }
+  // Vision-first filing (v61): the harvest gets one vision verdict per
+  // piece (capped) — genre, grouping and style from the picture itself,
+  // overriding the metadata filing. "None" and quality failures leave
+  // the river; cross-genre verdicts move buckets; infra failures keep
+  // the metadata filing.
+  let visionChecked = 0, visionCulled = 0;
+  if (env && env.ANTHROPIC_API_KEY) {
+    const filedAll = [];
+    for (const mv of Object.keys(buckets)) for (const p of buckets[mv]) filedAll.push(p);
+    const toVerify = filedAll.slice(0, 18);
+    if (toVerify.length) {
+      const verdicts = await visionClassifyBatch(env, toVerify, fetchFn);
+      for (const p of toVerify) {
+        const v = verdicts.get(p);
+        if (!v || v.genre === null) continue;
+        visionChecked++;
+        const from = buckets[p.movement];
+        const pull = () => { if (from) { const ix = from.indexOf(p); if (ix >= 0) from.splice(ix, 1); } };
+        if (v.ok === false || v.genre === "none") { visionCulled++; pull(); continue; }
+        p.style = v.style; p.gated = true; p.media = v.media;
+        if (v.genre !== p.movement) { pull(); p.movement = v.genre; (buckets[v.genre] = buckets[v.genre] || []).push(p); }
+      }
+    }
+  }
   // Round-robin interleave with a per-genre cap (v57): one deep bucket
   // (surreal is the usual suspect — its vocabulary is everywhere) may not
   // flood the river. Surplus classified pieces are BANKED under their
@@ -489,7 +588,7 @@ export async function fetchHomeBatch({ cursor, exclude, media }, fetchFn, env) {
   }
   for (const mv of Object.keys(banked)) { banked[mv] = banked[mv].slice(0, BANK_CAP); bankedCount += banked[mv].length; }
   for (const md of Object.keys(bankedHome)) { bankedHome[md] = bankedHome[md].slice(0, BANK_CAP); bankedHomeCount += bankedHome[md].length; }
-  return { pieces, banked, bankedHome, cursor: st, done: st.q >= walk.length, stats: { examined, passed: pieces.length, claude, civCalls: calls, genres: mvs.length, charCapped, skipped, banked: bankedCount, bankedHome: bankedHomeCount, freshFiled } };
+  return { pieces, banked, bankedHome, cursor: st, done: st.q >= walk.length, stats: { examined, passed: pieces.length, claude, civCalls: calls, genres: mvs.length, charCapped, skipped, banked: bankedCount, bankedHome: bankedHomeCount, freshFiled, visionChecked, visionCulled } };
 }
 
 export async function fetchMoreBatch({ movement, media, cursor, exclude }, fetchFn, env) {
@@ -504,7 +603,7 @@ export async function fetchMoreBatch({ movement, media, cursor, exclude }, fetch
   const ownCount = rawQueries.length;
   const pieces = [];
   const gate = env && env.ANTHROPIC_API_KEY ? (cands) => gatePieces(env, cands, fetchFn) : null;
-  let calls = 0, examined = 0, gateWhy = "", metaPassed = 0, gateErrors = 0, cross = 0, classCulled = 0;
+  let calls = 0, examined = 0, gateWhy = "", metaPassed = 0, gateErrors = 0, cross = 0, classCulled = 0, visionCulled = 0;
   const banked = [];
   while (pieces.length < BATCH && calls < 5 && examined < 12) {
     if (st.q >= queries.length) return { pieces, cursor: st, done: true, stats: { examined, passed: pieces.length, gated: !!gate, civCalls: calls, gateWhy, metaPassed, gateErrors, cross, classCulled } };
@@ -548,16 +647,30 @@ export async function fetchMoreBatch({ movement, media, cursor, exclude }, fetch
         else rest.push(p);
       }
       metaPassed += strong.length;
-      if (gate) {
-        const toGate = rest.slice(0, Math.max(0, 12 - examined));
-        examined += toGate.length;
-        const g = await gate(toGate);
-        if (g.why && !gateWhy) gateWhy = g.why;
-        gateErrors += g.errors || 0;
-        cands = strong.concat(g.kept);
-      } else {
-        cands = strong.concat(rest);
+      // The old per-movement vision gate is superseded by the v61 vision
+      // verdict below: one call files the piece by its TRUE genre and
+      // grouping instead of merely judging fit for the target folder.
+      cands = strong.concat(rest);
+    }
+    // Vision-first filing (v61): kept candidates get one Claude vision
+    // verdict each (capped per page) and the verdict RULES over the
+    // metadata filing. Another genre -> banked under its true genre;
+    // "none" or a quality failure leaves the column entirely. Infra
+    // failures keep the metadata filing (fail-open).
+    if (env && env.ANTHROPIC_API_KEY && cands.length) {
+      const toVerify = cands.slice(0, 12);
+      const verdicts = await visionClassifyBatch(env, toVerify, fetchFn);
+      const verified = [];
+      for (const p of toVerify) {
+        const v = verdicts.get(p);
+        if (!v || v.genre === null) { verified.push(p); continue; }
+        if (v.ok === false || v.genre === "none") { visionCulled++; continue; }
+        p.style = v.style; p.gated = true;
+        if (v.genre !== movement) { p.movement = v.genre; p.media = v.media; banked.push(p); continue; }
+        p.media = v.media;
+        verified.push(p);
       }
+      cands = verified.concat(cands.slice(12));
     }
     // Grouping split (v59): a kept piece joins THIS column only when its
     // classified grouping matches the one requested; the rest are banked
@@ -572,7 +685,7 @@ export async function fetchMoreBatch({ movement, media, cursor, exclude }, fetch
     st.c = (page.metadata && page.metadata.nextCursor) || null;
     if (!st.c) st.v++;
   }
-  return { pieces, banked, cursor: st, done: st.q >= queries.length, stats: { examined, passed: pieces.length, gated: !!gate, civCalls: calls, gateWhy, metaPassed, gateErrors, cross, classCulled, mediaBanked: banked.length } };
+  return { pieces, banked, cursor: st, done: st.q >= queries.length, stats: { examined, passed: pieces.length, gated: !!gate, civCalls: calls, gateWhy, metaPassed, gateErrors, cross, classCulled, mediaBanked: banked.length, visionCulled } };
 }
 
 export async function onRequestPost({ request, env }) {
