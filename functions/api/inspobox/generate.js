@@ -82,23 +82,39 @@ export function buildMessages({ prompt, styleId, movementId, studioId, reroll })
 
 const cap = (s, n) => (typeof s === "string" ? s.trim().slice(0, n) : "");
 
-export function parseConceptText(text, grounding) {
-  if (!text) return null;
-  const m = text.match(/\{[\s\S]*\}/);
-  if (!m) return null;
+function extractJsonSpan(text) {
+  const start = text.indexOf("{");
+  if (start < 0) return null;
+  let depth = 0, inStr = false, esc = false;
+  for (let i = start; i < text.length; i++) {
+    const ch = text[i];
+    if (inStr) { if (esc) esc = false; else if (ch === "\\") esc = true; else if (ch === '"') inStr = false; }
+    else if (ch === '"') inStr = true;
+    else if (ch === "{") depth++;
+    else if (ch === "}") { if (--depth === 0) return text.slice(start, i + 1); }
+  }
+  return null;
+}
+
+export function parseConceptDetailed(text, grounding) {
+  if (!text) return { concept: null, why: "empty response" };
+  const span = extractJsonSpan(text);
+  if (!span) return { concept: null, why: "no complete JSON object in " + text.length + " chars (truncated?)" };
   let o;
-  try { o = JSON.parse(m[0]); } catch { return null; }
+  try { o = JSON.parse(span); } catch { return { concept: null, why: "JSON would not parse" }; }
   const { ipA } = grounding;
   let title = cap(o.title, 70).toUpperCase();
-  if (!title) return null;
+  if (!title) return { concept: null, why: "missing title" };
   if (!title.startsWith("THE ")) title = "THE " + title;
   const role = ipA.roles.includes(o.role) ? o.role : ipA.roles[0];
   const look = ipA.looks.includes(o.look) ? o.look : ipA.looks[0];
   const place = cap(o.place, 120), open = cap(o.open, 240), pivot = cap(o.pivot, 240), final = cap(o.final, 240);
-  if (!place || !open || !pivot || !final) return null;
+  for (const [k, v] of [["place", place], ["open", open], ["pivot", pivot], ["final", final]]) if (!v) return { concept: null, why: "missing " + k };
   const aspect = ASPECTS.includes(o.aspect) ? o.aspect : ASPECTS[0];
-  return { title, role, look, place, open, pivot, final, aspect, ip: ipA.name, ip2: grounding.ipB ? grounding.ipB.name : null, mashup: !!grounding.ipB, studio: grounding.studio.name };
+  return { concept: { title, role, look, place, open, pivot, final, aspect, ip: ipA.name, ip2: grounding.ipB ? grounding.ipB.name : null, mashup: !!grounding.ipB, studio: grounding.studio.name }, why: "" };
 }
+
+export function parseConceptText(text, grounding) { return parseConceptDetailed(text, grounding).concept; }
 
 export async function callAnthropic(env, built) {
   // Haiku first: this is a small structured-JSON task and latency is the
@@ -109,7 +125,8 @@ export async function callAnthropic(env, built) {
   const models = [...new Set([env.ANTHROPIC_MODEL, "claude-haiku-5-5", "claude-sonnet-5-5"].filter(Boolean))];
   const deadline = Date.now() + 26000;
   let lastErr = "no models";
-  for (const model of models) {
+  const attemptOrder = models.flatMap((m) => [m, m]);
+  for (const model of attemptOrder) {
     const remain = deadline - Date.now();
     if (remain < 4000) break;
     const ctl = new AbortController();
@@ -119,7 +136,7 @@ export async function callAnthropic(env, built) {
         method: "POST",
         signal: ctl.signal,
         headers: { "x-api-key": env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json" },
-        body: JSON.stringify({ model, max_tokens: 1400, system: built.system, messages: [{ role: "user", content: built.user }] }),
+        body: JSON.stringify({ model, max_tokens: 2048, system: built.system, messages: [{ role: "user", content: built.user }] }),
       });
       const data = await res.json().catch(() => null);
       if (!res.ok) {
@@ -130,9 +147,12 @@ export async function callAnthropic(env, built) {
       const blocks = data.content || [];
       const textPool = blocks.filter((b) => b.type === "text").map((b) => b.text).join("");
       const thinkPool = blocks.filter((b) => b.type === "thinking").map((b) => b.thinking || "").join("");
-      const concept = parseConceptText(textPool, built.grounding) || (thinkPool ? parseConceptText(thinkPool, built.grounding) : null);
-      if (!concept) { const snip = (textPool || thinkPool).slice(0, 60).replace(/\s+/g, " "); lastErr = model + ": unparseable concept" + (snip ? ": " + snip : " (empty response)"); continue; }
-      return concept;
+      const d1 = parseConceptDetailed(textPool, built.grounding);
+      const det = d1.concept ? d1 : (thinkPool ? parseConceptDetailed(thinkPool, built.grounding) : d1);
+      if (det.concept) return det.concept;
+      const snip = (textPool || thinkPool).slice(0, 60).replace(/\s+/g, " ");
+      lastErr = model + ": unparseable concept (" + det.why + ")" + (snip ? ": " + snip : "");
+      continue; // a parse failure is worth one retry of the SAME model (fresh variance) before falling through
     } catch (e) {
       if (e && /: (authentication_error|permission_error)/.test(e.message || "")) throw e;
       lastErr = model + ": " + (e && e.name === "AbortError" ? "timed out" : String(e && e.message || e));
