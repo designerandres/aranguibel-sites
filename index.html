@@ -244,7 +244,7 @@
   .gohint .gobtn{width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center;
     font-size:15px; color:#F3E5BE; background:linear-gradient(180deg,var(--jungle-soft),var(--jungle));
     border:1px solid #0C1D13; box-shadow:0 4px 9px -4px rgba(0,0,0,.55)}
-  body.editing .gohint, body.editing .readtoggle{visibility:hidden}
+  body.editing .gohint, body.editing .readtoggle{display:none}
   .mv{display:none; gap:8px; margin-left:auto; position:relative; z-index:3}
   body.editing .mv{display:flex}
   body.editing .entry{cursor:default}
@@ -254,11 +254,11 @@
     color:var(--ink); font-size:17px; line-height:1; box-shadow:0 4px 9px -4px rgba(0,0,0,.5);
     -webkit-tap-highlight-color:transparent}
   .mv button[disabled]{opacity:.3; cursor:default}
-  .tilearch{display:none; margin-left:8px; position:relative; z-index:3}
+  .tilearch{display:none; margin-left:8px; position:relative; z-index:3; flex:none}
   body.editing .tilearch{display:flex}
   .tilearch button{height:38px; padding:0 14px; border-radius:999px; cursor:pointer; pointer-events:auto;
     border:1.5px solid #A5854C; background:linear-gradient(180deg,var(--paper-hi),var(--kraft));
-    color:var(--ink); font-family:"Special Elite",monospace; font-size:10px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--ink); font-family:"Special Elite",monospace; font-size:10px; letter-spacing:.14em; text-transform:uppercase; white-space:nowrap;
     box-shadow:0 4px 9px -4px rgba(0,0,0,.5); -webkit-tap-highlight-color:transparent}
 
   /* ============ THE ARCHIVE — sealed entries at the back of the log ============ */
