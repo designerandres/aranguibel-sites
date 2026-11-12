@@ -254,6 +254,12 @@
     color:var(--ink); font-size:17px; line-height:1; box-shadow:0 4px 9px -4px rgba(0,0,0,.5);
     -webkit-tap-highlight-color:transparent}
   .mv button[disabled]{opacity:.3; cursor:default}
+  .tilearch{display:none; margin-left:8px; position:relative; z-index:3}
+  body.editing .tilearch{display:flex}
+  .tilearch button{height:38px; padding:0 14px; border-radius:999px; cursor:pointer; pointer-events:auto;
+    border:1.5px solid #A5854C; background:linear-gradient(180deg,var(--paper-hi),var(--kraft));
+    color:var(--ink); font-family:"Special Elite",monospace; font-size:10px; letter-spacing:.14em; text-transform:uppercase;
+    box-shadow:0 4px 9px -4px rgba(0,0,0,.5); -webkit-tap-highlight-color:transparent}
 
   /* ============ THE ARCHIVE — sealed entries at the back of the log ============ */
   .archivebox{margin-top:34px}
@@ -663,6 +669,9 @@
   const TABS = ["family", "personal"];
   let displaySites = SITES.slice();
   let savedOrder = null; // last order fetched from (or saved to) the server
+  let archivedDyn = new Set(); // paths archived from this page (server copy in apps-archived)
+  let savedArchived = []; // last archived set fetched from (or saved to) the server
+  function isArchived(s) { return s.archive === true || archivedDyn.has(s.path); }
   let activeTab = "family";
   try { const t = sessionStorage.getItem("skipperslog.tab"); if (TABS.includes(t)) activeTab = t; } catch (e) {}
   const openByTab = { family: null, personal: null }; // path of the expanded entry per tab
@@ -678,8 +687,8 @@
     displaySites = next;
   }
 
-  function sitesInTab(tab) { return displaySites.filter(s => s.tab === tab && !s.archive); }
-  function archivedSites() { return displaySites.filter(s => s.archive); }
+  function sitesInTab(tab) { return displaySites.filter(s => s.tab === tab && !isArchived(s)); }
+  function archivedSites() { return displaySites.filter(s => isArchived(s)); }
 
   function setOpen(entryEl, open) {
     entryEl.classList.toggle("collapsed", !open);
@@ -690,7 +699,8 @@
     const art = document.createElement("article");
     art.className = "entry collapsed";
     art.dataset.path = site.path;
-    if (site.archive) art.classList.add("archived");
+    const archd = isArchived(site);
+    if (archd) art.classList.add("archived");
     const num = String(idx + 1).padStart(3, "0");
     const visual = site.icon
       ? '<img src="" alt="" width="512" height="512">'
@@ -708,10 +718,11 @@
       '<div class="cardfoot"><button class="readtoggle" type="button"><span class="lbl">Read log entry</span><span class="chev">\u25BE</span></button>' +
       '<span class="gohint"><span class="lbl">Tap to board</span><span class="gobtn">\u2192</span></span>' +
       '<span class="mv"><button type="button" data-mv="-1" aria-label="Move up">\u2191</button>' +
-      '<button type="button" data-mv="1" aria-label="Move down">\u2193</button></span></div>';
+      '<button type="button" data-mv="1" aria-label="Move down">\u2193</button></span>' +
+      (site.archive ? '' : '<span class="tilearch"><button type="button" data-arch="1">' + (archd ? 'Unarchive' : 'Archive') + '</button></span>') + '</div>';
     if (site.icon) art.querySelector(".frame img").src = site.icon;
     else art.querySelector(".mono").textContent = site.monogram;
-    art.querySelector(".stamp").textContent = site.archive ? (site.archiveStamp || "Voyage Complete") : site.stamp;
+    art.querySelector(".stamp").textContent = archd ? (site.archiveStamp || "Voyage Complete") : site.stamp;
     art.querySelector("figcaption").textContent = "Fig. " + (idx + 1) + " \u2014 " + site.fig;
     art.querySelector("h3").textContent = site.title;
     art.querySelector(".territory").textContent = "Territory: " + site.territory;
@@ -733,6 +744,11 @@
       openByTab[site.tab] = willOpen ? site.path : null;
       art.closest(".tabpage, .archivebox").querySelectorAll(".entry").forEach(e => setOpen(e, false));
       if (willOpen) setOpen(art, true);
+    });
+    const abtn = art.querySelector("[data-arch]");
+    if (abtn) abtn.addEventListener("click", () => {
+      if (archivedDyn.has(site.path)) archivedDyn.delete(site.path); else archivedDyn.add(site.path);
+      renderEntries();
     });
     const btns = art.querySelectorAll(".mv button");
     btns[0].disabled = idx === 0;
@@ -806,6 +822,10 @@
     .then(r => r.ok ? r.json() : null)
     .then(j => { if (j && Array.isArray(j.order)) { savedOrder = j.order; applyOrder(j.order); renderEntries(); } })
     .catch(() => { /* offline — baked-in order stands */ });
+  fetch("/api/apps/archive", { cache: "no-store" })
+    .then(r => r.ok ? r.json() : null)
+    .then(j => { if (j && Array.isArray(j.archived)) { savedArchived = j.archived.slice(); archivedDyn = new Set(savedArchived); renderEntries(); } })
+    .catch(() => { /* offline — baked-in archive stands */ });
 
   // --- Edit order (signed-in accounts only) ---
   const $id = (x) => document.getElementById(x);
@@ -843,15 +863,18 @@
     } catch (e) { msg("Sign-in didn't complete — please try again."); }
     btnEdit.disabled = false;
   });
-  btnCancel.addEventListener("click", () => { applyOrder(savedOrder); setEditing(false); msg(""); });
+  btnCancel.addEventListener("click", () => { applyOrder(savedOrder); archivedDyn = new Set(savedArchived); setEditing(false); msg(""); });
   btnSave.addEventListener("click", async () => {
     btnSave.disabled = true; btnCancel.disabled = true;
     try {
       const order = displaySites.map(s => s.path);
       await api("PUT", "/api/apps/order", { order });
       savedOrder = order;
+      const archived = Array.from(archivedDyn);
+      await api("PUT", "/api/apps/archive", { archived });
+      savedArchived = archived;
       setEditing(false);
-      msg("Order sealed — it now shows this way on every device.");
+      msg("Sealed — order and archive now show this way on every device.");
     } catch (e) { msg("That save didn't go through. Check your connection and try again."); }
     btnSave.disabled = false; btnCancel.disabled = false;
   });
