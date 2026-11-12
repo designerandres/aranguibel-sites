@@ -200,7 +200,7 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
     <div class="logo">INSPO<span class="box">BOX</span></div>
     <div id="counter">— / —</div>
     <div id="tapHint">TAP A PIECE TO LOCK ITS GENRE</div>
-    <div id="buildTag">BUILD V26</div>
+    <div id="buildTag">BUILD V27</div>
   </div>
   <div class="topbtns">
     <button class="chipbtn" id="boxBtn">BOX <span class="n" id="boxCount">0</span></button>
@@ -303,6 +303,21 @@ async function load() {
   catch { res = null; }
   if (!res || res.status === 401 || res.status === 403) { $("#loading").style.display = "none"; $("#gate").classList.add("show"); return; }
   DATA = await res.json();
+  // v27: pieces saved to the Box before self-hosting still point at Civitai;
+  // remap them to the local copies (matched by image UUID) so an old save
+  // never depends on Civitai's uptime again.
+  try {
+    const local = new Set((DATA.feed || []).map((p) => p.img));
+    let touched = false;
+    for (const b of box) {
+      if (b && b.type === "piece" && typeof b.img === "string" && b.img.includes("image.civitai.com")) {
+        const m = b.img.match(/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/);
+        const cand = m ? `/inspobox/img/feed/${m[1]}.jpg` : null;
+        if (cand && local.has(cand)) { b.img = cand; touched = true; }
+      }
+    }
+    if (touched) store.set("inspobox.box.v1", box);
+  } catch (e) { /* best-effort */ }
   $("#loading").style.display = "none";
   buildSelects(); renderDeck(); renderIndex(); renderBox(); renderSparks();
 }
@@ -615,7 +630,7 @@ function jumpToMedia(id) {
    of the available disciplines side by side, active one centered. Keep
    swiping and the selection ticks through them; letting go (or pausing)
    lands the deck on the highlighted discipline. */
-const sw = { open: false, pending: null, list: [], timer: null };
+const sw = { open: false, pending: null, list: [], timer: null, suppress: false };
 function presentMedia() {
   const order = DATA.media.map((m) => m.id);
   return order.filter((id) => scopeFeed().some((p) => p.media === id));
@@ -650,13 +665,27 @@ function beginDrag(x) {
   if (!sw.open) { openSwitcher(null); if (!sw.open) return; }
   clearTimeout(sw.timer);
   $("#swTrack").classList.add("drag");
-  sw.drag = { startX: x, baseTx: stripTxFor(sw.pending) };
+  sw.drag = { startX: x, baseTx: stripTxFor(sw.pending), startPending: sw.pending };
+}
+/* One more swipe past the first discipline while locked drops straight
+   back to the home tour — the gesture that starts on the first segment
+   and pushes past its end unlocks, mid-drag, no waiting for release. */
+function unlockFromSwitcher() {
+  clearTimeout(sw.timer);
+  sw.drag = null; sw.open = false; sw.suppress = true;
+  $("#swTrack").classList.remove("drag");
+  $("#switcher").classList.remove("on");
+  $("#veil").classList.remove("on");
+  const keepId = deckList[state.current] && deckList[state.current].id;
+  state.movement = "all"; renderIndex(); renderDeck(keepId); flash("UNLOCKED");
 }
 function dragStripTo(x) {
   if (!sw.drag) return;
   const track = $("#swTrack");
   const lo = stripTxFor(sw.list[sw.list.length - 1]) - 56, hi = stripTxFor(sw.list[0]) + 56;
-  const tx = Math.max(lo, Math.min(hi, sw.drag.baseTx + (x - sw.drag.startX)));
+  const rawTx = sw.drag.baseTx + (x - sw.drag.startX);
+  if (state.movement !== "all" && sw.drag.startPending === sw.list[0] && sw.pending === sw.list[0] && rawTx > hi + 44) { unlockFromSwitcher(); return; }
+  const tx = Math.max(lo, Math.min(hi, rawTx));
   track.style.transform = `translateX(${tx}px)`;
   let best = sw.pending, bd = Infinity;
   $$("#swTrack .switem").forEach((it) => {
@@ -709,9 +738,9 @@ $("#deck").addEventListener("pointermove", (e) => {
   if (swX === null) return;
   const dx = e.clientX - swX, dy = e.clientY - swY;
   if (sw.drag) { dragStripTo(e.clientX); return; }
-  if (Math.abs(dx) > 52 && Math.abs(dx) > Math.abs(dy) * 1.4) beginDrag(e.clientX);
+  if (!sw.suppress && Math.abs(dx) > 52 && Math.abs(dx) > Math.abs(dy) * 1.4) beginDrag(e.clientX);
 });
-const swReset = () => { endDrag(); swX = null; };
+const swReset = () => { endDrag(); swX = null; sw.suppress = false; };
 $("#deck").addEventListener("pointerup", swReset);
 $("#deck").addEventListener("pointercancel", swReset);
 let tX = null, tY = null;
@@ -720,9 +749,9 @@ $("#deck").addEventListener("touchmove", (e) => {
   if (tX === null) return;
   const t = e.touches[0], dx = t.clientX - tX, dy = t.clientY - tY;
   if (sw.drag) { e.preventDefault(); dragStripTo(t.clientX); return; }
-  if (Math.abs(dx) > 24 && Math.abs(dx) > Math.abs(dy) * 1.25) { e.preventDefault(); beginDrag(t.clientX); }
+  if (!sw.suppress && Math.abs(dx) > 24 && Math.abs(dx) > Math.abs(dy) * 1.25) { e.preventDefault(); beginDrag(t.clientX); }
 }, { passive: false });
-const tReset = () => { endDrag(); tX = null; };
+const tReset = () => { endDrag(); tX = null; sw.suppress = false; };
 $("#deck").addEventListener("touchend", tReset);
 $("#deck").addEventListener("touchcancel", tReset);
 let tapX = null, tapY = null;
