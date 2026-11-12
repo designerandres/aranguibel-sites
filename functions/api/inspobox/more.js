@@ -1,4 +1,5 @@
 import { appAllowed, json, requireIdentity } from "../../_lib/auth.js";
+import { QUALITY_BAR, RUBRIC } from "../../_lib/inspobox-rubric.js";
 
 // INSPOBOX live feed — the app pulls fresh pieces from Civitai's public API
 // itself, per session, when a locked genre's stack runs low. Nothing here is
@@ -71,17 +72,66 @@ export function toPiece(item, modelName, movement, media) {
   };
 }
 
+export function gatePrompt(movement) {
+  return `You are the genre-fit gate for INSPOBOX, a design-inspiration app. Decide whether this image belongs in the "${movement}" feed.\n\n${RUBRIC[movement] || ""}\n\n${QUALITY_BAR}\n\nReply with ONLY this JSON: {"fits": true} or {"fits": false}. fits=true requires the genre's core idea AND at least two of its hallmarks, clearly present, plus the quality bar. When in doubt, answer false — a missing image is cheap; a wrong-genre image breaks the feed's promise.`;
+}
+
+// One vision verdict. Fails CLOSED: any error, timeout, or unparseable
+// reply culls the piece (the standing bar: rather lose a pretty image
+// than let a category lie).
+export async function gateOne(env, piece, fetchFn) {
+  const ctl = new AbortController();
+  const to = setTimeout(() => ctl.abort(), 8000);
+  try {
+    const res = await fetchFn("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      signal: ctl.signal,
+      headers: { "x-api-key": env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-haiku-5-5",
+        max_tokens: 40,
+        temperature: 0,
+        messages: [{ role: "user", content: [
+          { type: "image", source: { type: "url", url: piece.img } },
+          { type: "text", text: gatePrompt(piece.movement) },
+        ] }],
+      }),
+    });
+    if (!res.ok) return false;
+    const data = await res.json().catch(() => null);
+    const text = ((data && data.content) || []).filter((b) => b.type === "text").map((b) => b.text).join("");
+    const m = text.match(/\{[\s\S]*\}/);
+    if (!m) return false;
+    return JSON.parse(m[0]).fits === true;
+  } catch { return false; } finally { clearTimeout(to); }
+}
+
+// Gate a list of candidates in parallel waves of 9 (keeps burst rate sane).
+export async function gatePieces(env, candidates, fetchFn) {
+  const kept = [];
+  for (let i = 0; i < candidates.length; i += 9) {
+    const wave = candidates.slice(i, i + 9);
+    const verdicts = await Promise.all(wave.map((p) => gateOne(env, p, fetchFn)));
+    wave.forEach((p, j) => { if (verdicts[j]) { p.gated = true; kept.push(p); } });
+  }
+  return kept;
+}
+
 // One batch of live pieces. `cursor` is the opaque state from the previous
 // response ({q, v, c, m}); `exclude` is a list of image uuids the client
 // already has (curated + this session). Pure w.r.t. fetchFn for testability.
-export async function fetchMoreBatch({ movement, media, cursor, exclude }, fetchFn) {
+// When `env.ANTHROPIC_API_KEY` is present, candidates pass the Claude
+// genre-fit gate before they can be returned; without a key the batch is
+// served ungated (mechanical filters only).
+export async function fetchMoreBatch({ movement, media, cursor, exclude }, fetchFn, env) {
   const queries = QUERIES[movement];
   if (!queries) return { pieces: [], cursor: cursor || null, done: true };
   const seen = new Set(exclude || []);
   const st = cursor && typeof cursor === "object" ? { q: 0, v: 0, c: null, m: null, ...cursor } : { q: 0, v: 0, c: null, m: null };
   const pieces = [];
-  let calls = 0;
-  while (pieces.length < BATCH && calls < 4) {
+  const gate = env && env.ANTHROPIC_API_KEY ? (cands) => gatePieces(env, cands, fetchFn) : null;
+  let calls = 0, examined = 0;
+  while (pieces.length < BATCH && calls < 5 && examined < 24) {
     if (st.q >= queries.length) return { pieces, cursor: st, done: true };
     if (!st.m) {
       const qs = new URLSearchParams({ query: queries[st.q], limit: "6", sort: "Most Downloaded", nsfw: "false" });
@@ -96,10 +146,17 @@ export async function fetchMoreBatch({ movement, media, cursor, exclude }, fetch
     const qs = new URLSearchParams({ modelVersionId: String(ver.v), limit: "30", nsfw: "false", sort: "Most Reactions", period: "AllTime", withMeta: "true" });
     if (st.c) qs.set("cursor", st.c);
     const page = await civGet(fetchFn, "/images?" + qs.toString()); calls++;
+    let cands = [];
     for (const item of page.items || []) {
       const p = toPiece(item, ver.n, movement, media);
-      if (p && !seen.has(p.uuid)) { seen.add(p.uuid); pieces.push(p); if (pieces.length >= BATCH) break; }
+      if (p && !seen.has(p.uuid)) { seen.add(p.uuid); cands.push(p); }
     }
+    if (gate) {
+      cands = cands.slice(0, Math.max(0, 24 - examined));
+      examined += cands.length;
+      cands = await gate(cands);
+    }
+    for (const p of cands) { pieces.push(p); if (pieces.length >= BATCH) break; }
     st.c = (page.metadata && page.metadata.nextCursor) || null;
     if (!st.c) st.v++;
   }
@@ -118,7 +175,7 @@ export async function onRequestPost({ request, env }) {
       media: String(body.media || "design"),
       cursor: body.cursor || null,
       exclude: Array.isArray(body.exclude) ? body.exclude.slice(0, 600).map(String) : [],
-    }, fetch);
+    }, fetch, env);
     return json({ ok: true, ...out });
   } catch (e) {
     if (e && e.code === 429) return json({ ok: false, error: "rate_limited" }, 429);

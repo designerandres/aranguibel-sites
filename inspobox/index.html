@@ -207,7 +207,7 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
     <div class="logo">INSPO<span class="box">BOX</span></div>
     <div id="counter">— / —</div>
     <div id="tapHint">TAP A PIECE TO LOCK ITS GENRE</div>
-    <div id="buildTag">BUILD V35</div>
+    <div id="buildTag">BUILD V36</div>
   </div>
   <div class="topbtns">
     <button class="chipbtn" id="boxBtn">BOX <span class="n" id="boxCount">0</span></button>
@@ -364,7 +364,7 @@ function pieceHtml(p, i, total) {
       <button class="savebtn ${isSavedPiece(p.id) ? "saved" : ""}" data-save="${p.id}" aria-label="Save to your box">${isSavedPiece(p.id) ? "✓" : "+"}</button>
       <div class="panel">
         <div class="ptitle">${esc(p.title)}</div>
-        ${p.url ? `<a class="pby" href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.by)}${p.session ? ` <span class="ext">· LIVE</span>` : ""} <span class="ext">↗</span></a>` : `<div class="pby">${esc(p.by)}${p.session ? ` <span class="ext">· LIVE</span>` : ""}</div>`}
+        ${p.url ? `<a class="pby" href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.by)}${p.session ? ` <span class="ext">· LIVE${p.gated ? " ✓" : ""}</span>` : ""} <span class="ext">↗</span></a>` : `<div class="pby">${esc(p.by)}${p.session ? ` <span class="ext">· LIVE${p.gated ? " ✓" : ""}</span>` : ""}</div>`}
         <div class="rail">${railHtml()}</div>
       </div>
     </section>`;
