@@ -306,8 +306,15 @@ export async function persistNoneThemes(env, tally) {
 const HOME_BATCH = 16;
 // Vision budget for one river batch: the harvest stops here so EVERY
 // harvested candidate gets a vision verdict attempt (v66 — the river
-// files fail-closed; see the filing loop below).
-const HOME_VISION_BUDGET = 24;
+// files fail-closed; see the filing loop below). The ceiling is set by
+// the platform, not by appetite: one pull spends up to ~15 Civitai
+// calls + 2 subrequests per verdicted piece (image download + verdict
+// call) + D1 reads/writes against a ~50-subrequest invocation limit.
+// At 24 the math ran to ~65 and Cloudflare killed whole pulls with
+// HTTP 503 (v67 field report: rivers stranded at 3 pieces). At 12 the
+// worst case is ~41 — and the client simply chains more, smaller
+// pulls to reach its start-depth target (v68).
+const HOME_VISION_BUDGET = 12;
 
 // The home river (v65): one walk across the requested LANE's style
 // pools, round-robin. Candidates are pre-filtered by their metadata

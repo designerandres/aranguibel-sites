@@ -226,7 +226,7 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
     <div class="logo">INSPO<span class="box">BOX</span></div>
     <div id="counter">— / —</div>
     <div id="tapHint">TAP A PIECE TO LOCK ITS STYLE</div>
-    <div id="buildTag">BUILD V67</div>
+    <div id="buildTag">BUILD V68</div>
   </div>
   <div class="topbtns">
     <button class="chipbtn" id="boxBtn">BOX <span class="n" id="boxCount">0</span></button>
@@ -609,6 +609,7 @@ async function maybeFetchHome(force, chained) {
       col.lastError = why; col.coolUntil = Date.now() + 25000;
       if (!col.pieces.length) { col.failed = true; if (state.movement === "all" && state.media === media) renderDeck(); }
       else if (!col.flashedErr) { col.flashedErr = true; showToast("HOME RIVER", String(why)); }
+      scheduleRiverRetry(col, media);
       col.loading = false;
       return;
     }
@@ -643,7 +644,7 @@ async function maybeFetchHome(force, chained) {
         // v67 start depth: a lane's river opens with a real bench, not
         // one shallow batch — keep pulling (bounded) until this lane
         // holds at least 19 pieces or its walk is done.
-        if (col.pieces.length < 19 && !col.done && (chained || 0) < 4) { col.loading = false; maybeFetchHome(true, (chained || 0) + 1); return; }
+        if (col.pieces.length < 19 && !col.done && (chained || 0) < 8) { col.loading = false; maybeFetchHome(true, (chained || 0) + 1); return; }
       }
     } else if (!col.done && state.movement === "all" && state.media === media && deckList.length) {
       col.loading = false; maybeFetchHome(true); return;
@@ -660,8 +661,20 @@ async function maybeFetchHome(force, chained) {
     col.lastError = String(e && e.message || e); col.coolUntil = Date.now() + 25000;
     if (!col.pieces.length) { col.failed = true; if (state.movement === "all" && state.media === media) renderDeck(); }
     else if (!col.flashedErr) { col.flashedErr = true; showToast("HOME RIVER", col.lastError); }
+    scheduleRiverRetry(col, media);
   }
   col.loading = false;
+}
+// v68: a failed pull (e.g. a platform 503) used to strand a shallow
+// river until the user happened to scroll. If the lane is still below
+// the start-depth target, retry once the cooldown lapses — once per
+// failure, only while he's still looking at that river.
+function scheduleRiverRetry(col, media) {
+  if (col.done || col.pieces.length >= 19 || col.retryT) return;
+  col.retryT = setTimeout(() => {
+    col.retryT = null;
+    if (state.movement === "all" && state.media === media && homeColFor(media) === col && !col.done && col.pieces.length < 19) maybeFetchHome(true);
+  }, 26000);
 }
 
 /* Snap hardening: iOS can leave the deck resting between pieces when the
