@@ -47,8 +47,33 @@ export function pickGrounding({ prompt, studioId }) {
     ipA = rnd(pack);
     const others = DISNEY.studios.filter((s) => s.id !== studio.id);
     ipB = rnd(DISNEY.packs[rnd(others).id]);
-  } else ipA = rnd(pack);
+  } else {
+    // No pack matched. If the seed explicitly declares a world ("in the
+    // world of Pixar's Luca"), honor the declaration with a free world
+    // instead of silently substituting a random one.
+    const dw = declaredWorld(prompt);
+    if (dw) {
+      const st2 = DISNEY.studios.find((s) => dw.studioWord && s.name.toLowerCase().startsWith(dw.studioWord)) || (dw.studioWord === 'disney' ? DISNEY.studios[0] : studio);
+      return { studio: st2, ipA: { name: dw.name, free: true, keys: [], world: "", chars: [], places: [], prop: "", opens: [], pivots: [], finals: [], nouns: [], roles: [], looks: [] }, ipB: null };
+    }
+    ipA = rnd(pack);
+  }
   return { studio, ipA, ipB };
+}
+
+// Extract an explicitly declared world from a seed line, or null when the
+// declaration actually names a packed world (the normal path owns those).
+function declaredWorld(prompt) {
+  const m = String(prompt || "").match(/(?:in\s+)?the\s+world\s+of\s+(?:([a-z]+)['’]s\s+)?([^\n,.;]{2,44})/i);
+  if (!m) return null;
+  const name = m[2].trim().replace(/\s+(when|where|in which)\b.*$/i, "").trim();
+  if (!name) return null;
+  const norm = " " + name.toLowerCase().replace(/[^a-z0-9 ]/g, " ").replace(/\s+/g, " ") + " ";
+  for (const st of DISNEY.studios) for (const p of DISNEY.packs[st.id]) {
+    const pn = " " + p.name.toLowerCase().replace(/[^a-z0-9 ]/g, " ").replace(/\s+/g, " ").trim() + " ";
+    if (norm.includes(pn) || p.keys.some((k) => norm.includes(" " + k + " ") || norm.includes(k))) return null;
+  }
+  return { name: name.replace(/\w\S*/g, (w) => w[0].toUpperCase() + w.slice(1)), studioWord: (m[1] || "").toLowerCase() };
 }
 
 export function buildMessages({ prompt, styleId, movementId, studioId, reroll }) {
@@ -72,8 +97,9 @@ export function buildMessages({ prompt, styleId, movementId, studioId, reroll })
     `Visual style: ${style.name} — ${style.look}`,
     noMove ? "Movement: none — do not dress the world in any genre movement; keep the world's own native look and light." : `Movement: ${moveName} — dress the world in ${move.dress}; light: ${move.light}`,
     `Studio: ${g.studio.name}`,
-    packBlock("IP pack", g.ipA),
   ];
+  if (g.ipA.free) lines.push(`IP: ${g.ipA.name} — this world has NO curated pack. Build the concept entirely inside ${g.ipA.name}, from your own knowledge of that world: invent a role, a look and a place that belong unmistakably to it, with the same specificity a pack would give. The hero is still only "the newcomer"; named characters may appear only as encounters.`);
+  else lines.push(packBlock("IP pack", g.ipA));
   if (g.ipB) lines.push(packBlock("MASHUP — second IP pack (the two worlds collide; the pivot is where they meet)", g.ipB));
   lines.push(prompt ? `The user's seed line (use it): "${prompt}"` : "Seed line: none — invent freely within the world.");
   if (reroll > 0) lines.push(`This is take ${reroll + 1} — make it distinctly different from the obvious take.`);
@@ -106,8 +132,15 @@ export function parseConceptDetailed(text, grounding) {
   let title = cap(o.title, 70).toUpperCase();
   if (!title) return { concept: null, why: "missing title" };
   if (!title.startsWith("THE ")) title = "THE " + title;
-  const role = ipA.roles.includes(o.role) ? o.role : ipA.roles[0];
-  const look = ipA.looks.includes(o.look) ? o.look : ipA.looks[0];
+  let role, look;
+  if (ipA.free) {
+    role = cap(o.role, 140); look = cap(o.look, 260);
+    if (!role) return { concept: null, why: "missing role" };
+    if (!look) return { concept: null, why: "missing look" };
+  } else {
+    role = ipA.roles.includes(o.role) ? o.role : ipA.roles[0];
+    look = ipA.looks.includes(o.look) ? o.look : ipA.looks[0];
+  }
   const place = cap(o.place, 120), open = cap(o.open, 240), pivot = cap(o.pivot, 240), final = cap(o.final, 240);
   for (const [k, v] of [["place", place], ["open", open], ["pivot", pivot], ["final", final]]) if (!v) return { concept: null, why: "missing " + k };
   const aspect = ASPECTS.includes(o.aspect) ? o.aspect : ASPECTS[0];

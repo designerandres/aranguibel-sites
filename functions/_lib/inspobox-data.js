@@ -543,6 +543,18 @@ export const DISNEY = {
         roles: ["a junior Wilderness Explorer, badges pending", "a balloon-tender on the house crew", "a map-keeper for the road to Paradise Falls"],
         looks: ["dressed in a sash heavy with earned and unearned badges, neckerchief knotted, a juice-box holster at the belt", "wearing an explorer's cap and an oversized backpack, socks pulled high, a walking stick taller than needed", "in a cardigan and bow tie like a tiny expedition sponsor, an Adventure Book tucked under one arm"],
       },
+      {
+        name: "Luca", keys: ["luca", "portorosso", "sea monster", "sea monsters", "alberto", "giulia", "silenzio bruno", "portorosso cup"], world: "Portorosso, a sun-baked Italian fishing village where sea monsters turn human on dry land",
+        chars: ["Luca Paguro, a sea-monster kid seeing the surface for the first time", "Alberto Scorfano, all bravado, secretly terrified of being left behind", "Giulia Marcovaldo, a born racer with something to prove", "Massimo Marcovaldo, a giant fisherman with one arm and a bigger heart"],
+        places: ["the little town plaza of Portorosso", "the fountain at the center of the plaza", "the island tower across the bay"],
+        prop: "a rust-red Vespa, wobbling toward the sea",
+        opens: ["{H} kicks a soccer ball across the Portorosso plaza, laughing like a local", "{H} pedals a rattling bicycle downhill toward the harbor, bell ringing", "{H} surfaces in the plaza fountain, gasping, as the whole town turns"],
+        pivots: ["the ball smacks the fountain and a wave arcs over {H} — scales shimmer through wet skin", "a splash catches {H} mid-cheer and the plaza gasps: fins, a tail, a sea monster", "{H} whispers 'Silenzio, Bruno' and leaps from the island tower toward the water"],
+        finals: ["{H} dripping and grinning in the fountain as the town applauds a real sea monster", "{H} races the sunset along the harbor wall, half kid, half sea monster, all free", "{H} holds a gelato high on the Vespa as Portorosso waves from the plaza"],
+        nouns: ["VESPA", "GELATO", "FOUNTAIN"],
+        roles: ["a sea-monster kid on their first day on land", "a Portorosso Cup racer still looking for a team", "a fisherman's new deckhand who must not get splashed"],
+        looks: ["wearing a striped shirt and rolled-up trousers, a paper map of Portorosso in one hand", "in a borrowed swimsuit and a swim cap two sizes too big, gelato already on one cheek", "dressed as a deckhand in an oilskin apron, flinching at every splash from the fountain"],
+      },
     ],
     marvel: [
       {
