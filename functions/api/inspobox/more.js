@@ -30,7 +30,7 @@ async function civGet(fetchFn, path, ms = 12000) {
   try {
     const res = await fetchFn(CIV + path, { signal: ctl.signal, headers: { "user-agent": "INSPOBOX live feed" } });
     if (res.status === 429) { const e = new Error("rate_limited"); e.code = 429; throw e; }
-    if (!res.ok) throw new Error("civitai " + res.status);
+    if (!res.ok) throw new Error("civitai " + path.split("?")[0] + " -> " + res.status);
     return await res.json();
   } finally { clearTimeout(to); }
 }
@@ -79,10 +79,23 @@ export function gatePrompt(movement) {
 // One vision verdict. Fails CLOSED: any error, timeout, or unparseable
 // reply culls the piece (the standing bar: rather lose a pretty image
 // than let a category lie).
+function b64(buf) {
+  let out = "";
+  const bytes = new Uint8Array(buf);
+  for (let i = 0; i < bytes.length; i += 0x8000) out += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+  return btoa(out);
+}
+
 export async function gateOne(env, piece, fetchFn) {
   const ctl = new AbortController();
-  const to = setTimeout(() => ctl.abort(), 8000);
+  const to = setTimeout(() => ctl.abort(), 12000);
   try {
+    const imgUrl = String(piece.img).replace("/width=1200/", "/width=768/");
+    const imgRes = await fetchFn(imgUrl, { signal: ctl.signal, headers: { "user-agent": "INSPOBOX live feed" } });
+    if (!imgRes.ok) return false;
+    const mt = (imgRes.headers && imgRes.headers.get && imgRes.headers.get("content-type") || "image/jpeg").split(";")[0].trim();
+    const mediaType = ["image/jpeg", "image/png", "image/gif", "image/webp"].includes(mt) ? mt : "image/jpeg";
+    const imgData = b64(await imgRes.arrayBuffer());
     const res = await fetchFn("https://api.anthropic.com/v1/messages", {
       method: "POST",
       signal: ctl.signal,
@@ -91,7 +104,7 @@ export async function gateOne(env, piece, fetchFn) {
         model: "claude-haiku-5-5",
         max_tokens: 40,
         messages: [{ role: "user", content: [
-          { type: "image", source: { type: "url", url: piece.img } },
+          { type: "image", source: { type: "base64", media_type: mediaType, data: imgData } },
           { type: "text", text: gatePrompt(piece.movement) },
         ] }],
       }),
@@ -130,8 +143,8 @@ export async function fetchMoreBatch({ movement, media, cursor, exclude }, fetch
   const pieces = [];
   const gate = env && env.ANTHROPIC_API_KEY ? (cands) => gatePieces(env, cands, fetchFn) : null;
   let calls = 0, examined = 0;
-  while (pieces.length < BATCH && calls < 5 && examined < 24) {
-    if (st.q >= queries.length) return { pieces, cursor: st, done: true };
+  while (pieces.length < BATCH && calls < 5 && examined < 20) {
+    if (st.q >= queries.length) return { pieces, cursor: st, done: true, stats: { examined, passed: pieces.length, gated: !!gate, civCalls: calls } };
     if (!st.m) {
       const qs = new URLSearchParams({ query: queries[st.q], limit: "6", sort: "Most Downloaded", nsfw: "false" });
       qs.append("types", "LORA"); qs.append("types", "Checkpoint");
@@ -151,7 +164,7 @@ export async function fetchMoreBatch({ movement, media, cursor, exclude }, fetch
       if (p && !seen.has(p.uuid)) { seen.add(p.uuid); cands.push(p); }
     }
     if (gate) {
-      cands = cands.slice(0, Math.max(0, 24 - examined));
+      cands = cands.slice(0, Math.max(0, 20 - examined));
       examined += cands.length;
       cands = await gate(cands);
     }
@@ -159,7 +172,7 @@ export async function fetchMoreBatch({ movement, media, cursor, exclude }, fetch
     st.c = (page.metadata && page.metadata.nextCursor) || null;
     if (!st.c) st.v++;
   }
-  return { pieces, cursor: st, done: st.q >= queries.length };
+  return { pieces, cursor: st, done: st.q >= queries.length, stats: { examined, passed: pieces.length, gated: !!gate, civCalls: calls } };
 }
 
 export async function onRequestPost({ request, env }) {

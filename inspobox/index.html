@@ -207,7 +207,7 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
     <div class="logo">INSPO<span class="box">BOX</span></div>
     <div id="counter">— / —</div>
     <div id="tapHint">TAP A PIECE TO LOCK ITS GENRE</div>
-    <div id="buildTag">BUILD V37</div>
+    <div id="buildTag">BUILD V38</div>
   </div>
   <div class="topbtns">
     <button class="chipbtn" id="boxBtn">BOX <span class="n" id="boxCount">0</span></button>
@@ -460,19 +460,31 @@ async function maybeFetchLive() {
   const col = liveCol();
   if (col.done || col.loading) return;
   if (state.current < deckList.length - 3) return;
+  if (col.coolUntil && Date.now() < col.coolUntil) return;
   col.loading = true;
   const key = liveKey();
   try {
-    const ctl = new AbortController(); const to = setTimeout(() => ctl.abort(), 30000);
+    const ctl = new AbortController(); const to = setTimeout(() => ctl.abort(), 45000);
     const res = await fetch("/api/inspobox/more", { method: "POST", headers: { "content-type": "application/json" }, signal: ctl.signal, body: JSON.stringify({ movement: state.movement, media: state.media, cursor: col.cursor, exclude: excludeUuids() }) });
     clearTimeout(to);
     const data = await res.json().catch(() => null);
-    if (!res.ok || !data || !data.ok) { col.done = true; return; }
-    col.cursor = data.cursor; col.done = !!data.done;
+    if (!res.ok || !data || !data.ok) {
+      const why = (data && data.error) || ("HTTP " + res.status);
+      col.lastError = why; col.coolUntil = Date.now() + 25000;
+      if (!col.flashedErr) { col.flashedErr = true; flash("LIVE FEED — " + String(why).slice(0, 60).toUpperCase()); }
+      col.loading = false;
+      return;
+    }
+    col.cursor = data.cursor; col.done = !!data.done; col.lastError = "";
+    if (data.stats) col.stats = data.stats;
+    if (data.stats && data.stats.gated && data.stats.examined >= 8 && data.stats.passed === 0 && !col.flashedCull) { col.flashedCull = true; flash("LIVE CHECK — 0 OF " + data.stats.examined + " FIT THE GENRE"); }
     const fresh = (data.pieces || []).filter((p) => !deckList.some((x) => x.id === p.id));
     if (fresh.length) { col.pieces.push(...fresh); col.empties = 0; if (liveKey() === key) appendPieces(fresh); }
     else if (!col.done && ++col.empties < 3 && liveKey() === key) { col.loading = false; maybeFetchLive(); return; }
-  } catch { col.done = true; }
+  } catch (e) {
+    col.lastError = String(e && e.message || e); col.coolUntil = Date.now() + 25000;
+    if (!col.flashedErr) { col.flashedErr = true; flash("LIVE FEED — " + col.lastError.slice(0, 60).toUpperCase()); }
+  }
   col.loading = false;
 }
 
@@ -873,7 +885,7 @@ $("#deck").addEventListener("pointerup", (e) => {
   if (state.movement === "all") { state.movement = p.movement; renderIndex(); renderDeck(p.id); flash(mvName(p.movement).toUpperCase() + " — LOCKED"); }
   else flash(mvName(p.movement).toUpperCase());
 });
-window.INSPOBOX = { disciplineStep, jumpToMedia, getSw: () => ({ open: sw.open, dragging: !!sw.drag, pending: sw.pending }), fetchLive: () => maybeFetchLive(), getLive: () => Object.fromEntries(Object.entries(liveCols).map(([k, c]) => [k, { n: c.pieces.length, done: c.done }])), getState: () => ({ movement: state.movement, current: state.current, count: deckList.length, media: state.media }), getConcept: () => lastConcept };
+window.INSPOBOX = { disciplineStep, jumpToMedia, getSw: () => ({ open: sw.open, dragging: !!sw.drag, pending: sw.pending }), fetchLive: () => maybeFetchLive(), getLive: () => Object.fromEntries(Object.entries(liveCols).map(([k, c]) => [k, { n: c.pieces.length, done: c.done, err: c.lastError || "", stats: c.stats || null }])), getState: () => ({ movement: state.movement, current: state.current, count: deckList.length, media: state.media }), getConcept: () => lastConcept };
 
 /* ---------------- idea starter ---------------- */
 const sel = { style: "cgi", movement: "none", studio: "animation" };
