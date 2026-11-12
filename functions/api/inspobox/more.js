@@ -106,7 +106,7 @@ export async function gateOne(env, piece, fetchFn) {
         headers: { "x-api-key": env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json" },
         body: JSON.stringify({
           model,
-          max_tokens: 40,
+          max_tokens: 320,
           messages: [{ role: "user", content: [
             { type: "image", source: { type: "base64", media_type: mediaType, data: imgData } },
             { type: "text", text: gatePrompt(piece.movement) },
@@ -120,11 +120,14 @@ export async function gateOne(env, piece, fetchFn) {
         continue;
       }
       const data = await res.json().catch(() => null);
-      const text = ((data && data.content) || []).filter((b) => b.type === "text").map((b) => b.text).join("");
-      const m = text.match(/\{[\s\S]*\}/);
-      if (!m) { why = model + " unparseable verdict"; continue; }
-      try { return { fits: JSON.parse(m[0]).fits === true, why: "" }; }
-      catch { why = model + " unparseable verdict"; continue; }
+      const blocks = (data && data.content) || [];
+      let text = blocks.filter((b) => b.type === "text").map((b) => b.text).join("");
+      if (!/\{/.test(text)) text += blocks.filter((b) => b.type === "thinking").map((b) => b.thinking || "").join("");
+      const cands = text.match(/\{[^{}]*\}/g) || [];
+      let verdict = null;
+      for (const cand of cands) { try { const j = JSON.parse(cand); if (typeof j.fits === "boolean") verdict = j; } catch {} }
+      if (!verdict) { why = model + " unparseable verdict: " + (text.slice(0, 60) || "(empty response)"); continue; }
+      return { fits: verdict.fits, why: "" };
     }
     return { fits: false, why };
   } catch { return { fits: false, why: "gate timed out" }; } finally { clearTimeout(to); }

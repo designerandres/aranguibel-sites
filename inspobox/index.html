@@ -213,7 +213,7 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
     <div class="logo">INSPO<span class="box">BOX</span></div>
     <div id="counter">— / —</div>
     <div id="tapHint">TAP A PIECE TO LOCK ITS GENRE</div>
-    <div id="buildTag">BUILD V41</div>
+    <div id="buildTag">BUILD V42</div>
   </div>
   <div class="topbtns">
     <button class="chipbtn" id="boxBtn">BOX <span class="n" id="boxCount">0</span></button>
@@ -907,7 +907,7 @@ $("#deck").addEventListener("pointerup", (e) => {
   if (e.target.closest("button, .panel, .vtitle, a")) return;
   const piece = e.target.closest(".piece"); if (!piece) return;
   const p = deckList.find((x) => x.id === piece.dataset.id); if (!p) return;
-  if (state.movement === "all") { state.movement = p.movement; renderIndex(); renderDeck(p.id); flash(mvName(p.movement).toUpperCase() + " — LOCKED"); }
+  if (state.movement === "all") { state.movement = p.movement; renderIndex(); renderDeck(p.id); flash("LOCKED"); }
   else flash(mvName(p.movement).toUpperCase());
 });
 window.INSPOBOX = { disciplineStep, jumpToMedia, getSw: () => ({ open: sw.open, dragging: !!sw.drag, pending: sw.pending }), fetchLive: () => maybeFetchLive(), getLive: () => Object.fromEntries(Object.entries(liveCols).map(([k, c]) => [k, { n: c.pieces.length, done: c.done, err: c.lastError || "", stats: c.stats || null }])), getState: () => ({ movement: state.movement, current: state.current, count: deckList.length, media: state.media }), getConcept: () => lastConcept };
