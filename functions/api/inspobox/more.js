@@ -90,7 +90,7 @@ export async function gateOne(env, piece, fetchFn) {
   const ctl = new AbortController();
   const to = setTimeout(() => ctl.abort(), 12000);
   try {
-    const imgUrl = String(piece.img).replace("/width=1200/", "/width=768/");
+    const imgUrl = String(piece.img).replace("/width=1200/", "/width=640/");
     const imgRes = await fetchFn(imgUrl, { signal: ctl.signal, headers: { "user-agent": "INSPOBOX live feed" } });
     if (!imgRes.ok) return false;
     const mt = (imgRes.headers && imgRes.headers.get && imgRes.headers.get("content-type") || "image/jpeg").split(";")[0].trim();
@@ -122,7 +122,7 @@ export async function gateOne(env, piece, fetchFn) {
 export async function gatePieces(env, candidates, fetchFn) {
   const kept = [];
   for (let i = 0; i < candidates.length; i += 9) {
-    const wave = candidates.slice(i, i + 9);
+    const wave = candidates.slice(i, i + 6);
     const verdicts = await Promise.all(wave.map((p) => gateOne(env, p, fetchFn)));
     wave.forEach((p, j) => { if (verdicts[j]) { p.gated = true; kept.push(p); } });
   }
@@ -143,7 +143,7 @@ export async function fetchMoreBatch({ movement, media, cursor, exclude }, fetch
   const pieces = [];
   const gate = env && env.ANTHROPIC_API_KEY ? (cands) => gatePieces(env, cands, fetchFn) : null;
   let calls = 0, examined = 0;
-  while (pieces.length < BATCH && calls < 5 && examined < 20) {
+  while (pieces.length < BATCH && calls < 5 && examined < 12) {
     if (st.q >= queries.length) return { pieces, cursor: st, done: true, stats: { examined, passed: pieces.length, gated: !!gate, civCalls: calls } };
     if (!st.m) {
       const qs = new URLSearchParams({ query: queries[st.q], limit: "6", sort: "Most Downloaded", nsfw: "false" });
@@ -164,7 +164,7 @@ export async function fetchMoreBatch({ movement, media, cursor, exclude }, fetch
       if (p && !seen.has(p.uuid)) { seen.add(p.uuid); cands.push(p); }
     }
     if (gate) {
-      cands = cands.slice(0, Math.max(0, 20 - examined));
+      cands = cands.slice(0, Math.max(0, 12 - examined));
       examined += cands.length;
       cands = await gate(cands);
     }

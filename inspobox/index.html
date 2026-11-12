@@ -177,6 +177,12 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
 .switem.on span{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
 #flash{position:fixed;left:0;right:0;top:34%;z-index:45;text-align:center;font-family:var(--anton);font-size:52px;letter-spacing:.05em;color:transparent;-webkit-text-stroke:2px rgba(255,255,255,.9);opacity:0;transition:opacity .25s;pointer-events:none;text-shadow:none}
 #flash.show{opacity:.95}
+#toast{position:fixed;left:14px;right:14px;bottom:228px;z-index:46;background:rgba(13,11,22,.94);border:1px solid rgba(255,255,255,.16);border-radius:14px;padding:12px 42px 12px 14px;backdrop-filter:blur(18px) saturate(1.4);-webkit-backdrop-filter:blur(18px) saturate(1.4);box-shadow:0 14px 34px rgba(0,0,0,.5);opacity:0;transform:translateY(8px);pointer-events:none;transition:opacity .25s,transform .25s}
+#toast.show{opacity:1;transform:none;pointer-events:auto}
+#toast .ttag{font-family:var(--unb);font-weight:700;font-size:10px;letter-spacing:.18em;color:#FF8A1F;margin-bottom:4px}
+#toast .tmsg{font-family:var(--sg);font-size:13.5px;line-height:1.45;color:rgba(255,255,255,.92);word-break:break-word}
+#toastX{position:absolute;top:4px;right:4px;width:32px;height:32px;border:none;background:none;color:rgba(255,255,255,.65);font-size:14px;cursor:pointer}
+
 /* ---------- story prompt bottom sheet ---------- */
 .sheetlayer{background:transparent}
 .sheetback{position:absolute;inset:0;background:rgba(3,3,7,.62);opacity:0;transition:opacity .34s ease}
@@ -207,7 +213,7 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
     <div class="logo">INSPO<span class="box">BOX</span></div>
     <div id="counter">— / —</div>
     <div id="tapHint">TAP A PIECE TO LOCK ITS GENRE</div>
-    <div id="buildTag">BUILD V38</div>
+    <div id="buildTag">BUILD V39</div>
   </div>
   <div class="topbtns">
     <button class="chipbtn" id="boxBtn">BOX <span class="n" id="boxCount">0</span></button>
@@ -216,6 +222,7 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
 <div id="veil"></div>
 <div id="switcher"><div id="swTrack"></div></div>
 <div id="flash"></div>
+<div id="toast" role="status"><div class="ttag" id="toastTag"></div><div class="tmsg" id="toastMsg"></div><button id="toastX" aria-label="Dismiss notification">✕</button></div>
 
 <div id="dots"></div>
 <main id="deck"></main>
@@ -471,19 +478,19 @@ async function maybeFetchLive() {
     if (!res.ok || !data || !data.ok) {
       const why = (data && data.error) || ("HTTP " + res.status);
       col.lastError = why; col.coolUntil = Date.now() + 25000;
-      if (!col.flashedErr) { col.flashedErr = true; flash("LIVE FEED — " + String(why).slice(0, 60).toUpperCase()); }
+      if (!col.flashedErr) { col.flashedErr = true; showToast("LIVE FEED", String(why)); }
       col.loading = false;
       return;
     }
     col.cursor = data.cursor; col.done = !!data.done; col.lastError = "";
     if (data.stats) col.stats = data.stats;
-    if (data.stats && data.stats.gated && data.stats.examined >= 8 && data.stats.passed === 0 && !col.flashedCull) { col.flashedCull = true; flash("LIVE CHECK — 0 OF " + data.stats.examined + " FIT THE GENRE"); }
+    if (data.stats && data.stats.gated && data.stats.examined >= 8 && data.stats.passed === 0 && !col.flashedCull) { col.flashedCull = true; showToast("LIVE CHECK", "0 of " + data.stats.examined + " images examined fit the genre — the gate culled the whole batch."); }
     const fresh = (data.pieces || []).filter((p) => !deckList.some((x) => x.id === p.id));
     if (fresh.length) { col.pieces.push(...fresh); col.empties = 0; if (liveKey() === key) appendPieces(fresh); }
     else if (!col.done && ++col.empties < 3 && liveKey() === key) { col.loading = false; maybeFetchLive(); return; }
   } catch (e) {
     col.lastError = String(e && e.message || e); col.coolUntil = Date.now() + 25000;
-    if (!col.flashedErr) { col.flashedErr = true; flash("LIVE FEED — " + col.lastError.slice(0, 60).toUpperCase()); }
+    if (!col.flashedErr) { col.flashedErr = true; showToast("LIVE FEED", col.lastError); }
   }
   col.loading = false;
 }
@@ -706,6 +713,19 @@ function scrollToPiece(i) {
   }, 195);
 }
 let flashTimer = null;
+const toastEl = $("#toast");
+function showToast(tag, msg) {
+  $("#toastTag").textContent = tag;
+  $("#toastMsg").textContent = msg;
+  const piece = document.querySelectorAll("#deck .piece")[state.current];
+  const panel = piece ? piece.querySelector(".panel") : null;
+  let bottom = 228;
+  if (panel) { const r = panel.getBoundingClientRect(); if (r.height > 0) bottom = Math.max(96, Math.round(window.innerHeight - r.top + 10)); }
+  toastEl.style.bottom = bottom + "px";
+  toastEl.classList.add("show");
+}
+function hideToast() { toastEl.classList.remove("show"); }
+$("#toastX").addEventListener("click", hideToast);
 function flash(txt) { const f = $("#flash"); f.textContent = txt; f.classList.add("show"); clearTimeout(flashTimer); flashTimer = setTimeout(() => f.classList.remove("show"), 780); }
 function landOn(next) {
   const cur = deckList[state.current];
