@@ -100,6 +100,7 @@ a.bb{color:var(--dim);text-decoration:underline dotted rgba(255,255,255,.35);tex
 .crow b{color:#fff;font-size:10.5px;letter-spacing:.13em;margin-right:7px}
 .crow b::before{content:"▶ ";color:var(--red);font-size:9px}
 .ctags{margin-top:13px;font-family:var(--unb);font-weight:700;font-size:10px;letter-spacing:.06em;color:#FFC2CC;position:relative}
+.cwhy{margin-top:9px;font-family:ui-monospace,Menlo,monospace;font-size:10.5px;line-height:1.5;color:#FFB02E;word-break:break-word;position:relative}
 .cardbtns{display:flex;gap:9px;margin-top:15px;position:relative}
 .cardbtns button{flex:1;padding:12px 0;border-radius:11px;font-family:var(--unb);font-weight:900;font-size:11.5px;letter-spacing:.05em;border:1.5px solid rgba(255,255,255,.22)}
 .cardbtns .savec{background:var(--grad);border-color:transparent}
@@ -142,6 +143,10 @@ a.bb{color:var(--dim);text-decoration:underline dotted rgba(255,255,255,.35);tex
 .boxitem .bacts{flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:7px}
 .boxitem .dl{font-family:var(--unb);font-weight:900;font-size:9.5px;letter-spacing:.07em;padding:7px 9px;border-radius:8px;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.16);color:#fff;white-space:nowrap}
 .boxitem .dl:active{background:var(--grad)}
+.boxitem.sparkitem{flex-direction:column;gap:9px}
+.sparkitem .bhead{display:flex;gap:12px;width:100%;align-items:flex-start}
+.sparkitem .bacts{flex-direction:row;align-items:center;gap:2px}
+.sparkitem .bb{font-size:12.5px;color:var(--dim);line-height:1.55}
 .boxempty{padding:50px 26px;text-align:center;color:var(--faint)}
 .boxempty .t{font-family:var(--unb);font-weight:900;font-size:15px;color:rgba(255,255,255,.8)}
 
@@ -201,7 +206,7 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
     <div class="logo">INSPO<span class="box">BOX</span></div>
     <div id="counter">— / —</div>
     <div id="tapHint">TAP A PIECE TO LOCK ITS GENRE</div>
-    <div id="buildTag">BUILD V29</div>
+    <div id="buildTag">BUILD V30</div>
   </div>
   <div class="topbtns">
     <button class="chipbtn" id="boxBtn">BOX <span class="n" id="boxCount">0</span></button>
@@ -466,10 +471,11 @@ function renderBox() {
       <div class="bti">${esc(b.title)}</div>${b.url ? `<a class="bb" href="${esc(b.url)}" target="_blank" rel="noopener">${esc(b.by || "")} ↗</a>` : `<div class="bb">${esc(b.by || "")}</div>`}</div>
       <button class="del" data-del="${i}">✕</button>
     </div>` : `
-    <div class="boxitem">
-      <div class="bt"><div class="bk">SPARK · ${esc(b.label || "")}</div>
-      <div class="bti">${esc(b.title)}</div><div class="bb">${esc(b.body || "")}</div></div>
-      <div class="bacts"><button class="dl" data-dl="${i}">PROMPT ↓</button><button class="del" data-del="${i}">✕</button></div>
+    <div class="boxitem sparkitem">
+      <div class="bhead"><div class="bt"><div class="bk">SPARK · ${esc(b.label || "")}</div>
+      <div class="bti">${esc(b.title)}</div></div>
+      <div class="bacts"><button class="dl" data-dl="${i}">PROMPT ↓</button><button class="del" data-del="${i}">✕</button></div></div>
+      <div class="bb">${esc(b.body || "")}</div>
     </div>`).join("");
 }
 $("#boxList").addEventListener("click", (e) => {
@@ -817,7 +823,7 @@ function findNamedIPs(text) {
 const promptEl = $("#promptInput");
 promptEl.addEventListener("input", () => { promptEl.style.height = "auto"; promptEl.style.height = Math.min(promptEl.scrollHeight, 170) + "px"; });
 
-function generateLocal() {
+function generateLocal(why) {
   const A = DATA.atoms, D = DATA.disney;
   const prompt = promptEl.value.trim();
   const seed = hashStr([sel.style, sel.movement, sel.studio, prompt].join("|")) + rerolls * 7919 + genCount * 131;
@@ -871,6 +877,7 @@ function generateLocal() {
     styleId: style.id, style: style.name, movementId: sel.movement, movement: mvName(sel.movement),
     studio: studio.name, ip: ipA.name, ip2: ipB ? ipB.name : null, mashup: !!ipB,
     subject, person: null, role, look, place, open, pivot, final, tags,
+    fallbackWhy: why || null,
   };
   renderConcept();
 }
@@ -878,6 +885,7 @@ function generateLocal() {
    and writes fresh beats inside the grounded world. Any failure (no API
    key yet, offline, API error) falls back to the authored banks. */
 let generating = false;
+let lastGenWhy = "";
 function showConjuring() {
   $("#conceptZone").innerHTML = `<div class="card"><div class="clabel">IDEA STARTER — LIVE</div><div class="ctitle">✳ CONJURING…</div><div class="crow">Reading your line and dreaming inside the world — a few seconds.</div></div>`;
 }
@@ -902,18 +910,25 @@ function acceptDynamic(dc, prompt) {
 async function ignite() {
   if (generating) return;
   generating = true;
+  lastGenWhy = "";
   showConjuring();
   try {
     const ctl = new AbortController();
     const to = setTimeout(() => ctl.abort(), 30000);
     const res = await fetch("/api/inspobox/generate", { method: "POST", signal: ctl.signal, headers: { "content-type": "application/json" }, body: JSON.stringify({ prompt: promptEl.value.trim(), styleId: sel.style, movementId: sel.movement, studioId: sel.studio, reroll: rerolls }) });
     clearTimeout(to);
-    if (!res.ok) throw new Error("generate " + res.status);
+    if (!res.ok) {
+      let detail = "";
+      try { const b = await res.json(); detail = b.error || b.message || ""; } catch (_) { try { detail = (await res.text()).slice(0, 160); } catch (_) {} }
+      lastGenWhy = ("HTTP " + res.status + (detail ? " · " + detail : "")).slice(0, 200);
+      throw new Error(lastGenWhy);
+    }
     const data = await res.json();
-    if (!data.ok || !data.concept) throw new Error("generate bad");
+    if (!data.ok || !data.concept) { lastGenWhy = ("bad payload · " + (data.error || "no concept returned")).slice(0, 200); throw new Error(lastGenWhy); }
     acceptDynamic(data.concept, promptEl.value.trim());
   } catch (e) {
-    generateLocal();
+    const why = (e && e.name === "AbortError") ? "request timed out after 30s" : (lastGenWhy || String(e && e.message || e));
+    generateLocal(why);
   }
   generating = false;
 }
@@ -933,6 +948,7 @@ function renderConcept() {
       <div class="ctitle">${esc(c.title)}</div>
       ${rows.join("")}
       <div class="ctags">${esc(c.tags)}</div>
+      ${c.fallbackWhy ? `<div class="cwhy">⚠ BANKS FALLBACK — ${esc(c.fallbackWhy)}</div>` : ""}
       <div class="cardbtns"><button id="rerollBtn">↻ REROLL</button><button id="promptBtn">CREATE PROMPT</button><button class="savec" id="saveSparkBtn">SAVE TO BOX</button></div>
     </div>`;
   $("#rerollBtn").addEventListener("click", () => { rerolls += 1; ignite(); });
