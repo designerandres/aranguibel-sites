@@ -43,7 +43,8 @@ img{display:block}
 /* ---------- deck ---------- */
 #deck{height:100dvh;overflow-y:auto;scroll-snap-type:y mandatory;overscroll-behavior:none}
 .piece{position:relative;height:100dvh;scroll-snap-align:start;scroll-snap-stop:always;overflow:hidden;background:#0B0B13}
-.piece .bgimg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.piece .bgimg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .5s ease}
+.piece .bgimg.ld{opacity:1}
 .piece .bgvid{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .piece .scrim{position:absolute;inset:0;background:linear-gradient(180deg,rgba(5,5,10,.40) 0%,transparent 26%,transparent 44%,rgba(5,5,10,.88) 84%)}
 .piece .prog{position:absolute;top:0;left:0;height:3px;background:var(--grad);z-index:3}
@@ -200,7 +201,7 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
     <div class="logo">INSPO<span class="box">BOX</span></div>
     <div id="counter">— / —</div>
     <div id="tapHint">TAP A PIECE TO LOCK ITS GENRE</div>
-    <div id="buildTag">BUILD V28</div>
+    <div id="buildTag">BUILD V29</div>
   </div>
   <div class="topbtns">
     <button class="chipbtn" id="boxBtn">BOX <span class="n" id="boxCount">0</span></button>
@@ -357,7 +358,7 @@ function renderDeck(startId) {
     <section class="piece" data-id="${p.id}" data-idx="${i}">
       ${p.video
         ? `<video class="bgvid" src="${esc(p.video)}" poster="${esc(p.img)}" muted loop playsinline preload="metadata"></video>`
-        : `<img class="bgimg" src="${esc(p.img)}" alt="" decoding="async" ${i > 1 ? 'loading="lazy"' : ""}>`}
+        : `<img class="bgimg" src="${esc(p.img)}" alt="" decoding="async">`}
       <div class="scrim"></div>
       <div class="prog" style="width:${Math.round(((i + 1) / feed.length) * 100)}%"></div>
       <div class="vtitle" data-open-index title="All movements">${esc(mvName(p.movement).toUpperCase())}</div>
@@ -404,8 +405,30 @@ function bindDeck(feed) {
       } else if (v) v.pause();
     }
   }, { root: $("#deck"), threshold: 0.6 });
-  $$(".piece", $("#deck")).forEach((el) => deckObs.observe(el));
+  $$(".piece", $("#deck")).forEach((el) => {
+    deckObs.observe(el);
+    const img = el.querySelector("img.bgimg");
+    if (img) {
+      if (img.complete && img.naturalWidth) img.classList.add("ld");
+      else { img.addEventListener("load", () => img.classList.add("ld")); img.addEventListener("error", () => img.classList.add("ld")); }
+    }
+  });
 }
+/* Snap hardening: iOS can leave the deck resting between pieces when the
+   viewport height shifts (URL bar, rotation). Once scrolling settles, if
+   the deck is not aligned to the current piece, put it back. */
+let snapTimer = null, deckTouch = false;
+function snapFix() {
+  const deck = $("#deck"), el = $$("#deck .piece")[state.current];
+  if (el && Math.abs(deck.scrollTop - el.offsetTop) > 2) deck.scrollTop = el.offsetTop;
+}
+$("#deck").addEventListener("touchstart", () => { deckTouch = true; }, { passive: true });
+$("#deck").addEventListener("touchend", () => { deckTouch = false; }, { passive: true });
+$("#deck").addEventListener("scroll", () => {
+  clearTimeout(snapTimer);
+  snapTimer = setTimeout(() => { if (!deckTouch && !sw.drag) snapFix(); }, 160);
+}, { passive: true });
+window.addEventListener("resize", () => { clearTimeout(snapTimer); snapTimer = setTimeout(snapFix, 200); });
 $("#deck").addEventListener("click", (e) => {
   const mediaBtn = e.target.closest("[data-media]");
   if (mediaBtn) { jumpToMedia(mediaBtn.dataset.media); return; }
