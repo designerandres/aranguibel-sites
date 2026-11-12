@@ -1,5 +1,5 @@
 import { appAllowed, json, requireIdentity } from "../../_lib/auth.js";
-import { AFFINITY, QUALITY_BAR, RUBRIC } from "../../_lib/inspobox-rubric.js";
+import { AFFINITY, LANE_GENRES, QUALITY_BAR, RUBRIC } from "../../_lib/inspobox-rubric.js";
 
 // INSPOBOX live feed — the app pulls fresh pieces from Civitai's public API
 // itself, per session, when a locked genre's stack runs low. Nothing here is
@@ -161,9 +161,9 @@ export const MEDIA_VOCAB = {
   "world": ["landscape", "scenery", "environment", "vista", "panorama", "panoramic", "valley", "mountain", "forest", "desert", "ocean", "sea", "island", "jungle", "tundra", "canyon", "waterfall", "meadow", "coast", "shore", "cliff", "cave", "village", "town", "kingdom", "realm", "planet", "terrain", "countryside", "wilderness", "aerial view", "overlook", "cityscape", "horizon", "fields", "underwater world"],
   "architecture": ["architecture", "building", "cathedral", "church", "temple", "castle", "palace", "tower", "bridge", "interior", "facade", "dome", "spire", "skyscraper", "mansion", "cottage", "fortress", "library", "museum", "hotel", "lobby", "staircase", "archway", "courtyard", "station", "pavilion", "ruins", "house", "street", "skyline", "cathedral interior", "throne room", "hall", "plaza", "marketplace", "harbor", "lighthouse", "windmill", "pagoda", "mosque", "abbey", "monastery", "crypt", "dungeon"],
   "prop": ["sword", "weapon", "gun", "rifle", "vehicle", "car", "motorcycle", "bicycle", "watch", "chair", "table", "lamp", "machine", "device", "gadget", "armor", "helmet", "shield", "book", "bottle", "key", "chest", "guitar", "camera", "backpack", "crown", "mask", "potion", "teapot", "vase", "sculpture", "statue", "still life", "product", "object", "dagger", "axe", "bow", "staff", "wand", "ring", "amulet", "spaceship", "airship", "train", "ship", "mecha", "mech", "jewelry", "necklace", "gem", "crystal", "orb", "lantern", "clock", "compass", "map"],
-  "graphics": ["poster", "typography", "logo", "illustration", "comic", "cover art", "album cover", "book cover", "signage", "banner", "advertisement", "vector", "flat design", "infographic", "pattern", "interface", "dashboard", "hud", "ui design", "manga", "print", "editorial", "branding", "packaging", "label", "postcard", "tarot", "playing card", "stamp design", "text"],
+  "design": ["poster", "typography", "logo", "illustration", "comic", "cover art", "album cover", "book cover", "signage", "banner", "advertisement", "vector", "flat design", "infographic", "pattern", "interface", "dashboard", "hud", "ui design", "manga", "print", "editorial", "branding", "packaging", "label", "postcard", "tarot", "playing card", "stamp design", "text"],
 };
-const MEDIA_PRIORITY = ["graphics", "architecture", "prop", "character", "world"];
+const MEDIA_PRIORITY = ["design", "architecture", "prop", "character", "world"];
 export function classifyMedia(piece, modelText) {
   const hay = (((piece && piece.prompt) || "") + " " + ((piece && piece.title) || "") + " " + (modelText || "")).toLowerCase();
   let best = null, bestScore = 0;
@@ -288,7 +288,7 @@ export async function gateOne(env, piece, fetchFn) {
 // metadata filing (fail-open, per the standing rule); a real verdict
 // RULES — it overrides the metadata genre and grouping outright.
 export const GENRE_IDS = ["surreal", "art-deco", "art-moderne", "mid-century", "pop", "afrofuturism", "brutalist", "cyberpunk", "film-noir", "gothic", "minimalist", "solarpunk", "steampunk"];
-export const MEDIA_IDS = ["character", "world", "architecture", "prop", "graphics"];
+export const MEDIA_IDS = ["design", "world", "architecture", "character", "prop"];
 // The generation prompt reaches the vision judge ONLY as a labeled,
 // quarantined hint (Andres's suggestion, Nov 12): it can carry real
 // intent that disambiguates a genuinely borderline image, but it was
@@ -303,7 +303,7 @@ export function promptHint(raw) {
 
 export function classifyPrompt(hint) {
   const genres = GENRE_IDS.map((id) => "- " + id + ": " + (RUBRIC[id] || "")).join("\n");
-  return ("You are the filing editor for INSPOBOX, a design-inspiration app. Look at this image and file it by WHAT IT ACTUALLY SHOWS — never by what it might have been generated with.\n\nGENRES (choose exactly one id, or none):\n" + genres + "\n\nGROUPINGS (choose exactly one): character = a person, creature, or being is the subject; world = an environment, landscape, or place is the subject with no single building or object dominating; architecture = a building, structure, or interior is the subject; prop = a single object, product, vehicle, or item is the subject; graphics = a poster, typography, logo, flat illustration, print, or interface — the graphic itself is the subject.\n\n" + QUALITY_BAR + "\n\nBegin your reply with ONLY this JSON object, nothing before it: {\"genre\": \"<genre id or none>\", \"media\": \"<grouping id>\", \"style\": \"<your own short phrase for the style this image actually is, e.g. 'muted liminal-space photograph'>\", \"ok\": true}. Set ok=false only for a quality-bar failure. Choose genre none when no listed genre honestly fits — do not force the nearest one." + (hint ? promptHint(hint) : ""));
+  return ("You are the filing editor for INSPOBOX, a design-inspiration app. Look at this image and file it by WHAT IT ACTUALLY SHOWS — never by what it might have been generated with.\n\nGENRES (choose exactly one id, or none):\n" + genres + "\n\nGROUPINGS (choose exactly one): character = a person, creature, or being is the subject; world = an environment, landscape, or place is the subject with no single building or object dominating; architecture = a building, structure, or interior is the subject; prop = a single object, product, vehicle, or item is the subject; design = a poster, typography, logo, flat illustration, print, or interface — the graphic work itself is the subject.\n\n" + QUALITY_BAR + "\n\nBegin your reply with ONLY this JSON object, nothing before it: {\"genre\": \"<genre id or none>\", \"media\": \"<grouping id>\", \"style\": \"<your own short phrase for the style this image actually is, e.g. 'muted liminal-space photograph'>\", \"ok\": true}. Set ok=false only for a quality-bar failure. Choose genre none when no listed genre honestly fits — do not force the nearest one." + (hint ? promptHint(hint) : ""));
 }
 
 export async function visionClassify(env, piece, fetchFn) {
@@ -574,7 +574,7 @@ export async function fetchHomeBatch({ cursor, exclude, media }, fetchFn, env) {
   // stays diverse. Filing is bookkeeping on the same payload — no extra
   // calls, no extra spend.
   const HOME_GENRE_CAP = 3, BANK_CAP = 8;
-  const primary = MEDIA_VOCAB[media] ? media : "character";
+  const primary = MEDIA_VOCAB[media] ? media : "design";
   const mvs = Object.keys(buckets).filter((k) => buckets[k].length);
   const pieces = [];
   const counts = {};
@@ -583,7 +583,7 @@ export async function fetchHomeBatch({ cursor, exclude, media }, fetchFn, env) {
     let progressed = false;
     for (const mv of mvs) {
       if ((counts[mv] || 0) >= HOME_GENRE_CAP) continue;
-      const ix = buckets[mv].findIndex((p) => p.media === primary);
+      const ix = buckets[mv].findIndex((p) => p.media === primary && (LANE_GENRES[primary] || []).includes(p.movement));
       if (ix >= 0) { pieces.push(buckets[mv].splice(ix, 1)[0]); counts[mv] = (counts[mv] || 0) + 1; progressed = true; if (pieces.length >= HOME_BATCH) break; }
     }
     if (!progressed) break;

@@ -40,3 +40,17 @@ export const AFFINITY = {
   "solarpunk": ["solarpunk", "solar punk", "green architecture", "vertical forest", "green roof", "solar panels", "eco futurism", "ecofuturism", "lush city"],
   "steampunk": ["steampunk", "steam punk", "clockwork", "airship", "brass gears", "victorian machine", "zeppelin", "automaton"],
 };
+
+// Per-lane genre subsets (v64, Andres's direction): each grouping carries
+// only the genres that genuinely produce that subject, so a lane never
+// offers a style that doesn't belong to it. The movement index shows the
+// current lane's subset, the locked strip hides groupings where the genre
+// isn't carried, and the home river only decks subset genres per lane
+// (the rest bank to their genre columns as usual).
+export const LANE_GENRES = {
+  "design": ["pop", "art-deco", "art-moderne", "mid-century", "cyberpunk", "brutalist", "minimalist", "film-noir", "surreal", "afrofuturism"],
+  "world": ["surreal", "solarpunk", "cyberpunk", "afrofuturism", "steampunk", "gothic", "brutalist", "art-deco", "art-moderne", "mid-century", "film-noir", "minimalist"],
+  "architecture": ["art-deco", "art-moderne", "mid-century", "brutalist", "gothic", "solarpunk", "cyberpunk", "steampunk", "minimalist", "afrofuturism", "surreal", "film-noir"],
+  "character": ["afrofuturism", "cyberpunk", "steampunk", "gothic", "film-noir", "pop", "surreal", "art-deco", "mid-century", "solarpunk"],
+  "prop": ["steampunk", "mid-century", "art-deco", "art-moderne", "cyberpunk", "pop", "minimalist", "film-noir", "afrofuturism", "surreal", "gothic", "solarpunk"],
+};

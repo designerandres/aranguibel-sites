@@ -221,7 +221,7 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
     <div class="logo">INSPO<span class="box">BOX</span></div>
     <div id="counter">— / —</div>
     <div id="tapHint">TAP A PIECE TO LOCK ITS GENRE</div>
-    <div id="buildTag">BUILD V63</div>
+    <div id="buildTag">BUILD V64</div>
   </div>
   <div class="topbtns">
     <button class="chipbtn" id="boxBtn">BOX <span class="n" id="boxCount">0</span></button>
@@ -313,7 +313,7 @@ function rng(seed) { let t = seed >>> 0; return () => { t += 0x6D2B79F5; let r =
 const pick = (r, arr) => arr[Math.floor(r() * arr.length)];
 
 let DATA = null;
-const state = { media: "character", movement: "all", current: 0 };
+const state = { media: "design", movement: "all", current: 0 };
 let box = store.get("inspobox.box.v1", []);
 let sparks = store.get("inspobox.sparks.v1", []);
 let genCount = store.get("inspobox.count.v1", 0);
@@ -528,7 +528,7 @@ async function maybeFetchLive(force) {
   if (state.movement === "all") return;
   const col = liveCol();
   if (col.done || col.loading) return;
-  if (!force && state.current < deckList.length - 8) return;
+  if (!force && state.current < deckList.length - 5) return;
   if (col.coolUntil && Date.now() < col.coolUntil) return;
   col.loading = true; col.fetchedOnce = true;
   const key = liveKey();
@@ -575,7 +575,7 @@ async function maybeFetchHome(force) {
   if (state.movement !== "all") return;
   const col = homeCol();
   if (col.done || col.loading) return;
-  if (!force && col.pieces.length && state.current < deckList.length - 8) return;
+  if (!force && col.pieces.length && state.current < deckList.length - 5) return;
   if (col.coolUntil && Date.now() < col.coolUntil) return;
   col.loading = true; col.fetchedOnce = true;
   const media = state.media;
@@ -783,11 +783,14 @@ function renderDeckSoft() { // refresh save states without rebuilding scroll pos
 
 /* ---------------- movement index ---------------- */
 function renderIndex() {
+  const lane = state.media;
+  const subset = laneGenres(lane);
   const counts = {};
-  DATA.feed.forEach((p) => { counts[p.movement] = (counts[p.movement] || 0) + 1; });
+  DATA.feed.forEach((p) => { if (p.media === lane) counts[p.movement] = (counts[p.movement] || 0) + 1; });
+  const laneTotal = DATA.feed.filter((p) => p.media === lane).length;
   $("#indexGrid").innerHTML = `
-    <button class="tile alltile ${state.movement === "all" ? "on" : ""}" data-mv="all" data-name="all movements"><span class="tn"><span class="nm">ALL<br>MOVEMENTS</span><span class="tg" style="display:block">${DATA.feed.length} pieces · tap a genre to lock it</span></span></button>
-    ` + DATA.movements.map((m) => `
+    <button class="tile alltile ${state.movement === "all" ? "on" : ""}" data-mv="all" data-name="all movements"><span class="tn"><span class="nm">ALL<br>MOVEMENTS</span><span class="tg" style="display:block">${laneTotal} pieces in ${esc(mdName(lane))} · tap a genre to lock it</span></span></button>
+    ` + DATA.movements.filter((m) => subset.includes(m.id)).map((m) => `
     <button class="tile ${state.movement === m.id ? "on" : ""} ${m.img ? "" : "gradtile"}" data-mv="${m.id}" data-name="${esc(m.name.toLowerCase())}">
       ${m.img ? `<img src="${esc(m.img)}" alt="" loading="lazy">` : `<span class="bigletter">${esc(m.name.charAt(0))}</span><span class="soon">FIRST DROP SOON</span>`}<span class="tsc"></span>
       <span class="cnt">${counts[m.id] || 0}</span>${state.movement === m.id ? '<span class="lockb">LOCKED</span>' : ""}
@@ -924,9 +927,11 @@ function jumpToMedia(id) {
    swiping and the selection ticks through them; letting go (or pausing)
    lands the deck on the highlighted discipline. */
 const sw = { open: false, pending: null, list: [], timer: null, suppress: false, watchdog: null };
+function laneGenres(id) { return (DATA && DATA.laneGenres && DATA.laneGenres[id]) || DATA.movements.map((m) => m.id); }
 function presentMedia() {
   const order = DATA.media.map((m) => m.id);
-  return order.filter((id) => scopeFeed().some((p) => p.media === id));
+  return order.filter((id) => scopeFeed().some((p) => p.media === id))
+    .filter((id) => state.movement === "all" || laneGenres(id).includes(state.movement));
 }
 function openSwitcher(target, commitMs) {
   const list = presentMedia();
