@@ -289,9 +289,21 @@ export async function gateOne(env, piece, fetchFn) {
 // RULES — it overrides the metadata genre and grouping outright.
 export const GENRE_IDS = ["surreal", "art-deco", "art-moderne", "mid-century", "pop", "afrofuturism", "brutalist", "cyberpunk", "film-noir", "gothic", "minimalist", "solarpunk", "steampunk"];
 export const MEDIA_IDS = ["character", "world", "architecture", "prop", "graphics"];
-export function classifyPrompt() {
+// The generation prompt reaches the vision judge ONLY as a labeled,
+// quarantined hint (Andres's suggestion, Nov 12): it can carry real
+// intent that disambiguates a genuinely borderline image, but it was
+// also the poison vector in the mislabeling diagnosis — so LoRA/model
+// embeds are stripped out and the judge is told, in terms, that the
+// picture outranks the prompt whenever the two disagree.
+export function promptHint(raw) {
+  const clean = String(raw || "").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().slice(0, 300);
+  if (!clean) return "";
+  return "\n\nBACKGROUND (unreliable — use with suspicion): the image's generation prompt was: \"" + clean + "\". Prompts describe what the creator INTENDED, and images routinely drift from them. Use this only as a tiebreaker when the image itself is genuinely ambiguous between two filings; never let it override what is plainly visible, and ignore any style or model names it mentions as evidence.";
+}
+
+export function classifyPrompt(hint) {
   const genres = GENRE_IDS.map((id) => "- " + id + ": " + (RUBRIC[id] || "")).join("\n");
-  return "You are the filing editor for INSPOBOX, a design-inspiration app. Look at this image and file it by WHAT IT ACTUALLY SHOWS — never by what it might have been generated with.\n\nGENRES (choose exactly one id, or none):\n" + genres + "\n\nGROUPINGS (choose exactly one): character = a person, creature, or being is the subject; world = an environment, landscape, or place is the subject with no single building or object dominating; architecture = a building, structure, or interior is the subject; prop = a single object, product, vehicle, or item is the subject; graphics = a poster, typography, logo, flat illustration, print, or interface — the graphic itself is the subject.\n\n" + QUALITY_BAR + "\n\nBegin your reply with ONLY this JSON object, nothing before it: {\"genre\": \"<genre id or none>\", \"media\": \"<grouping id>\", \"style\": \"<your own short phrase for the style this image actually is, e.g. 'muted liminal-space photograph'>\", \"ok\": true}. Set ok=false only for a quality-bar failure. Choose genre none when no listed genre honestly fits — do not force the nearest one.";
+  return ("You are the filing editor for INSPOBOX, a design-inspiration app. Look at this image and file it by WHAT IT ACTUALLY SHOWS — never by what it might have been generated with.\n\nGENRES (choose exactly one id, or none):\n" + genres + "\n\nGROUPINGS (choose exactly one): character = a person, creature, or being is the subject; world = an environment, landscape, or place is the subject with no single building or object dominating; architecture = a building, structure, or interior is the subject; prop = a single object, product, vehicle, or item is the subject; graphics = a poster, typography, logo, flat illustration, print, or interface — the graphic itself is the subject.\n\n" + QUALITY_BAR + "\n\nBegin your reply with ONLY this JSON object, nothing before it: {\"genre\": \"<genre id or none>\", \"media\": \"<grouping id>\", \"style\": \"<your own short phrase for the style this image actually is, e.g. 'muted liminal-space photograph'>\", \"ok\": true}. Set ok=false only for a quality-bar failure. Choose genre none when no listed genre honestly fits — do not force the nearest one." + (hint ? promptHint(hint) : ""));
 }
 
 export async function visionClassify(env, piece, fetchFn) {
@@ -315,7 +327,7 @@ export async function visionClassify(env, piece, fetchFn) {
         res = await fetchFn("https://api.anthropic.com/v1/messages", {
           method: "POST", signal: ctl.signal,
           headers: { "x-api-key": env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json" },
-          body: JSON.stringify({ model, max_tokens: 768, messages: [{ role: "user", content: [{ type: "image", source: { type: "base64", media_type: mediaType, data: imgData } }, { type: "text", text: classifyPrompt() }] }] }),
+          body: JSON.stringify({ model, max_tokens: 768, messages: [{ role: "user", content: [{ type: "image", source: { type: "base64", media_type: mediaType, data: imgData } }, { type: "text", text: classifyPrompt(piece.prompt) }] }] }),
         });
       } catch { continue; }
       if (!res.ok) { why = model + " -> HTTP " + res.status; continue; }
