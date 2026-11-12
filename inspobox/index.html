@@ -56,6 +56,9 @@ img{display:block}
 .idxsearchrow{padding:2px 20px 12px}
 .idxsearchrow input{width:100%;box-sizing:border-box;background:rgba(255,255,255,.06);border:1px solid var(--glassline);border-radius:999px;padding:11px 16px;color:inherit;font-family:var(--sg);font-size:13px;letter-spacing:.08em;outline:none}
 .idxsearchrow input::placeholder{color:var(--dim)}
+.idxmediarow{display:flex;gap:8px;flex-wrap:wrap;padding:0 20px 12px}
+.idxmedia{background:rgba(255,255,255,.05);border:1px solid var(--glassline);color:var(--dim);border-radius:999px;padding:7px 12px;font-family:var(--sg);font-size:11px;letter-spacing:.1em;cursor:pointer}
+.idxmedia.on{color:#fff;border-color:rgba(255,255,255,.45);background:rgba(255,255,255,.12)}
 .panel{position:absolute;left:14px;right:14px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:4;border-radius:14px;background:var(--glass);backdrop-filter:blur(22px) saturate(1.5);-webkit-backdrop-filter:blur(22px) saturate(1.5);border:1px solid var(--glassline);padding:16px 16px 12px}
 .ptitle{font-family:var(--anton);font-size:26px;line-height:1.06;margin-top:0;letter-spacing:.01em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .pstyle{font-size:11.5px;line-height:1.35;color:var(--faint);font-weight:500;margin-top:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
@@ -220,8 +223,8 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
   <div>
     <div class="logo">INSPO<span class="box">BOX</span></div>
     <div id="counter">— / —</div>
-    <div id="tapHint">TAP A PIECE TO LOCK ITS GENRE</div>
-    <div id="buildTag">BUILD V64</div>
+    <div id="tapHint">TAP A PIECE TO LOCK ITS STYLE</div>
+    <div id="buildTag">BUILD V65</div>
   </div>
   <div class="topbtns">
     <button class="chipbtn" id="boxBtn">BOX <span class="n" id="boxCount">0</span></button>
@@ -268,10 +271,11 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
   <div class="grab" data-drag><i></i></div>
   <div class="layerhead">
     <div class="logo">INSPO<span class="box">BOX</span></div>
-    <div style="display:flex;align-items:center;gap:12px"><span class="mode">MOVEMENTS</span><button class="xbtn" data-close>✕</button></div>
+    <div style="display:flex;align-items:center;gap:12px"><span class="mode">STYLES</span><button class="xbtn" data-close>✕</button></div>
   </div>
-  <div class="layernote"><b>Tap any piece</b> in the feed to lock its genre — or pick one here. Every vertical stack is a single discipline — <b>left/right</b> swipes switch discipline. Tap the colored genre title on any piece to unlock (tapping the locked genre here works too).</div>
-  <div class="idxsearchrow"><input id="idxSearch" type="search" placeholder="SEARCH MOVEMENTS…" autocomplete="off" aria-label="Search movements"></div>
+  <div class="layernote"><b>Tap any piece</b> in the feed to lock its style — or pick one here. Every lane carries its <b>own native styles</b>: Design thinks in Bauhaus and Swiss type, Architecture in Deco and Brutalism, World in forests and wastes. <b>Left/right</b> swipes switch lane. Tap the colored style title on any piece to unlock.</div>
+  <div class="idxsearchrow"><input id="idxSearch" type="search" placeholder="SEARCH STYLES…" autocomplete="off" aria-label="Search styles"></div>
+  <div id="indexMedia" class="idxmediarow"></div>
   <div id="indexGrid"></div>
 </section>
 
@@ -349,14 +353,12 @@ async function load() {
 let deckList = [];
 function scopeFeed() { return DATA.feed.filter((p) => state.movement === "all" || p.movement === state.movement); }
 function tourFeed() {
-  // The original genre tour: one representative piece per movement. Since
-  // v53 it is only the offline floor — home shows it when the river's
-  // first pull fails, so home is never a dead screen.
-  const order = [state.media, ...DATA.media.map((m) => m.id).filter((id) => id !== state.media)];
+  // The offline floor (since v53): one representative piece per style of
+  // the current lane — home shows it when the river's first pull fails,
+  // so home is never a dead screen.
   const reps = [];
-  for (const mv of DATA.movements) {
-    const pieces = DATA.feed.filter((p) => p.movement === mv.id);
-    const rep = order.map((id) => pieces.find((p) => p.media === id)).find(Boolean);
+  for (const st of laneStyles(state.media)) {
+    const rep = DATA.feed.find((p) => p.movement === st.id && p.media === state.media);
     if (rep) reps.push(rep);
   }
   return reps;
@@ -372,6 +374,19 @@ function deckFeed() {
   return col.failed ? tourFeed() : [];
 }
 function mvName(id) { if (id === "none") return "None"; const m = DATA.movements.find((x) => x.id === id); return m ? m.name : id; }
+/* v65: feed pieces file by STYLE within their lane. styleName resolves a
+   piece's style id against its own lane's list first, then any lane,
+   then the legacy movement names (pieces saved to the Box before v65
+   carry genre ids). Unstyled river pieces carry movement: null. */
+function laneStyles(lane) { return (DATA && DATA.laneStyles && DATA.laneStyles[lane]) || []; }
+function styleEntry(lane, id) { return laneStyles(lane).find((x) => x.id === id) || null; }
+function styleName(lane, id) {
+  if (!id) return "Open River";
+  const own = styleEntry(lane, id); if (own) return own.name;
+  for (const l of Object.keys(DATA.laneStyles || {})) { const e = styleEntry(l, id); if (e) return e.name; }
+  return mvName(id);
+}
+function styleNameAny(id) { return styleName(state.media, id); }
 const tagLine = (styleName, movementId, studioName, ip, ip2) => `${styleName.toUpperCase()}${movementId === "none" ? "" : " ✕ " + mvName(movementId).toUpperCase()} · ${studioName.toUpperCase()} — ${ip.toUpperCase()}${ip2 ? " ✕ " + ip2.toUpperCase() + " · MASHUP" : ""}`;
 function mdName(id) { const m = DATA.media.find((x) => x.id === id); return m ? m.name : id; }
 function isSavedPiece(id) { return box.some((b) => b.type === "piece" && b.id === id); }
@@ -384,7 +399,7 @@ function pieceHtml(p, i, total) {
         : `<img class="bgimg" src="${esc(p.img)}" alt="" decoding="async">`}
       <div class="scrim"></div>
       <div class="prog" style="width:${Math.round(((i + 1) / total) * 100)}%"></div>
-      <div class="vtitle" data-open-index title="All movements">${esc(mvName(p.movement).toUpperCase())}</div>
+      <div class="vtitle" data-open-index title="All styles">${esc(styleName(p.media, p.movement).toUpperCase())}</div>
       <button class="savebtn ${isSavedPiece(p.id) ? "saved" : ""}" data-save="${p.id}" aria-label="Save to your box">${isSavedPiece(p.id) ? "✓" : "+"}</button>
       <button class="searchbtn" data-search aria-label="Search by movement"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 L21 21"/></svg></button>
       <div class="panel">
@@ -400,12 +415,13 @@ function renderDeck(startId) {
   const deck = $("#deck");
   if (!feed.length) {
     if (state.movement === "all" && !homeCol().failed) {
-      deck.innerHTML = `<div class="deckempty"><div class="big">CASTING THE NET</div><p>Pulling a fresh river from today's pools — every piece filed by its own prompt.</p><div class="skelpanel" aria-hidden="true"><div class="skbar" style="width:58%;height:26px"></div><div class="skbar" style="width:82%;height:11px"></div><div class="skbar" style="width:44%;height:12px"></div><div class="skrail"><div class="skbar"></div><div class="skbar"></div><div class="skbar"></div><div class="skbar"></div><div class="skbar"></div></div></div></div>`;
+      deck.innerHTML = `<div class="deckempty"><div class="big">CASTING THE NET</div><p>Pulling a fresh river from today's pools — every piece filed by Claude's eye, not its gallery label.</p><div class="skelpanel" aria-hidden="true"><div class="skbar" style="width:58%;height:26px"></div><div class="skbar" style="width:82%;height:11px"></div><div class="skbar" style="width:44%;height:12px"></div><div class="skrail"><div class="skbar"></div><div class="skbar"></div><div class="skbar"></div><div class="skbar"></div><div class="skbar"></div></div></div></div>`;
       $("#counter").textContent = "00 / 00";
       maybeFetchHome(true);
       return;
     }
-    deck.innerHTML = `<div class="deckempty"><div class="big">NOTHING HERE… YET</div><p>This genre has no pieces in the current drop. The next curation pass fills gaps like this.</p><button class="chipbtn" id="clearFilters">UNLOCK — SHOW EVERYTHING</button></div>`;
+    deck.innerHTML = `<div class="deckempty"><div class="big">NOTHING HERE… YET</div><p>This style has no pieces in the current drop. Live pulls and the next curation pass fill gaps like this.</p><button class="chipbtn" id="clearFilters">UNLOCK — SHOW EVERYTHING</button></div>`;
+    hydrateLive();
     $("#clearFilters").addEventListener("click", () => { state.movement = "all"; renderIndex(); renderDeck(); });
     $("#counter").textContent = "0 / 0";
     return;
@@ -421,8 +437,7 @@ function renderDeck(startId) {
   if (state.movement === "all") hydrateHome(); else hydrateLive();
 }
 function railHtml() {
-  const order = DATA.media.map((m) => m.id);
-  const present = order.filter((id) => scopeFeed().some((p) => p.media === id));
+  const present = presentMedia();
   return DATA.media.filter((m) => present.includes(m.id)).map((m) => `<button data-media="${m.id}">${esc(m.name.toUpperCase())}</button>`).join("");
 }
 function updateChrome(total) {
@@ -489,6 +504,7 @@ function reindexDeck() {
 }
 function appendPieces(pieces) {
   const deck = $("#deck");
+  const empty = deck.querySelector(".deckempty"); if (empty) empty.remove();
   const base = deckList.length;
   pieces.forEach((p, j) => { deckList.push(p); deck.insertAdjacentHTML("beforeend", pieceHtml(p, base + j, deckList.length)); });
   reindexDeck();
@@ -503,6 +519,7 @@ function appendPieces(pieces) {
 function insertPieces(fresh) {
   if (!fresh.length) return;
   const deck = $("#deck");
+  const empty = deck.querySelector(".deckempty"); if (empty) empty.remove();
   const startAt = Math.min(state.current + 2, deckList.length);
   const tail = deckList.slice(startAt);
   const stride = Math.max(1, Math.floor(tail.length / Math.max(1, fresh.length)));
@@ -556,7 +573,7 @@ async function maybeFetchLive(force) {
       }
       if (filed.length) recordSeen(filed);
     }
-    if (data.stats && data.stats.gated && data.stats.examined >= 8 && data.stats.passed === 0 && !col.flashedCull) { col.flashedCull = true; showToast("LIVE CHECK", "0 of " + data.stats.examined + " images examined fit the genre — the gate culled the whole batch." + (data.stats.gateWhy ? " Gate reports: " + data.stats.gateWhy : "")); }
+    if (data.stats && data.stats.gated && data.stats.examined >= 8 && data.stats.passed === 0 && !col.flashedCull) { col.flashedCull = true; showToast("LIVE CHECK", "0 of " + data.stats.examined + " images examined fit this style — the judge culled the whole batch." + (data.stats.gateWhy ? " Judge reports: " + data.stats.gateWhy : "")); }
     const fresh = (data.pieces || []).filter((p) => !deckList.some((x) => x.id === p.id));
     if (fresh.length) { col.pieces.push(...fresh); recordSeen(fresh); col.empties = 0; if (liveKey() === key) insertPieces(fresh); }
     else if (!col.done && ++col.empties < 3 && liveKey() === key) { col.loading = false; maybeFetchLive(); return; }
@@ -689,7 +706,7 @@ function renderBox() {
   list.innerHTML = box.map((b, i) => b.type === "piece" ? `
     <div class="boxitem">
       <img src="${esc(b.img)}" alt="">
-      <div class="bt"><div class="bk">${esc(mvName(b.movement).toUpperCase())} · ${esc(mdName(b.media).toUpperCase())}</div>
+      <div class="bt"><div class="bk">${esc(styleName(b.media, b.movement).toUpperCase())} · ${esc(mdName(b.media).toUpperCase())}</div>
       <div class="bti">${esc(b.title)}</div>${b.url ? `<a class="bb" href="${esc(b.url)}" target="_blank" rel="noopener">${esc(b.by || "")}</a>` : `<div class="bb">${esc(b.by || "")}</div>`}</div>
       <button class="del" data-del="${i}">✕</button>
     </div>` : `
@@ -784,15 +801,15 @@ function renderDeckSoft() { // refresh save states without rebuilding scroll pos
 /* ---------------- movement index ---------------- */
 function renderIndex() {
   const lane = state.media;
-  const subset = laneGenres(lane);
+  $("#indexMedia").innerHTML = DATA.media.map((m) => { const n = DATA.feed.filter((p) => p.media === m.id).length; return `<button class="idxmedia ${state.media === m.id ? "on" : ""}" data-media="${m.id}">${esc(m.name.toUpperCase())} · ${n}</button>`; }).join("");
   const counts = {};
   DATA.feed.forEach((p) => { if (p.media === lane) counts[p.movement] = (counts[p.movement] || 0) + 1; });
   const laneTotal = DATA.feed.filter((p) => p.media === lane).length;
   $("#indexGrid").innerHTML = `
-    <button class="tile alltile ${state.movement === "all" ? "on" : ""}" data-mv="all" data-name="all movements"><span class="tn"><span class="nm">ALL<br>MOVEMENTS</span><span class="tg" style="display:block">${laneTotal} pieces in ${esc(mdName(lane))} · tap a genre to lock it</span></span></button>
-    ` + DATA.movements.filter((m) => subset.includes(m.id)).map((m) => `
+    <button class="tile alltile ${state.movement === "all" ? "on" : ""}" data-mv="all" data-name="all styles"><span class="tn"><span class="nm">ALL<br>STYLES</span><span class="tg" style="display:block">${laneTotal} pieces in ${esc(mdName(lane))} · tap a style to lock it</span></span></button>
+    ` + laneStyles(lane).map((m) => `
     <button class="tile ${state.movement === m.id ? "on" : ""} ${m.img ? "" : "gradtile"}" data-mv="${m.id}" data-name="${esc(m.name.toLowerCase())}">
-      ${m.img ? `<img src="${esc(m.img)}" alt="" loading="lazy">` : `<span class="bigletter">${esc(m.name.charAt(0))}</span><span class="soon">FIRST DROP SOON</span>`}<span class="tsc"></span>
+      ${m.img ? `<img src="${esc(m.img)}" alt="" loading="lazy">` : `<span class="bigletter">${esc(m.name.charAt(0))}</span>`}<span class="tsc"></span>
       <span class="cnt">${counts[m.id] || 0}</span>${state.movement === m.id ? '<span class="lockb">LOCKED</span>' : ""}
       <span class="tn"><span class="nm">${esc(m.name.toUpperCase())}</span><span class="tg" style="display:block">${esc(m.tag)}</span></span>
     </button>`).join("");
@@ -803,13 +820,17 @@ $("#idxSearch").addEventListener("input", (e) => {
   const q = e.target.value.trim().toLowerCase();
   $$("#indexGrid .tile").forEach((t) => { t.style.display = !q || (t.dataset.name || "").includes(q) ? "" : "none"; });
 });
+$("#indexMedia").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-media]"); if (!b) return;
+  const id = b.dataset.media; if (id === state.media) return;
+  state.media = id; state.movement = "all";
+  renderIndex(); renderDeck();
+});
 $("#indexGrid").addEventListener("click", (e) => {
   const t = e.target.closest("[data-mv]");
   if (!t) return;
   const mv = t.dataset.mv;
   state.movement = mv === state.movement ? "all" : mv;
-  const scope = scopeFeed();
-  if (scope.length && !scope.some((p) => p.media === state.media)) state.media = DATA.media.map((m) => m.id).find((id) => scope.some((p) => p.media === id));
   closeLayer("#indexLayer"); renderIndex(); renderDeck();
 });
 
@@ -909,12 +930,27 @@ function hideToast() { toastEl.classList.remove("show"); }
 $("#toastX").addEventListener("click", hideToast);
 function flash(txt) { const f = $("#flash"); f.textContent = txt; f.classList.add("show"); clearTimeout(flashTimer); flashTimer = setTimeout(() => f.classList.remove("show"), 780); }
 function landOn(next) {
-  const cur = deckList[state.current];
-  const cell = scopeFeed().filter((p) => p.media === next);
-  if (!cell.length) return;
-  const target = (cur && cell.find((p) => p.movement === cur.movement)) || cell[0];
+  if (next === state.media) return;
+  // Locked: the lock TRAVELS only when the target lane carries a style
+  // with the same name (the Art Deco case — Design's Deco lands on
+  // Architecture's Deco). A style unique to one lane unlocks instead —
+  // switching just decks the other lane's river.
+  if (state.movement !== "all") {
+    const name = styleName(state.media, state.movement);
+    const twin = laneStyles(next).find((x) => x.name === name);
+    state.media = next;
+    if (twin) {
+      state.movement = twin.id;
+      const first = scopeFeed().find((p) => p.media === next);
+      renderIndex(); renderDeck(first && first.id);
+    } else {
+      state.movement = "all";
+      renderIndex(); renderDeck(); flash("UNLOCKED");
+    }
+    return;
+  }
   state.media = next;
-  renderDeck(target && target.id);
+  renderDeck();
 }
 function jumpToMedia(id) {
   if (id === state.media) return;
@@ -927,11 +963,16 @@ function jumpToMedia(id) {
    swiping and the selection ticks through them; letting go (or pausing)
    lands the deck on the highlighted discipline. */
 const sw = { open: false, pending: null, list: [], timer: null, suppress: false, watchdog: null };
-function laneGenres(id) { return (DATA && DATA.laneGenres && DATA.laneGenres[id]) || DATA.movements.map((m) => m.id); }
 function presentMedia() {
   const order = DATA.media.map((m) => m.id);
-  return order.filter((id) => scopeFeed().some((p) => p.media === id))
-    .filter((id) => state.movement === "all" || laneGenres(id).includes(state.movement));
+  if (state.movement === "all") return order.filter((id) => DATA.feed.some((p) => p.media === id) || (homeCols[id] && homeCols[id].pieces.length));
+  // Locked on a style: if another lane carries a style with the same
+  // name, the strip lists only the lanes that carry it; a style unique
+  // to its lane lists every lane (switching unlocks to that river).
+  const name = styleName(state.media, state.movement);
+  const carriers = order.filter((id) => laneStyles(id).some((x) => x.name === name));
+  if (carriers.length > 1) return carriers;
+  return order;
 }
 function openSwitcher(target, commitMs) {
   const list = presentMedia();
@@ -1090,8 +1131,11 @@ $("#deck").addEventListener("pointerup", (e) => {
   if (e.target.closest("button, .panel, .vtitle, a")) return;
   const piece = e.target.closest(".piece"); if (!piece) return;
   const p = deckList.find((x) => x.id === piece.dataset.id); if (!p) return;
-  if (state.movement === "all") { state.movement = p.movement; renderIndex(); renderDeck(p.id); flash("LOCKED"); }
-  else flash(mvName(p.movement).toUpperCase());
+  if (state.movement === "all") {
+    if (!p.movement) { openIndex(); return; }
+    state.movement = p.movement; renderIndex(); renderDeck(p.id); flash("LOCKED");
+  }
+  else flash(styleName(p.media, p.movement).toUpperCase());
 });
 window.INSPOBOX = { disciplineStep, jumpToMedia, getSw: () => ({ open: sw.open, dragging: !!sw.drag, pending: sw.pending }), fetchLive: () => maybeFetchLive(true), getLive: () => Object.fromEntries(Object.entries(liveCols).map(([k, c]) => [k, { n: c.pieces.length, done: c.done, err: c.lastError || "", stats: c.stats || null }])), getState: () => ({ movement: state.movement, current: state.current, count: deckList.length, media: state.media, seen: seenList().length }), getHome: () => { const c = homeCol(); return { n: c.pieces.length, done: c.done, failed: c.failed, stats: c.stats || null }; }, getConcept: () => lastConcept };
 

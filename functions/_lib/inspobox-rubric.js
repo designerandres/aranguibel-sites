@@ -41,16 +41,80 @@ export const AFFINITY = {
   "steampunk": ["steampunk", "steam punk", "clockwork", "airship", "brass gears", "victorian machine", "zeppelin", "automaton"],
 };
 
-// Per-lane genre subsets (v64, Andres's direction): each grouping carries
-// only the genres that genuinely produce that subject, so a lane never
-// offers a style that doesn't belong to it. The movement index shows the
-// current lane's subset, the locked strip hides groupings where the genre
-// isn't carried, and the home river only decks subset genres per lane
-// (the rest bank to their genre columns as usual).
-export const LANE_GENRES = {
-  "design": ["pop", "art-deco", "art-moderne", "mid-century", "cyberpunk", "brutalist", "minimalist", "film-noir", "surreal", "afrofuturism"],
-  "world": ["surreal", "solarpunk", "cyberpunk", "afrofuturism", "steampunk", "gothic", "brutalist", "art-deco", "art-moderne", "mid-century", "film-noir", "minimalist"],
-  "architecture": ["art-deco", "art-moderne", "mid-century", "brutalist", "gothic", "solarpunk", "cyberpunk", "steampunk", "minimalist", "afrofuturism", "surreal", "film-noir"],
-  "character": ["afrofuturism", "cyberpunk", "steampunk", "gothic", "film-noir", "pop", "surreal", "art-deco", "mid-century", "solarpunk"],
-  "prop": ["steampunk", "mid-century", "art-deco", "art-moderne", "cyberpunk", "pop", "minimalist", "film-noir", "afrofuturism", "surreal", "gothic", "solarpunk"],
+// Native per-lane style taxonomies (v65, Andres's direction, superseding
+// the v64 genre subsets — "the same styles reordered"): each lane's styles
+// come from how that discipline actually categorizes itself. Architecture
+// gets real architectural movements; Design gets graphic/product-design
+// movements (Bauhaus lives here now); Character gets rendering traditions
+// and archetypes; World gets place types; Prop gets object families and
+// product eras. Every lane carries at least 8 styles (his hard rule).
+// Ids are unique per lane (Art Deco exists in Design AND Architecture as
+// separate entries). def = the vision judge's one-line rubric; queries =
+// Civitai model-search terms for sourcing/live pools; img/tag feed the
+// client's style index tiles (null img = gradient monogram tile).
+export const LANE_STYLES = {
+  "design": [
+    { id: "bauhaus", name: "Bauhaus", tag: "Form follows function", img: "/inspobox/img/tile-artmoderne.jpg", def: "Bauhaus graphic/product design: primary-color geometry, circles/triangles/bars, functionalist sans-serif composition, Dessau-school posters and objects.", queries: ["bauhaus", "bauhaus poster", "bauhaus design"] },
+    { id: "swiss-typography", name: "Swiss Typography", tag: "Grids & Helvetica", img: null, def: "Swiss/International typographic design: grid-locked layouts, grotesque sans type as the image itself, red/black/white, posters and editorial spreads.", queries: ["swiss typography", "typography poster", "editorial typography", "helvetica poster"] },
+    { id: "constructivism", name: "Russian Constructivism", tag: "Diagonal & red", img: null, def: "Russian Constructivism: bold diagonal photomontage, red/black/cream palette, revolutionary-era graphic form and industrial montage posters.", queries: ["constructivism", "russian constructivism poster", "soviet poster"] },
+    { id: "art-deco", name: "Art Deco", tag: "Gilded geometry", img: "/inspobox/img/deco-design.webp", def: "Art Deco as GRAPHIC work: 1920s posters, covers, typography and illustration — zigzag/sunburst ornament, gold and jewel tones, glamorous flat figures.", queries: ["art deco poster", "art deco design", "gatsby poster"] },
+    { id: "pop", name: "Pop", tag: "Mass culture, loud color", img: "/inspobox/img/comic.webp", def: "Pop art: mass-media imagery reframed as art — Ben-Day dots, screen-print flat color, advertising, celebrity and comic imagery.", queries: ["pop art", "warhol style", "comic book style", "pop culture poster"] },
+    { id: "psychedelic-poster", name: "Psychedelic Poster", tag: "Liquid lettering", img: null, def: "1960s psychedelic poster art: liquid warped lettering, vibrating complementary colors, Art Nouveau-derived concert posters.", queries: ["psychedelic art", "psychedelic poster", "60s poster", "trippy poster"] },
+    { id: "memphis", name: "Memphis", tag: "Squiggles & terrazzo", img: "/inspobox/img/memphis.webp", def: "Memphis design: 1980s postmodern pattern and product graphics — squiggles, terrazzo, pastel plus black geometry, playful forms.", queries: ["memphis design", "80s design", "memphis pattern"] },
+    { id: "vaporwave", name: "Vaporwave", tag: "Pastel & marble busts", img: "/inspobox/img/vaporwave.webp", def: "Vaporwave: pastel pink/cyan, Greco-Roman busts, palm grids, early-internet nostalgia and glitch as graphic design.", queries: ["vaporwave", "vaporwave aesthetic", "vaporwave poster"] },
+    { id: "y2k", name: "Y2K", tag: "Chrome & blobjects", img: "/inspobox/img/metallic.webp", def: "Y2K aesthetic: chrome and translucent plastic, bubblegum futurism, blobjects, iridescent gradients, turn-of-millennium tech graphics.", queries: ["y2k aesthetic", "y2k design", "chrome y2k", "frutiger aero"] },
+    { id: "flat-vector", name: "Flat Vector", tag: "Clean shapes, no shading", img: "/inspobox/img/minimalist-ui.webp", def: "Flat vector illustration: clean shape-based digital illustration, corporate/editorial vector style, minimal shading — the graphic itself is the subject.", queries: ["flat illustration", "vector illustration", "flat design", "corporate illustration"] },
+  ],
+  "world": [
+    { id: "enchanted-forest", name: "Enchanted Forest", tag: "Luminous woods", img: null, def: "A magical forest place: luminous woods, fairy flora, ancient trees, enchanted clearings — the forest environment itself is the subject.", queries: ["enchanted forest", "magical forest", "fantasy forest landscape", "fairy forest"] },
+    { id: "arid-wastes", name: "Arid Wastes", tag: "Dunes & badlands", img: null, def: "Arid places: deserts, dunes, badlands, sun-baked ruins and wastelands — dry open terrain is the subject.", queries: ["desert landscape", "arid wasteland", "dune landscape", "desert ruins"] },
+    { id: "frozen-north", name: "Frozen North", tag: "Ice & aurora", img: null, def: "Frozen places: arctic tundra, ice fields, snowbound mountains, aurora skies — the cold environment is the subject.", queries: ["arctic landscape", "winter landscape", "frozen tundra", "snowy mountains"] },
+    { id: "underwater-realm", name: "Underwater Realm", tag: "Beneath the water", img: null, def: "Underwater places: ocean depths, reefs, submerged ruins or cities — being beneath the water is the subject.", queries: ["underwater world", "underwater city", "ocean depths", "underwater landscape"] },
+    { id: "floating-isles", name: "Floating Isles", tag: "Terrain, airborne", img: null, def: "Islands or landmasses floating in sky or void — airborne terrain is the subject.", queries: ["floating island", "sky island", "floating islands landscape"] },
+    { id: "alien-planet", name: "Alien Planet", tag: "Otherworldly terrain", img: null, def: "An alien world's surface: exoplanet terrain, impossible geology, otherworldly skies — the planet is the subject.", queries: ["alien planet", "alien landscape", "alien world", "exoplanet landscape"] },
+    { id: "post-apocalyptic", name: "Post-Apocalyptic", tag: "Civilization, reclaimed", img: null, def: "A world after collapse: overgrown ruins, wrecked cities, nature reclaiming streets — decayed civilization as place.", queries: ["post apocalyptic", "post-apocalyptic landscape", "ruined city landscape", "wasteland"] },
+    { id: "eco-utopia", name: "Eco-Utopia", tag: "The garden future", img: "/inspobox/img/solarpunk.webp", def: "An eco-utopian place: lush greenery woven through a bright future settlement, garden cities, hopeful climate-solved environments.", queries: ["solarpunk landscape", "eco city", "green utopia", "lush future city"] },
+    { id: "dreamscape", name: "Dreamscape", tag: "Logic, off duty", img: "/inspobox/img/surreal.webp", def: "Dream-logic places: liminal spaces, impossible geography, surreal vistas, backrooms-like emptiness — the dreamscape is the subject.", queries: ["dreamscape", "surreal landscape", "liminal space", "dreamlike landscape"] },
+    { id: "haunted-land", name: "Haunted Land", tag: "Dread in the terrain", img: null, def: "Haunted places: gothic moors, cursed forests, spectral villages, dread-filled dark terrain — the haunted land is the subject.", queries: ["haunted landscape", "dark fantasy landscape", "gothic landscape", "haunted forest"] },
+  ],
+  "architecture": [
+    { id: "art-deco-arch", name: "Art Deco", tag: "Gilded towers", img: "/inspobox/img/artdeco.webp", def: "Art Deco buildings: 1920s–30s vertical, ornamented towers and interiors — setbacks, sunbursts, chevrons, gold and lacquer glamour.", queries: ["art deco architecture", "art deco building", "deco skyscraper"] },
+    { id: "art-moderne", name: "Art Moderne", tag: "Streamlined machine age", img: "/inspobox/img/tile-artmoderne.jpg", def: "Streamline Moderne buildings: horizontal emphasis, curved corners, smooth plain surfaces, portholes, ocean-liner forms, 1930s–45.", queries: ["streamline moderne", "art moderne architecture", "streamlined building"] },
+    { id: "international-style", name: "International Style", tag: "Glass, steel, grid", img: null, def: "International Style / modernist architecture: glass-and-steel grids, flat roofs, white rationalist volumes, Bauhaus-to-Mies clarity.", queries: ["international style architecture", "modernist architecture", "glass tower architecture", "bauhaus architecture"] },
+    { id: "mid-century", name: "Mid-Century", tag: "Atomic-age optimism", img: "/inspobox/img/tile-midcentury.jpg", def: "Mid-Century architecture: 1945–69 low-slung houses and pavilions, post-and-beam glass walls, atomic-age civic buildings.", queries: ["mid century architecture", "mid-century modern house", "retro architecture"] },
+    { id: "brutalist", name: "Brutalist", tag: "Concrete, unapologetic", img: "/inspobox/img/brutalist.webp", def: "Brutalist buildings: raw béton brut concrete, monolithic massing, repetitive modules, zero ornament, civic monumentality.", queries: ["brutalist architecture", "brutalism", "concrete architecture"] },
+    { id: "gothic", name: "Gothic", tag: "Stone, shadow & stained glass", img: "/inspobox/img/tile-gothic.jpg", def: "Gothic buildings: pointed arches, rib vaults, flying buttresses, spires, gargoyles, stained glass — medieval sacred architecture.", queries: ["gothic architecture", "gothic cathedral", "gothic castle"] },
+    { id: "classical-revival", name: "Classical Revival", tag: "Columns & pediments", img: null, def: "Classical-revival buildings: columns, pediments, domes and symmetry in the Greek/Roman/Beaux-Arts temple tradition.", queries: ["classical architecture", "neoclassical building", "greek revival", "roman architecture"] },
+    { id: "postmodern", name: "Postmodern", tag: "Ironic ornament", img: null, def: "Postmodern architecture: playful historical quotation, bright color, ironic ornament, fragmented or collaged forms, 1970s–90s.", queries: ["postmodern architecture", "postmodern building", "deconstructivism"] },
+    { id: "parametric", name: "Parametric", tag: "Fluid computation", img: null, def: "Parametric / neo-futurist architecture: fluid computational curves, flowing biomorphic shells, Hadid-style forms.", queries: ["parametric architecture", "futuristic architecture", "organic architecture", "zaha hadid style"] },
+    { id: "eco-solar", name: "Eco/Solar", tag: "Buildings, garden-kept", img: "/inspobox/img/solarpunk.webp", def: "Eco/solar architecture: buildings integrated with lush planting, green roofs and facades, visible renewable tech, bright daylight.", queries: ["solarpunk architecture", "green architecture", "vertical forest building", "eco architecture"] },
+  ],
+  "character": [
+    { id: "anime", name: "Anime", tag: "Cel-shaded", img: null, def: "Anime character art: Japanese animation styling — cel shading, manga-derived features, the character rendered as anime.", queries: ["anime character design", "anime style", "manga character"] },
+    { id: "western-cartoon", name: "Western Cartoon", tag: "Hand-drawn & squashy", img: null, def: "Western cartoon characters: hand-drawn animation styling from rubber-hose to modern TV cartoon — the character as cartoon.", queries: ["cartoon character", "western cartoon", "retro cartoon", "cartoon style character"] },
+    { id: "comic-book", name: "Comic Book", tag: "Ink & halftone", img: "/inspobox/img/comic.webp", def: "Comic-book characters: inked linework, halftone/print texture, panel-art heroes and figures from comics.", queries: ["comic book character", "comic art character", "superhero comic", "comic book style"] },
+    { id: "3d-animated", name: "3D Animated", tag: "Feature-film CGI", img: null, def: "3D-animated characters: CGI feature-animation rendering — soft sculpted forms, Pixar/DreamWorks-style character renders.", queries: ["3d character", "pixar style character", "3d animated character", "cgi character"] },
+    { id: "painterly-storybook", name: "Painterly Storybook", tag: "Brushwork & fairy tales", img: null, def: "Painterly storybook characters: fairy-tale illustration, visible brushwork, classic children's-book figures.", queries: ["storybook illustration", "fairy tale character", "painterly character", "children book illustration"] },
+    { id: "creature-design", name: "Creature Design", tag: "Invented beings", img: null, def: "Creature design: an invented animal, monster or being as a designed subject — concept-art creatures, beasts, aliens as creatures.", queries: ["creature design", "monster design", "creature concept", "fantasy creature"] },
+    { id: "mascot", name: "Mascot", tag: "Cute & emblematic", img: null, def: "Mascot characters: cute emblematic brand/team-style characters, chibi proportions, cheerful mascot design.", queries: ["mascot character", "mascot design", "cute mascot", "chibi mascot"] },
+    { id: "realist-portrait", name: "Realist Portrait", tag: "Lifelike fidelity", img: null, def: "Realist portraits: photographic or hyperreal painted portraits — a real-seeming person rendered with lifelike fidelity.", queries: ["realistic portrait", "photorealistic portrait", "cinematic portrait", "hyperreal portrait"] },
+    { id: "fantasy-adventurer", name: "Fantasy Adventurer", tag: "Heroes of the realm", img: null, def: "Fantasy adventurers: heroes, warriors, mages and rogues of high-fantasy worlds, in painterly or rendered illustration.", queries: ["fantasy character", "fantasy adventurer", "dnd character", "fantasy warrior"] },
+    { id: "cybernetic", name: "Cybernetic", tag: "Flesh & machine", img: "/inspobox/img/cyberpunk.webp", def: "Cybernetic characters: cyborgs, androids, augmented humans — the character's machine fusion is the subject.", queries: ["cyberpunk character", "cyborg character", "android character", "sci-fi character"] },
+    { id: "horror", name: "Horror", tag: "Meant to scare", img: null, def: "Horror characters: frightening figures, ghosts, slashers, grotesques — the character is meant to scare.", queries: ["horror character", "dark horror", "creepy character", "horror monster"] },
+  ],
+  "prop": [
+    { id: "steampunk-gadgetry", name: "Steampunk Gadgetry", tag: "Brass & clockwork", img: "/inspobox/img/steampunk-photo.webp", def: "Steampunk objects: brass-and-clockwork devices, gauges, airship machinery, Victorian-industrial inventions as single objects.", queries: ["steampunk gadget", "steampunk machine", "steampunk device", "clockwork machine"] },
+    { id: "retro-futurist", name: "Retro-Futurist", tag: "Yesterday's tomorrow", img: null, def: "Retro-futurist objects: 1950s–60s visions of future tech — chrome rockets, ray guns, atomic-age gadgets as single objects.", queries: ["retro futurism object", "retro sci-fi gadget", "1950s futurism", "retro robot"] },
+    { id: "deco-luxury", name: "Deco Luxury", tag: "Gold & enamel", img: null, def: "Deco luxury objects: 1920s jewelry, perfume bottles, cocktail and vanity goods — gold, enamel, geometric glamour.", queries: ["art deco object", "deco luxury", "art deco jewelry", "gatsby object"] },
+    { id: "magical-artifacts", name: "Magical Artifacts", tag: "Potions & relics", img: null, def: "Magical artifacts: potions, wands, amulets, spellbooks, enchanted relics — a single arcane object.", queries: ["magical artifact", "magic potion", "enchanted object", "fantasy artifact"] },
+    { id: "armory", name: "Armory", tag: "Blades & shields", img: null, def: "Armory: weapons and armor as objects — swords, shields, firearms, helmets, presented as designed pieces.", queries: ["fantasy weapon", "sword design", "weapon concept", "medieval armor"] },
+    { id: "sci-fi-tech", name: "Sci-Fi Tech", tag: "Future devices", img: "/inspobox/img/metallic.webp", def: "Sci-fi tech objects: futuristic devices, hologram emitters, sleek future gadgets as single objects.", queries: ["sci-fi gadget", "futuristic device", "sci-fi tech", "holographic device"] },
+    { id: "vintage-household", name: "Vintage Household", tag: "Domestic antiques", img: null, def: "Vintage household objects: antique and retro domestic items — radios, typewriters, appliances, presented as objects.", queries: ["vintage household", "retro appliance", "vintage object", "antique item"] },
+    { id: "vehicles", name: "Vehicles", tag: "Machines that move you", img: null, def: "Vehicles as the subject: cars, bikes, trains, ships, craft — presented as a designed object, not scenery.", queries: ["vehicle design", "concept car", "futuristic vehicle", "vintage car"] },
+    { id: "mid-century-product", name: "Mid-Century Product", tag: "Eames-era goods", img: null, def: "Mid-Century product design: 1945–69 furniture and goods — Eames-era chairs, molded forms, teak and fiberglass objects.", queries: ["mid century product", "mid-century furniture", "eames design", "retro product design"] },
+  ],
 };
+
+// The 13 global movements (RUBRIC/AFFINITY above) survive ONLY in the
+// Idea Starter: the IGNITE movement dropdown and the concept grounding.
+// The feed no longer files by them — see LANE_STYLES.

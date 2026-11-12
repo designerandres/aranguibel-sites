@@ -1,28 +1,25 @@
 import { appAllowed, json, requireIdentity } from "../../_lib/auth.js";
-import { AFFINITY, LANE_GENRES, QUALITY_BAR, RUBRIC } from "../../_lib/inspobox-rubric.js";
+import { LANE_STYLES, QUALITY_BAR } from "../../_lib/inspobox-rubric.js";
+import { getDoc, putDoc } from "../../_lib/docStore.js";
 
 // INSPOBOX live feed — the app pulls fresh pieces from Civitai's public API
-// itself, per session, when a locked genre's stack runs low. Nothing here is
-// persisted: pieces live only in the client's in-memory deck. Galleries are
-// the same model pools the curated sourcing used (old genre pools folded
-// into the current 13 movements), images sorted by most reactions.
-const QUERIES = {
-  "surreal": ["surreal", "surrealism", "liminal space", "backrooms", "claymation", "stop motion", "greek mythology", "ancient greece"],
-  "art-deco": ["art deco", "great gatsby"],
-  "art-moderne": ["bauhaus", "dieselpunk"],
-  "mid-century": ["mid century", "retro futurism"],
-  "pop": ["comic book style", "comic art", "memphis design", "80s design", "vaporwave", "psychedelic", "psychedelic art"],
-  "afrofuturism": ["afrofuturism", "afro futurism"],
-  "brutalist": ["brutalist architecture", "brutalism"],
-  "cyberpunk": ["cyberpunk", "cyberpunk city", "liquid metal", "chrome style"],
-  "film-noir": ["film noir", "noir style"],
-  "gothic": ["gothic architecture", "gothic style"],
-  "minimalist": ["minimalist", "minimalism"],
-  "solarpunk": ["solarpunk", "cozy interior", "cozy"],
-  "steampunk": ["steampunk", "steampunk machinery"],
-};
+// itself, per session, when a river or a locked (lane, style) column runs
+// low. Nothing here is persisted except the none-theme sightings doc (the
+// discovery loop, below). Pieces live only in the client's in-memory deck.
+//
+// v65 filing model: a piece's lockable category is its STYLE within its
+// LANE (one of the five subject groupings). The vision judge files style —
+// metadata text classification may only shape which pools get walked, it
+// never assigns the displayed style. A piece vision could not file shows
+// in its lane's river as unstyled (no style lock).
 const CIV = "https://civitai.com/api/v1";
 const BATCH = 8;
+
+export const LANE_IDS = Object.keys(LANE_STYLES);
+export const STYLE_IDS = {}; // lane -> Set of style ids
+for (const lane of LANE_IDS) STYLE_IDS[lane] = new Set(LANE_STYLES[lane].map((s) => s.id));
+export function styleInLane(lane, styleId) { return !!(STYLE_IDS[lane] && STYLE_IDS[lane].has(styleId)); }
+export function styleEntry(lane, styleId) { return (LANE_STYLES[lane] || []).find((s) => s.id === styleId) || null; }
 
 async function civGet(fetchFn, path, ms = 12000) {
   const ctl = new AbortController();
@@ -72,44 +69,6 @@ export function toPiece(item, modelName, movement, media) {
   };
 }
 
-// Metadata pre-pass (v50): Civitai images carry their own generation
-// prompt, and the gallery model's name — when that text speaks the genre's
-// vocabulary fluently, the intent is explicit and no vision call is spent.
-// Score: genre name in the text = 3; each distinct affinity term = 1.
-// >= 3 passes on metadata alone.
-export function metaScore(piece, modelName, modelText) {
-  return scoreAll(piece, modelName, modelText)[piece.movement] || 0;
-}
-
-// Score a candidate's metadata against EVERY genre at once (v51): the
-// prompt is the artist's own declaration of intent, so it can file a piece
-// — including one found in the WRONG genre's gallery — better than a
-// gallery label can. Genre name in the text = 3; each affinity term = 1.
-export function scoreHay(hay) {
-  const out = {};
-  for (const mv of Object.keys(AFFINITY)) {
-    let score = 0;
-    if (hay.includes(mv.replace(/-/g, " "))) score += 3;
-    for (const term of AFFINITY[mv]) if (hay.includes(term)) score += 1;
-    if (score) out[mv] = score;
-  }
-  return out;
-}
-
-// The model's own declarations — its human-applied tags and trained
-// trigger words (v56) — corroborate the image's prompt. They describe the
-// model rather than this one image, so their contribution is capped at
-// +3 per genre: enough to firm up a whisper, never enough to outvote
-// what the image's own prompt says.
-export function scoreAll(piece, modelName, modelText) {
-  const out = scoreHay((((piece && piece.prompt) || "") + " " + (modelName || "") + " " + ((piece && piece.title) || "")).toLowerCase());
-  if (modelText) {
-    const ms = scoreHay(String(modelText).toLowerCase());
-    for (const mv of Object.keys(ms)) out[mv] = (out[mv] || 0) + Math.min(3, ms[mv]);
-  }
-  return out;
-}
-
 // Gallery quality prior from the community stats the API actually
 // returns (thumbs up/down, downloads — the website's star rating is not
 // exposed). Trusted = a real thumbs volume with few downvotes.
@@ -132,12 +91,9 @@ export function orderModels(list) {
   return arr;
 }
 
-// Subject + medium signals (v54). Civitai showcase galleries are
-// dominated by character generations whatever the style — the prompt
-// reveals the SUBJECT as plainly as the style. CHARACTER_TERMS mark a
-// character-led piece (Danbooru tag soup is unmistakable); MEDIUM_TERMS
-// mark designed-media subject matter — the places, objects, graphics and
-// spaces the app's disciplines are actually about.
+// Subject + medium signals: used ONLY as a harvest pre-filter (which
+// candidates are worth a vision call) and as the fail-open grouping when
+// vision is unreachable. They never assign a style.
 const CHARACTER_TERMS = ["1girl", "2girls", "1boy", "solo", "waifu", "anime", "manga", "long hair", "short hair", "hair ornament", "hairclip", "hairband", "school uniform", "thighhighs", "blush", "looking at viewer", "cat ears", "maid outfit", "bikini", "swimsuit", "cleavage", "ponytail", "twintails", "heterochromia", "ahoge", "choker", "pleated skirt", "vtuber", "genshin impact", "honkai", "azur lane", "arknights", "blue archive", "portrait of a woman", "beautiful girl", "beautiful woman", "young woman"];
 const MEDIUM_TERMS = ["architecture", "building", "interior", "cityscape", "skyline", "poster", "typography", "logo", "branding", "packaging", "product design", "furniture", "vehicle", "airship", "city", "street", "landscape", "temple", "church", "cathedral", "castle", "tower", "bridge", "statue", "sculpture", "editorial", "house", "palace", "theater", "theatre", "library", "museum", "cafe", "restaurant", "hotel", "lobby", "facade", "staircase", "courtyard", "rooftop", "garden", "machine", "spaceship"];
 function countTerms(prompt, terms) {
@@ -149,13 +105,11 @@ function countTerms(prompt, terms) {
 export function subjectHits(prompt) { return countTerms(prompt, CHARACTER_TERMS); }
 export function mediumHits(prompt) { return countTerms(prompt, MEDIUM_TERMS); }
 
-// The grouping taxonomy (v59) — the horizontal strip, replacing
-// Design/Photo/Architecture/UI. These are SUBJECT groupings: what the
-// piece is OF, read from the same prompt evidence as the genre. A castle
-// in a valley files as architecture (the built thing is the subject);
-// the valley alone files as world; a poster OF a castle files as
-// graphics (the medium is the subject). Ties break toward the most
-// specific reading: graphics > architecture > prop > character > world.
+// The grouping taxonomy (v59) — the horizontal strip. These are SUBJECT
+// groupings: what the piece is OF. Ties break toward the most specific
+// reading: design > architecture > prop > character > world. In v65 this
+// text classifier is only the fail-open grouping; the vision verdict
+// rules whenever it runs.
 export const MEDIA_VOCAB = {
   "character": ["character design", "warrior", "knight", "sorceress", "portrait", "figure", "creature", "monster", "android", "cyborg", "vampire", "elf", "dwarf", "orc", "goblin", "dragon", "beast", "animal", "cat", "dog", "bird", "horse", "wolf", "fox", "woman", "man", "girl", "boy", "lady", "gentleman", "king", "queen", "witch", "wizard", "fairy", "angel", "demon", "skeleton", "zombie", "mermaid", "centaur", "minotaur", "phoenix"],
   "world": ["landscape", "scenery", "environment", "vista", "panorama", "panoramic", "valley", "mountain", "forest", "desert", "ocean", "sea", "island", "jungle", "tundra", "canyon", "waterfall", "meadow", "coast", "shore", "cliff", "cave", "village", "town", "kingdom", "realm", "planet", "terrain", "countryside", "wilderness", "aerial view", "overlook", "cityscape", "horizon", "fields", "underwater world"],
@@ -178,123 +132,56 @@ export function classifyMedia(piece, modelText) {
   return subjectHits(piece && piece.prompt) >= 2 ? "character" : "world";
 }
 
-// Neighbor genres whose galleries most often hide this genre's pieces
-// (dieselpunk lives under art-moderne, neon-noir under cyberpunk, ...).
-// The live walk covers the genre's own pool first, then the neighbors',
-// and classification — not the gallery label — decides what files here.
-const NEIGHBORS = {
-  "surreal": ["pop", "gothic"],
-  "art-deco": ["art-moderne", "pop"],
-  "art-moderne": ["art-deco", "mid-century"],
-  "mid-century": ["art-moderne", "pop"],
-  "pop": ["surreal", "mid-century"],
-  "afrofuturism": ["cyberpunk", "surreal"],
-  "brutalist": ["minimalist", "art-moderne"],
-  "cyberpunk": ["afrofuturism", "film-noir"],
-  "film-noir": ["cyberpunk", "gothic"],
-  "gothic": ["film-noir", "surreal"],
-  "minimalist": ["brutalist", "mid-century"],
-  "solarpunk": ["cyberpunk", "surreal"],
-  "steampunk": ["art-moderne", "gothic"],
-};
-export function walkList(movement, rot) {
-  const own = QUERIES[movement] || [];
-  const all = own.slice();
-  for (const nb of NEIGHBORS[movement] || []) for (const q of QUERIES[nb] || []) if (!all.includes(q)) all.push(q);
+// Pool walks (v65). A lane's walk interleaves its styles' query pools
+// round-robin; a column's walk covers its own style's queries first, then
+// the lane's other styles as the neighbor fallback (vision files whatever
+// it finds under its TRUE style, so a neighbor pool is a discovery
+// surface, never a mislabel).
+export function laneWalk(lane, rot) {
+  const styles = LANE_STYLES[lane] || [];
+  const maxQ = Math.max(0, ...styles.map((s) => s.queries.length));
+  const all = [];
+  for (let qi = 0; qi < maxQ; qi++) for (const s of styles) if (s.queries[qi]) all.push({ q: s.queries[qi], style: s.id });
   return all.map((_, i) => all[(i + (rot || 0)) % all.length]);
 }
-
-export function gatePrompt(movement) {
-  return `You are the genre-fit gate for INSPOBOX, a design-inspiration app. Decide whether this image belongs in the "${movement}" feed.\n\n${RUBRIC[movement] || ""}\n\n${QUALITY_BAR}\n\nBegin your reply with the JSON verdict, exactly {"fits": true} or {"fits": false}, then — only if you want — one short sentence of explanation. Nothing before the JSON. Standard: fits=true when the genre's core idea is present with at least one strong hallmark, or the image has an unmistakable overall ${movement} read, and it clears the quality bar. Borderline but plausible counts as true. Answer false only for a clearly different genre, an off-topic subject, or a quality-bar failure (watermarks, garbled text, AI artifacts, presentation boards, blockouts, murk, IP characters).`;
+export function columnWalk(lane, styleId, rot) {
+  const styles = LANE_STYLES[lane] || [];
+  const own = (styles.find((s) => s.id === styleId) || { queries: [] }).queries.map((q) => ({ q, style: styleId }));
+  const rest = [];
+  for (const s of styles) if (s.id !== styleId) for (const q of s.queries) rest.push({ q, style: s.id });
+  const all = own.concat(rest);
+  const r = (rot || 0) % Math.max(1, own.length || 1);
+  const rotated = own.slice(r).concat(own.slice(0, r), rest);
+  return rotated.length ? rotated : all;
+}
+// The fresh lane (v58 mechanics, v65 keying): "highest rated <style> of
+// the last 24 hours," per style of the requested lane, built from the
+// models search (the images endpoint has no cross-site search). Week
+// pass as fallback — a niche style may publish nothing on a given day.
+export function freshEntries(lane, rot) {
+  const styles = LANE_STYLES[lane] || [];
+  const ordered = styles.map((_, i) => styles[(i + (rot || 0)) % styles.length]);
+  const out = [];
+  for (const period of ["Day", "Week"]) for (const s of ordered) out.push({ q: s.queries[0], style: s.id, period });
+  return out;
 }
 
-// One vision verdict. A MERIT verdict (fits true/false) is honored. But
-// since v50 (Andres: "loosen the gates") an INFRASTRUCTURE failure — the
-// image would not download, the API errored, the reply held no verdict,
-// the call timed out — returns fits:null and the piece flows ungated
-// instead of being culled by a check that never actually ran.
-function b64(buf) {
-  let out = "";
-  const bytes = new Uint8Array(buf);
-  for (let i = 0; i < bytes.length; i += 0x8000) out += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
-  return btoa(out);
-}
-
-export async function gateOne(env, piece, fetchFn) {
-  const ctl = new AbortController();
-  const to = setTimeout(() => ctl.abort(), 15000);
-  try {
-    const imgUrl = String(piece.img).replace("/width=1200/", "/width=640/");
-    let imgRes;
-    try { imgRes = await fetchFn(imgUrl, { signal: ctl.signal, headers: { "user-agent": "INSPOBOX live feed" } }); }
-    catch { return { fits: null, why: "image download failed" }; }
-    if (!imgRes.ok) return { fits: null, why: "image download " + imgRes.status };
-    const mt = (imgRes.headers && imgRes.headers.get && imgRes.headers.get("content-type") || "image/jpeg").split(";")[0].trim();
-    const mediaType = ["image/jpeg", "image/png", "image/gif", "image/webp"].includes(mt) ? mt : "image/jpeg";
-    const imgData = b64(await imgRes.arrayBuffer());
-    let why = "";
-    for (const model of ["claude-haiku-5-5", "claude-sonnet-5-5"]) {
-      const res = await fetchFn("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        signal: ctl.signal,
-        headers: { "x-api-key": env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json" },
-        body: JSON.stringify({
-          model,
-          max_tokens: 768,
-          messages: [{ role: "user", content: [
-            { type: "image", source: { type: "base64", media_type: mediaType, data: imgData } },
-            { type: "text", text: gatePrompt(piece.movement) },
-          ] }],
-        }),
-      });
-      if (!res.ok) {
-        const errBody = await res.json().catch(() => null);
-        const errMsg = (errBody && errBody.error && (errBody.error.type + ": " + errBody.error.message)) || "";
-        why = model + " " + res.status + (errMsg ? " " + errMsg.slice(0, 70) : "");
-        continue;
-      }
-      const data = await res.json().catch(() => null);
-      const blocks = (data && data.content) || [];
-      let text = blocks.filter((b) => b.type === "text").map((b) => b.text).join("");
-      if (!/\{/.test(text)) text += blocks.filter((b) => b.type === "thinking").map((b) => b.thinking || "").join("");
-      let verdict = null;
-      const fm = text.match(/\{\s*"fits"\s*:\s*(true|false)/);
-      if (fm) verdict = { fits: fm[1] === "true" };
-      if (!verdict) {
-        const cands = text.match(/\{[^{}]*\}/g) || [];
-        for (const cand of cands) { try { const j = JSON.parse(cand); if (typeof j.fits === "boolean") verdict = j; } catch {} }
-      }
-      if (!verdict) { why = model + " unparseable verdict: " + (text.slice(0, 60) || "(empty response)"); continue; }
-      return { fits: verdict.fits, why: "" };
-    }
-    return { fits: null, why };
-  } catch { return { fits: null, why: "gate timed out" }; } finally { clearTimeout(to); }
-}
-
-// Gate a list of candidates in parallel waves of 9 (keeps burst rate sane).
-// Vision-first filing (v61, Andres's direction after the diagnosis: the
-// label was describing the gallery, not the picture). One Claude vision
-// call per DISPLAYED piece decides everything from the image itself:
-//  - genre: CLOSED set — exactly one of the 13 movement ids, or "none"
-//    when none honestly fits (a wrong label is worse than no label; the
-//    app files pieces into the 13 folders, so filing needs the taxonomy).
-//  - media: one of the 5 subject groupings.
-//  - style: Claude's OWN free-text phrase for what the image actually
-//    looks like. Shown on the piece as a descriptor, and logged in stats
-//    — a phrase that keeps recurring outside the 13 is a candidate new
-//    genre to propose, never a folder invented on the fly.
-//  - ok: the shared quality bar (watermarks, artifacts, IP characters…).
-// Infrastructure failures return nulls and the piece flows on its
-// metadata filing (fail-open, per the standing rule); a real verdict
-// RULES — it overrides the metadata genre and grouping outright.
-export const GENRE_IDS = ["surreal", "art-deco", "art-moderne", "mid-century", "pop", "afrofuturism", "brutalist", "cyberpunk", "film-noir", "gothic", "minimalist", "solarpunk", "steampunk"];
-export const MEDIA_IDS = ["design", "world", "architecture", "character", "prop"];
-// The generation prompt reaches the vision judge ONLY as a labeled,
-// quarantined hint (Andres's suggestion, Nov 12): it can carry real
-// intent that disambiguates a genuinely borderline image, but it was
-// also the poison vector in the mislabeling diagnosis — so LoRA/model
-// embeds are stripped out and the judge is told, in terms, that the
-// picture outranks the prompt whenever the two disagree.
+// The vision judge (v65). ONE Claude vision call per displayed piece.
+// The model sees the image first, then: the five grouping definitions
+// (unchanged from v61); then ALL five lanes' style lists with their
+// one-line definitions — choose the grouping first, then a style ONLY
+// from that grouping's list, or "none" for either when nothing honestly
+// fits. When the style is "none", the judge must also name what the
+// image actually IS (the `theme` field — the discovery loop below).
+// The generation prompt follows as labeled background that may only
+// break ties (LoRA/model names stripped, as shipped in v61). The reply
+// must START with the JSON verdict {grouping, style, phrase, theme, ok}.
+// Server-side fencing: a style id outside the chosen grouping's set is
+// discarded to "none" (its theme, if any, still counts); a "none"
+// grouping culls the piece from live display. Infrastructure failures
+// return nulls and the piece flows on its metadata grouping, unstyled
+// and unbadged (fail-open, the standing rule); a real verdict RULES.
+export const MEDIA_IDS = LANE_IDS;
 export function promptHint(raw) {
   const clean = String(raw || "").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().slice(0, 300);
   if (!clean) return "";
@@ -302,12 +189,22 @@ export function promptHint(raw) {
 }
 
 export function classifyPrompt(hint) {
-  const genres = GENRE_IDS.map((id) => "- " + id + ": " + (RUBRIC[id] || "")).join("\n");
-  return ("You are the filing editor for INSPOBOX, a design-inspiration app. Look at this image and file it by WHAT IT ACTUALLY SHOWS — never by what it might have been generated with.\n\nGENRES (choose exactly one id, or none):\n" + genres + "\n\nGROUPINGS (choose exactly one): character = a person, creature, or being is the subject; world = an environment, landscape, or place is the subject with no single building or object dominating; architecture = a building, structure, or interior is the subject; prop = a single object, product, vehicle, or item is the subject; design = a poster, typography, logo, flat illustration, print, or interface — the graphic work itself is the subject.\n\n" + QUALITY_BAR + "\n\nBegin your reply with ONLY this JSON object, nothing before it: {\"genre\": \"<genre id or none>\", \"media\": \"<grouping id>\", \"style\": \"<your own short phrase for the style this image actually is, e.g. 'muted liminal-space photograph'>\", \"ok\": true}. Set ok=false only for a quality-bar failure. Choose genre none when no listed genre honestly fits — do not force the nearest one." + (hint ? promptHint(hint) : ""));
+  const lanes = LANE_IDS.map((lane) => {
+    const styles = LANE_STYLES[lane].map((s) => "  - " + s.id + ": " + s.def).join("\n");
+    return "If the grouping is " + lane + ", the style must be one of:\n" + styles;
+  }).join("\n\n");
+  return ("You are the filing editor for INSPOBOX, a design-inspiration app. Look at this image and file it by WHAT IT ACTUALLY SHOWS — never by what it might have been generated with.\n\nGROUPINGS (choose exactly one): character = a person, creature, or being is the subject; world = an environment, landscape, or place is the subject with no single building or object dominating; architecture = a building, structure, or interior is the subject; prop = a single object, product, vehicle, or item is the subject; design = a poster, typography, logo, flat illustration, print, or interface — the graphic work itself is the subject.\n\nSTYLES — first choose the grouping, then choose a style ONLY from that grouping's list:\n\n" + lanes + "\n\n" + QUALITY_BAR + "\n\nBegin your reply with ONLY this JSON object, nothing before it: {\"grouping\": \"<grouping id or none>\", \"style\": \"<style id from that grouping's list, or none>\", \"phrase\": \"<your own short phrase for the style this image actually is, e.g. 'muted liminal-space photograph'>\", \"theme\": \"<when style is none: a 1-3 word name for the style this image actually is, e.g. 'liminal space', 'dieselpunk', 'cottagecore'; otherwise empty>\", \"ok\": true}. Set ok=false only for a quality-bar failure. Choose style none when nothing in the grouping's list honestly fits — do not force the nearest one; when you choose none, the theme is how a missing style gets discovered, so name it plainly." + (hint ? promptHint(hint) : ""));
+}
+
+function b64(buf) {
+  let out = "";
+  const bytes = new Uint8Array(buf);
+  for (let i = 0; i < bytes.length; i += 0x8000) out += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+  return btoa(out);
 }
 
 export async function visionClassify(env, piece, fetchFn) {
-  const fail = (why) => ({ genre: null, media: null, style: "", ok: null, why });
+  const fail = (why) => ({ grouping: null, style: null, phrase: "", theme: "", ok: null, why });
   if (!env || !env.ANTHROPIC_API_KEY) return fail("no_key");
   const ctl = new AbortController();
   const to = setTimeout(() => ctl.abort(), 15000);
@@ -339,8 +236,12 @@ export async function visionClassify(env, piece, fetchFn) {
       if (a < 0 || b <= a) { why = model + ": no JSON verdict"; continue; }
       let v = null;
       try { v = JSON.parse(txt.slice(a, b + 1)); } catch { why = model + ": unparseable verdict"; continue; }
-      if (!v || (v.genre !== "none" && !GENRE_IDS.includes(v.genre)) || !MEDIA_IDS.includes(v.media)) { why = model + ": verdict outside the taxonomy"; continue; }
-      return { genre: v.genre, media: v.media, style: String(v.style || "").slice(0, 80), ok: v.ok !== false, why: "" };
+      if (!v || (v.grouping !== "none" && !MEDIA_IDS.includes(v.grouping))) { why = model + ": verdict outside the taxonomy"; continue; }
+      // Fencing: the style must belong to the chosen grouping's set.
+      let style = "none";
+      if (v.grouping !== "none" && styleInLane(v.grouping, v.style)) style = v.style;
+      const theme = style === "none" ? normalizeTheme(v.theme) : "";
+      return { grouping: v.grouping, style, phrase: String(v.phrase || "").slice(0, 80), theme, ok: v.ok !== false, why: "" };
     }
     return fail(why || "no verdict");
   } catch (e) {
@@ -348,7 +249,7 @@ export async function visionClassify(env, piece, fetchFn) {
   } finally { clearTimeout(to); }
 }
 
-// Vision-classify a batch in waves of 6 (mirrors gatePieces' pacing).
+// Vision-classify a batch in waves of 6 (keeps burst rate sane).
 export async function visionClassifyBatch(env, pieces, fetchFn) {
   const out = new Map();
   for (let i = 0; i < pieces.length; i += 6) {
@@ -359,133 +260,91 @@ export async function visionClassifyBatch(env, pieces, fetchFn) {
   return out;
 }
 
-export async function gatePieces(env, candidates, fetchFn) {
-  const kept = [];
-  let why = "";
-  let errors = 0;
-  for (let i = 0; i < candidates.length; i += 6) {
-    const wave = candidates.slice(i, i + 6);
-    const verdicts = await Promise.all(wave.map((p) => gateOne(env, p, fetchFn)));
-    wave.forEach((p, j) => {
-      const v = verdicts[j];
-      if (v.fits === true) { p.gated = true; kept.push(p); }
-      else if (v.fits === null) { errors++; kept.push(p); if (!why && v.why) why = v.why; }
-      else if (!why && v.why) why = v.why;
-    });
-  }
-  return { kept, why, errors };
+// "None-theme" discovery loop (v65 addition, Andres's direction): every
+// time the judge answers style "none" it also names what the image
+// actually IS. Those names are tallied per lane per batch (returned in
+// stats.noneThemes) and accumulated across sessions in a D1 doc, so a
+// theme that keeps recurring can be proposed to Andres as a candidate
+// new style (weekly refresh report; his approval adds it — never
+// automatic). D1 failures are non-fatal.
+export function normalizeTheme(raw) {
+  return String(raw || "").toLowerCase().trim().replace(/\s+/g, " ").slice(0, 40);
 }
-
-// The home river (v53): one walk across ALL thirteen genre pools,
-// round-robin. Every candidate is filed by its own prompt — the genre is
-// wherever the classification lands, not the gallery it was found in.
-export function walkAll(rot) {
-  const mvs = Object.keys(QUERIES);
-  const maxQ = Math.max(...mvs.map((m) => QUERIES[m].length));
-  const all = [];
-  for (let qi = 0; qi < maxQ; qi++) for (const mv of mvs) if (QUERIES[mv][qi]) all.push({ q: QUERIES[mv][qi], src: mv });
-  return all.map((_, i) => all[(i + (rot || 0)) % all.length]);
+export function tallyTheme(tally, lane, theme) {
+  const t = normalizeTheme(theme);
+  if (!t || !LANE_IDS.includes(lane)) return;
+  (tally[lane] = tally[lane] || {})[t] = (tally[lane][t] || 0) + 1;
 }
-
-// The fresh lane (v58): "highest rated <genre> of the last 24 hours."
-// Civitai has no cross-site genre search — the images endpoint filters
-// only within a gallery — so the lane is built from the models search:
-// each genre's canonical query with period=Day and sort="Highest Rated",
-// then a Week pass as fallback (a niche genre may publish nothing on a
-// given day). Entries carry their period through to the images call, so
-// a TODAY piece really is from the window on its badge.
-export function freshEntries(rot) {
-  const mvs = Object.keys(QUERIES);
-  const ordered = mvs.map((_, i) => mvs[(i + (rot || 0)) % mvs.length]);
-  const out = [];
-  for (const period of ["Day", "Week"]) for (const mv of ordered) out.push({ q: QUERIES[mv][0], src: mv, period });
-  return out;
-}
-
-export function classifySlot(scores, minTop = 4, margin = 2) {
-  const entries = Object.entries(scores).sort((a, b) => b[1] - a[1]);
-  if (!entries.length) return null;
-  const [top, second] = [entries[0], entries[1]];
-  if (top[1] >= minTop && (!second || top[1] >= second[1] + margin)) return top[0];
-  return null;
+export const NONE_THEMES_SLUG = "inspobox-none-themes";
+export const NONE_THEMES_CAP = 40;
+export async function persistNoneThemes(env, tally) {
+  if (!env || !env.DB || !tally || !Object.keys(tally).length) return false;
+  try {
+    const row = await getDoc(env.DB, NONE_THEMES_SLUG);
+    let doc = {};
+    try { doc = row && row.html ? JSON.parse(row.html) : {}; } catch { doc = {}; }
+    const now = new Date().toISOString();
+    for (const lane of Object.keys(tally)) {
+      const cell = doc[lane] = doc[lane] || {};
+      for (const [theme, n] of Object.entries(tally[lane])) {
+        const cur = cell[theme] || { n: 0, lastSeen: "" };
+        cur.n += n; cur.lastSeen = now;
+        cell[theme] = cur;
+      }
+      const keys = Object.keys(cell);
+      if (keys.length > NONE_THEMES_CAP) {
+        keys.sort((a, b) => (cell[a].n - cell[b].n) || String(cell[a].lastSeen).localeCompare(String(cell[b].lastSeen)));
+        for (const k of keys.slice(0, keys.length - NONE_THEMES_CAP)) delete cell[k];
+      }
+    }
+    await putDoc(env.DB, NONE_THEMES_SLUG, JSON.stringify(doc));
+    return true;
+  } catch { return false; }
 }
 
 const HOME_BATCH = 16;
 
-// Ambiguous prompts (a whisper of signal, no dominant genre) get ONE
-// batched TEXT classification call — prompts only, no images — so the
-// whole batch costs a fraction of a single vision check. Haiku first.
-export async function classifyAmbiguous(env, items, fetchFn) {
-  if (!items.length || !env || !env.ANTHROPIC_API_KEY) return {};
-  const list = items.slice(0, 16);
-  const text = "Each numbered image-generation prompt comes with the small set of movements its own vocabulary already plausibly matches. For each one, choose the single best movement FROM ITS OWN SET, or none if the style is not truly the subject of the prompt. A character portrait with a plain or simple background is NOT minimalist — minimalist means deliberate geometric reduction, spare architecture, or abstract composition as the subject. Reply with ONLY a JSON array like [{\"i\":0,\"m\":\"gothic\"}].\n\n" + list.map((p, i) => i + ". " + String(p.prompt || "").slice(0, 220) + " [choose: " + (p.cands || []).join(", ") + " — or none]").join("\n");
-  for (const model of ["claude-haiku-5-5", "claude-sonnet-5-5"]) {
-    try {
-      const ctl = new AbortController();
-      const to = setTimeout(() => ctl.abort(), 15000);
-      const res = await fetchFn("https://api.anthropic.com/v1/messages", {
-        method: "POST", signal: ctl.signal,
-        headers: { "x-api-key": env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json" },
-        body: JSON.stringify({ model, max_tokens: 700, messages: [{ role: "user", content: [{ type: "text", text }] }] }),
-      });
-      clearTimeout(to);
-      if (!res.ok) continue;
-      const data = await res.json().catch(() => null);
-      const blocks = (data && data.content) || [];
-      let txt = blocks.filter((b) => b.type === "text").map((b) => b.text).join("");
-      if (!txt.includes("[")) txt += blocks.filter((b) => b.type === "thinking").map((b) => b.thinking || "").join("");
-      const a = txt.indexOf("["), b = txt.lastIndexOf("]");
-      if (a < 0 || b <= a) continue;
-      const arr = JSON.parse(txt.slice(a, b + 1));
-      const out = {};
-      for (const r of arr) if (r && Number.isInteger(r.i) && list[r.i] && (r.m === "none" || (list[r.i].cands || []).includes(r.m))) out[r.i] = r.m;
-      return out;
-    } catch { /* try the next model */ }
-  }
-  return {};
-}
-
+// The home river (v65): one walk across the requested LANE's style
+// pools, round-robin. Candidates are pre-filtered by their metadata
+// (designed-media subject matter, or a subject-led piece under a small
+// cap — Civitai galleries flood character work otherwise), then ONE
+// vision verdict per candidate files it: grouping, style within that
+// grouping's list, caption phrase. Cross-lane verdicts bank into their
+// own lanes' rivers; style overflow in the requested lane banks into
+// that style's locked column.
 export async function fetchHomeBatch({ cursor, exclude, media }, fetchFn, env) {
+  const primary = LANE_IDS.includes(media) ? media : "design";
   const seen = new Set(exclude || []);
   const st = cursor && typeof cursor === "object" ? { q: 0, v: 0, c: null, m: null, rot: 0, ...cursor } : { q: 0, v: 0, c: null, m: null, rot: Math.floor(Math.random() * 1024) };
-  const walk = walkAll(st.rot || 0);
-  const buckets = {};
+  const walk = laneWalk(primary, st.rot || 0);
+  const buckets = {}; // lane -> pieces (filed)
   let total = 0, calls = 0, examined = 0, charFiled = 0, charCapped = 0, skipped = 0;
-  const ambiguous = [];
   let freshFiled = 0;
-  const absorb = (page, ver, src, fresh) => {
+  const harvest = [];
+  const absorb = (page, ver, fresh) => {
     for (const item of page.items || []) {
-      const p = toPiece(item, ver.n, src, "world"); // placeholder — the grouping is classified below, at filing
+      const p = toPiece(item, ver.n, null, null);
       if (!p || seen.has(p.uuid)) continue;
-      p.media = classifyMedia(p, ver.mt);
       seen.add(p.uuid);
       examined++;
-      // Style-tagged media focus (v54): the style must be the SUBJECT.
-      // Character-led pieces (the Civitai showcase default) file only
-      // when their style signal is dominant, and at most 2 per batch;
-      // everything else needs designed-media subject matter in the
-      // prompt, or an overwhelming style score.
-      const scores = scoreAll(p, ver.n, ver.mt);
-      const topScore = Math.max(0, ...Object.values(scores));
-      const slot = classifySlot(scores);
-      const charStrong = subjectHits(p.prompt) >= 2;
       const med = mediumHits(p.prompt);
-      if (slot && (med >= 1 || topScore >= 6)) {
-        if (charStrong && charFiled >= 2) { charCapped++; }
-        else { p.movement = slot; p.meta = true; if (fresh) { p.fresh = true; freshFiled++; } (buckets[slot] = buckets[slot] || []).push(p); total++; if (charStrong) charFiled++; }
+      const charStrong = subjectHits(p.prompt) >= 2;
+      const eligible = !p.prompt || med >= 1 || charStrong;
+      if (!eligible) { skipped++; continue; }
+      if (charStrong && med === 0) {
+        if (charFiled >= 2) { charCapped++; continue; }
+        charFiled++;
       }
-      else if (!slot && p.prompt && topScore >= 2 && !charStrong && med >= 1 && ambiguous.length < 16) {
-        p.cands = Object.entries(scores).filter(([, v]) => v >= 2).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([k]) => k);
-        if (p.cands.length) { if (fresh) p.fresh = true; ambiguous.push(p); } else skipped++;
-      }
-      else skipped++;
-      if (total >= HOME_BATCH) break;
+      if (fresh) p.fresh = true;
+      p._mt = ver.mt;
+      harvest.push(p);
+      if (harvest.length >= 40) break;
     }
   };
   if (!st.f) st.f = { i: 0, m: null, v: 0, c: null, done: false };
-  const freshWalk = freshEntries(st.rot || 0);
+  const freshWalk = freshEntries(primary, st.rot || 0);
   let fCalls = 0;
-  while (total < HOME_BATCH && fCalls < 5 && !st.f.done) {
+  while (harvest.length < 24 && fCalls < 5 && !st.f.done) {
     if (st.f.i >= freshWalk.length) { st.f.done = true; break; }
     const entry = freshWalk[st.f.i];
     if (!st.f.m) {
@@ -505,11 +364,11 @@ export async function fetchHomeBatch({ cursor, exclude, media }, fetchFn, env) {
     let page;
     try { page = await civGet(fetchFn, "/images?" + qs.toString()); } catch (e) { if (e && e.code === 429) throw e; break; }
     fCalls++;
-    absorb(page, ver, entry.src, true);
+    absorb(page, ver, true);
     st.f.c = (page.metadata && page.metadata.nextCursor) || null;
     if (!st.f.c) st.f.v++;
   }
-  while (total < HOME_BATCH && calls < 10 && st.q < walk.length) {
+  while (harvest.length < 24 && calls < 10 && st.q < walk.length) {
     if (!st.m) {
       const qs = new URLSearchParams({ query: walk[st.q].q, limit: "6", sort: "Most Downloaded", nsfw: "false" });
       qs.append("types", "LORA"); qs.append("types", "Checkpoint");
@@ -527,100 +386,99 @@ export async function fetchHomeBatch({ cursor, exclude, media }, fetchFn, env) {
     let page;
     try { page = await civGet(fetchFn, "/images?" + qs.toString()); } catch (e) { if (e && e.code === 429) throw e; break; }
     calls++;
-    absorb(page, ver, walk[st.q].src, false);
+    absorb(page, ver, false);
     st.c = (page.metadata && page.metadata.nextCursor) || null;
     if (!st.c) st.v++;
   }
-  let claude = 0;
-  if (ambiguous.length && total < HOME_BATCH) {
-    const verdicts = await classifyAmbiguous(env, ambiguous, fetchFn);
-    for (const [ix, mv] of Object.entries(verdicts)) {
-      if (mv === "none" || claude >= 6) continue;
-      const p = ambiguous[Number(ix)];
-      p.movement = mv; p.claude = true;
-      (buckets[mv] = buckets[mv] || []).push(p); total++; claude++;
-      if (total >= HOME_BATCH) break;
+  // Vision-first filing: one verdict per harvested candidate (capped).
+  // Verdict rules; "none" grouping and quality failures leave the river;
+  // infra failures keep the metadata grouping, unstyled.
+  let visionChecked = 0, visionCulled = 0, unstyled = 0;
+  const noneThemes = {};
+  const toVerify = harvest.slice(0, 18);
+  const verdicts = (env && env.ANTHROPIC_API_KEY) ? await visionClassifyBatch(env, toVerify, fetchFn) : new Map();
+  for (const p of harvest) {
+    const v = verdicts.get(p);
+    delete p._mt;
+    if (!v || v.grouping === null) {
+      // fail-open: metadata grouping, no style, river only
+      p.media = classifyMedia(p, "");
+      p.movement = null;
+      unstyled++;
+      (buckets[p.media] = buckets[p.media] || []).push(p); total++;
+      continue;
     }
-  }
-  // Vision-first filing (v61): the harvest gets one vision verdict per
-  // piece (capped) — genre, grouping and style from the picture itself,
-  // overriding the metadata filing. "None" and quality failures leave
-  // the river; cross-genre verdicts move buckets; infra failures keep
-  // the metadata filing.
-  let visionChecked = 0, visionCulled = 0;
-  if (env && env.ANTHROPIC_API_KEY) {
-    const filedAll = [];
-    for (const mv of Object.keys(buckets)) for (const p of buckets[mv]) filedAll.push(p);
-    const toVerify = filedAll.slice(0, 18);
-    if (toVerify.length) {
-      const verdicts = await visionClassifyBatch(env, toVerify, fetchFn);
-      for (const p of toVerify) {
-        const v = verdicts.get(p);
-        if (!v || v.genre === null) continue;
-        visionChecked++;
-        const from = buckets[p.movement];
-        const pull = () => { if (from) { const ix = from.indexOf(p); if (ix >= 0) from.splice(ix, 1); } };
-        if (v.ok === false || v.genre === "none") { visionCulled++; pull(); continue; }
-        p.style = v.style; p.gated = true; p.media = v.media;
-        if (v.genre !== p.movement) { pull(); p.movement = v.genre; (buckets[v.genre] = buckets[v.genre] || []).push(p); }
-      }
+    visionChecked++;
+    if (v.ok === false || v.grouping === "none") { visionCulled++; if (v.theme) tallyTheme(noneThemes, primary, v.theme); continue; }
+    p.media = v.grouping;
+    if (v.style === "none") {
+      p.movement = null;
+      unstyled++;
+      if (v.theme) tallyTheme(noneThemes, v.grouping, v.theme);
+    } else {
+      p.movement = v.style;
+      p.gated = true;
     }
+    if (v.phrase) p.style = v.phrase;
+    if (p.fresh) freshFiled++;
+    (buckets[p.media] = buckets[p.media] || []).push(p); total++;
   }
-  // Round-robin interleave with a per-genre cap (v57): one deep bucket
-  // (surreal is the usual suspect — its vocabulary is everywhere) may not
-  // flood the river. Surplus classified pieces are BANKED under their
-  // genre instead of discarded: the client files them into that genre's
-  // locked column, so locking Surreal opens a pre-filled stack and home
-  // stays diverse. Filing is bookkeeping on the same payload — no extra
-  // calls, no extra spend.
-  const HOME_GENRE_CAP = 3, BANK_CAP = 8;
-  const primary = MEDIA_VOCAB[media] ? media : "design";
-  const mvs = Object.keys(buckets).filter((k) => buckets[k].length);
+  if (Object.keys(noneThemes).length) await persistNoneThemes(env, noneThemes);
+  // Round-robin interleave by STYLE with a per-style cap: one deep style
+  // may not flood the river. Surplus styled pieces BANK into their
+  // style's locked column; other-lane pieces bank into their home river.
+  const HOME_STYLE_CAP = 3, BANK_CAP = 8;
+  const inLane = (buckets[primary] || []).slice();
+  const byStyle = {};
+  for (const p of inLane) (byStyle[p.movement || "none"] = byStyle[p.movement || "none"] || []).push(p);
+  const styleKeys = Object.keys(byStyle);
   const pieces = [];
   const counts = {};
   let guard = 0;
   while (pieces.length < HOME_BATCH && guard++ < 500) {
     let progressed = false;
-    for (const mv of mvs) {
-      if ((counts[mv] || 0) >= HOME_GENRE_CAP) continue;
-      const ix = buckets[mv].findIndex((p) => p.media === primary && (LANE_GENRES[primary] || []).includes(p.movement));
-      if (ix >= 0) { pieces.push(buckets[mv].splice(ix, 1)[0]); counts[mv] = (counts[mv] || 0) + 1; progressed = true; if (pieces.length >= HOME_BATCH) break; }
+    for (const sk of styleKeys) {
+      if ((counts[sk] || 0) >= HOME_STYLE_CAP) continue;
+      if (byStyle[sk].length) { pieces.push(byStyle[sk].shift()); counts[sk] = (counts[sk] || 0) + 1; progressed = true; if (pieces.length >= HOME_BATCH) break; }
     }
     if (!progressed) break;
   }
-  // Leftovers bank along the axis they overflowed: same-grouping pieces
-  // go to their genre's locked column; other-grouping pieces go to that
-  // grouping's home river, so switching the strip finds them waiting.
   const banked = {};
   const bankedHome = {};
   let bankedCount = 0, bankedHomeCount = 0;
-  for (const mv of mvs) for (const p of buckets[mv]) {
-    if (p.media === primary) (banked[mv] = banked[mv] || []).push(p);
-    else (bankedHome[p.media] = bankedHome[p.media] || []).push(p);
+  for (const sk of styleKeys) for (const p of byStyle[sk]) if (p.movement) (banked[p.movement] = banked[p.movement] || []).push(p);
+  for (const lane of Object.keys(buckets)) {
+    if (lane === primary) continue;
+    for (const p of buckets[lane]) (bankedHome[lane] = bankedHome[lane] || []).push(p);
   }
   for (const mv of Object.keys(banked)) { banked[mv] = banked[mv].slice(0, BANK_CAP); bankedCount += banked[mv].length; }
   for (const md of Object.keys(bankedHome)) { bankedHome[md] = bankedHome[md].slice(0, BANK_CAP); bankedHomeCount += bankedHome[md].length; }
-  return { pieces, banked, bankedHome, cursor: st, done: st.q >= walk.length, stats: { examined, passed: pieces.length, claude, civCalls: calls, genres: mvs.length, charCapped, skipped, banked: bankedCount, bankedHome: bankedHomeCount, freshFiled, visionChecked, visionCulled } };
+  return { pieces, banked, bankedHome, cursor: st, done: st.q >= walk.length, stats: { examined, passed: pieces.length, civCalls: calls, styles: Object.keys(counts).length, charCapped, skipped, banked: bankedCount, bankedHome: bankedHomeCount, freshFiled, visionChecked, visionCulled, unstyled, noneThemes } };
 }
 
+// A locked column (v65): contract is {media: lane, movement: style id
+// within that lane} — param names unchanged from the genre era. The walk
+// covers the style's own pools, then the lane's neighbor styles; every
+// kept candidate gets ONE vision verdict and the verdict files it: this
+// column only when grouping AND style match the request; another
+// (lane, style) banks under its true filing; "none"/quality culls. A
+// piece vision could not reach is NOT delivered (it carries no honest
+// style) — it stays unserved rather than mislabeled.
 export async function fetchMoreBatch({ movement, media, cursor, exclude }, fetchFn, env) {
-  const rawQueries = QUERIES[movement];
-  if (!rawQueries) return { pieces: [], cursor: cursor || null, done: true };
+  const lane = LANE_IDS.includes(media) ? media : null;
+  const styleId = movement;
+  if (!lane || !styleInLane(lane, styleId)) return { pieces: [], banked: [], cursor: cursor || null, done: true, stats: { examined: 0, passed: 0, gated: !!(env && env.ANTHROPIC_API_KEY), civCalls: 0, unknownStyle: true, noneThemes: {} } };
   const seen = new Set(exclude || []);
-  // Fresh sessions start at a random rotation of the genre's query pool and
-  // walk shuffled model lists, so repeat visits do not retrace the same
-  // head of the same galleries (the rotation rides in the cursor).
   const st = cursor && typeof cursor === "object" ? { q: 0, v: 0, c: null, m: null, rot: 0, ...cursor } : { q: 0, v: 0, c: null, m: null, rot: Math.floor(Math.random() * 1024) };
-  const queries = walkList(movement, st.rot || 0);
-  const ownCount = rawQueries.length;
+  const queries = columnWalk(lane, styleId, st.rot || 0);
   const pieces = [];
-  const gate = env && env.ANTHROPIC_API_KEY ? (cands) => gatePieces(env, cands, fetchFn) : null;
-  let calls = 0, examined = 0, gateWhy = "", metaPassed = 0, gateErrors = 0, cross = 0, classCulled = 0, visionCulled = 0;
   const banked = [];
-  while (pieces.length < BATCH && calls < 5 && examined < 12) {
-    if (st.q >= queries.length) return { pieces, cursor: st, done: true, stats: { examined, passed: pieces.length, gated: !!gate, civCalls: calls, gateWhy, metaPassed, gateErrors, cross, classCulled } };
+  const noneThemes = {};
+  let calls = 0, examined = 0, visionCulled = 0, unstyled = 0;
+  while (pieces.length < BATCH && calls < 5) {
+    if (st.q >= queries.length) break;
     if (!st.m) {
-      const qs = new URLSearchParams({ query: queries[st.q], limit: "6", sort: "Most Downloaded", nsfw: "false" });
+      const qs = new URLSearchParams({ query: queries[st.q].q, limit: "6", sort: "Most Downloaded", nsfw: "false" });
       qs.append("types", "LORA"); qs.append("types", "Checkpoint");
       let models;
       try { models = await civGet(fetchFn, "/models?" + qs.toString()); } catch (e) { if (e && e.code === 429) throw e; break; }
@@ -636,68 +494,51 @@ export async function fetchMoreBatch({ movement, media, cursor, exclude }, fetch
     let page;
     try { page = await civGet(fetchFn, "/images?" + qs.toString()); } catch (e) { if (e && e.code === 429) throw e; break; }
     calls++;
-    let cands = [];
+    const cands = [];
     for (const item of page.items || []) {
-      const p = toPiece(item, ver.n, movement, media);
-      if (p && !seen.has(p.uuid)) { seen.add(p.uuid); cands.push(p); }
+      const p = toPiece(item, ver.n, styleId, lane);
+      if (p && !seen.has(p.uuid)) { seen.add(p.uuid); cands.push(p); examined++; }
     }
-    // Classification first (v51): the prompt files the piece. Target-
-    // dominant metadata passes outright (cross-discovered pieces from a
-    // neighbor gallery count as refiled); metadata that confidently names
-    // a DIFFERENT genre culls without spending a vision call; everything
-    // ambiguous goes to the vision gate (or flows, when no gate is set).
-    {
-      const fromNeighbor = !rawQueries.includes(queries[st.q]); // rotation shuffles the combined walk, so tag by query ownership, not index
-      const strong = [], rest = [];
-      for (const p of cands) {
-        const scores = scoreAll(p, ver.n, ver.mt);
-        const t = scores[movement] || 0;
-        let bestOther = 0;
-        for (const k in scores) if (k !== movement && scores[k] > bestOther) bestOther = scores[k];
-        if (t >= 3 && t >= bestOther) { p.meta = true; strong.push(p); if (fromNeighbor) cross++; }
-        else if (bestOther >= 4 && bestOther > t + 1) classCulled++;
-        else rest.push(p);
-      }
-      metaPassed += strong.length;
-      // The old per-movement vision gate is superseded by the v61 vision
-      // verdict below: one call files the piece by its TRUE genre and
-      // grouping instead of merely judging fit for the target folder.
-      cands = strong.concat(rest);
-    }
-    // Vision-first filing (v61): kept candidates get one Claude vision
-    // verdict each (capped per page) and the verdict RULES over the
-    // metadata filing. Another genre -> banked under its true genre;
-    // "none" or a quality failure leaves the column entirely. Infra
-    // failures keep the metadata filing (fail-open).
     if (env && env.ANTHROPIC_API_KEY && cands.length) {
       const toVerify = cands.slice(0, 12);
       const verdicts = await visionClassifyBatch(env, toVerify, fetchFn);
-      const verified = [];
       for (const p of toVerify) {
         const v = verdicts.get(p);
-        if (!v || v.genre === null) { verified.push(p); continue; }
-        if (v.ok === false || v.genre === "none") { visionCulled++; continue; }
-        p.style = v.style; p.gated = true;
-        if (v.genre !== movement) { p.movement = v.genre; p.media = v.media; banked.push(p); continue; }
-        p.media = v.media;
-        verified.push(p);
+        if (!v || v.grouping === null) { unstyled++; continue; }
+        if (v.ok === false || v.grouping === "none") { visionCulled++; if (v.theme) tallyTheme(noneThemes, lane, v.theme); continue; }
+        if (v.style === "none") { visionCulled++; if (v.theme) tallyTheme(noneThemes, v.grouping, v.theme); continue; }
+        p.movement = v.style; p.media = v.grouping; p.gated = true;
+        if (v.phrase) p.style = v.phrase;
+        if (v.grouping === lane && v.style === styleId) { if (pieces.length < BATCH) pieces.push(p); else banked.push(p); }
+        else banked.push(p);
       }
-      cands = verified.concat(cands.slice(12));
-    }
-    // Grouping split (v59): a kept piece joins THIS column only when its
-    // classified grouping matches the one requested; the rest are banked
-    // under their own grouping for the client to file into that column —
-    // a character piece found while filling Architecture is filed as a
-    // character piece, never stamped over.
-    for (const p of cands) {
-      const m = classifyMedia(p, ver.mt);
-      if (m === media && pieces.length < BATCH) pieces.push(p);
-      else { p.media = m; banked.push(p); }
+      unstyled += cands.length - toVerify.length; // beyond the vision cap: unserved, not mislabeled
+    } else {
+      unstyled += cands.length; // no judge available: nothing can be honestly styled
     }
     st.c = (page.metadata && page.metadata.nextCursor) || null;
     if (!st.c) st.v++;
   }
-  return { pieces, banked, cursor: st, done: st.q >= queries.length, stats: { examined, passed: pieces.length, gated: !!gate, civCalls: calls, gateWhy, metaPassed, gateErrors, cross, classCulled, mediaBanked: banked.length, visionCulled } };
+  if (Object.keys(noneThemes).length) await persistNoneThemes(env, noneThemes);
+  return { pieces, banked, cursor: st, done: st.q >= queries.length, stats: { examined, passed: pieces.length, gated: !!(env && env.ANTHROPIC_API_KEY), civCalls: calls, visionCulled, unstyled, mediaBanked: banked.length, noneThemes } };
+}
+
+export async function readNoneThemes(env) {
+  if (!env || !env.DB) return {};
+  try {
+    const row = await getDoc(env.DB, NONE_THEMES_SLUG);
+    return row && row.html ? JSON.parse(row.html) : {};
+  } catch { return {}; }
+}
+export async function resetNoneTheme(env, lane, theme) {
+  if (!env || !env.DB || !LANE_IDS.includes(lane)) return false;
+  const t = normalizeTheme(theme);
+  if (!t) return false;
+  try {
+    const doc = await readNoneThemes(env);
+    if (doc[lane] && doc[lane][t]) { delete doc[lane][t]; await putDoc(env.DB, NONE_THEMES_SLUG, JSON.stringify(doc)); }
+    return true;
+  } catch { return false; }
 }
 
 export async function onRequestPost({ request, env }) {
@@ -706,6 +547,14 @@ export async function onRequestPost({ request, env }) {
   if (!appAllowed(id, "inspobox")) return json({ error: "this account doesn't cover this app" }, 403);
   let body;
   try { body = await request.json(); } catch { return json({ ok: false, error: "bad json" }, 400); }
+  // Admin maintenance for the discovery loop: after Andres approves a
+  // none-theme as a new style (and it ships in LANE_STYLES), its counter
+  // resets here. Admin role only; never part of the feed path.
+  if (body && body.resetNoneTheme) {
+    if (id.role !== "admin") return json({ error: "admin only" }, 403);
+    const ok = await resetNoneTheme(env, String(body.resetNoneTheme.lane || ""), String(body.resetNoneTheme.theme || ""));
+    return json({ ok });
+  }
   try {
     if (body.home === true) {
       const out = await fetchHomeBatch({
@@ -728,6 +577,15 @@ export async function onRequestPost({ request, env }) {
   }
 }
 
-export async function onRequestGet() {
+export async function onRequestGet({ request, env }) {
+  // Admin-only read of the none-theme sightings doc (the weekly refresh
+  // reports any theme at n >= 5 in a lane as a candidate new style).
+  const url = new URL(request.url);
+  if (url.searchParams.get("noneThemes") === "1") {
+    const id = await requireIdentity(env, request);
+    if (!id) return json({ error: "not signed in" }, 401);
+    if (id.role !== "admin") return json({ error: "admin only" }, 403);
+    return json({ ok: true, themes: await readNoneThemes(env) });
+  }
   return json({ error: "POST only" }, 405);
 }
