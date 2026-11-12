@@ -177,8 +177,20 @@ async function buildState(db, viewer) {
 }
 
 // ---------------------------------------------------------------------------
-// Routes: GET ?viewer=A|B · POST {action:"submitAnswer"|"updateNames", ...}
+// Routes: GET (viewer = the signed-in partner) · POST {action:"submitAnswer"|"updateNames", ...}
 // ---------------------------------------------------------------------------
+// Who is writing is derived from the signed-in account — never from the
+// client. The account whose name matches the "B" partner is B; the one
+// matching "A" is A; the admin account is Andres (B) as a fallback. Any
+// other account is not one of the two partners and gets a 403.
+function authorFor(id, settings) {
+  const n = (id.name || "").trim().toLowerCase();
+  if (n && n === settings.nameB.trim().toLowerCase()) return "B";
+  if (n && n === settings.nameA.trim().toLowerCase()) return "A";
+  if (id.role === "admin") return "B";
+  return null;
+}
+
 async function gate(context) {
   const { env, request } = context;
   const id = await requireIdentity(env, request);
@@ -186,15 +198,18 @@ async function gate(context) {
   if (!appAllowed(id, SLUG)) return { error: json({ error: "this account doesn't cover this app" }, 403) };
   const db = env.DB;
   await ensureSchema(db);
-  return { db };
+  const settings = await ensureSettings(db);
+  const author = authorFor(id, settings);
+  if (!author) return { error: json({ error: "this account isn't one of the two partners" }, 403) };
+  return { db, author };
 }
 
 export async function onRequestGet(context) {
   const g = await gate(context);
   if (g.error) return g.error;
-  const viewer = new URL(context.request.url).searchParams.get("viewer");
-  if (viewer !== "A" && viewer !== "B") return json({ error: "viewer must be A or B" }, 400);
-  return json(await buildState(g.db, viewer));
+  const st = await buildState(g.db, g.author);
+  st.viewer = g.author;
+  return json(st);
 }
 
 export async function onRequestPost(context) {
@@ -206,9 +221,9 @@ export async function onRequestPost(context) {
   const action = body && body.action;
 
   if (action === "submitAnswer") {
-    const { promptId, author, text } = body;
+    const { promptId, text } = body;
+    const author = g.author; // the signed-in account decides — body author is ignored
     if (!Number.isInteger(promptId) || promptId <= 0) return json({ error: "bad promptId" }, 400);
-    if (author !== "A" && author !== "B") return json({ error: "bad author" }, 400);
     if (typeof text !== "string") return json({ error: "bad text" }, 400);
     const trimmed = text.trim();
     if (trimmed.length < 1 || trimmed.length > 4000) return json({ error: "answer must be 1-4000 characters" }, 400);
