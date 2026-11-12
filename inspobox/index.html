@@ -170,6 +170,16 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
 .switem.on span{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
 #flash{position:fixed;left:0;right:0;top:34%;z-index:45;text-align:center;font-family:var(--anton);font-size:52px;letter-spacing:.05em;color:transparent;-webkit-text-stroke:2px rgba(255,255,255,.9);opacity:0;transition:opacity .25s;pointer-events:none;text-shadow:none}
 #flash.show{opacity:.95}
+/* ---------- story prompt bottom sheet ---------- */
+.sheetlayer{background:transparent}
+.sheetback{position:absolute;inset:0;background:rgba(3,3,7,.62);opacity:0;transition:opacity .34s ease}
+.sheetlayer.open .sheetback{opacity:1}
+.sheetpanel{position:absolute;left:0;right:0;bottom:0;max-height:84dvh;display:flex;flex-direction:column;background:#12101C;border:1px solid var(--glassline);border-bottom:none;border-top-left-radius:20px;border-top-right-radius:20px;box-shadow:0 -18px 50px rgba(0,0,0,.55);transition:transform .38s cubic-bezier(.32,.72,.24,1)}
+.sheetbody{overflow-y:auto;padding:8px 20px 14px;-webkit-overflow-scrolling:touch}
+#promptText{white-space:pre-wrap;word-break:break-word;font-family:var(--sg);font-size:13.5px;line-height:1.62;font-weight:500;color:rgba(255,255,255,.92)}
+.sheetfoot{flex:none;padding:12px 20px calc(16px + env(safe-area-inset-bottom));border-top:1px solid rgba(255,255,255,.12)}
+#copyPromptBtn{width:100%;height:52px;border-radius:13px;background:var(--grad);font-family:var(--unb);font-weight:900;font-size:13.5px;letter-spacing:.08em;color:#fff;box-shadow:0 4px 0 #6E0B1E}
+#copyPromptBtn:active{transform:translateY(2px);box-shadow:0 2px 0 #6E0B1E}
 .layernote{flex:none;padding:12px 20px 2px;font-size:12px;line-height:1.55;color:var(--dim);font-weight:500}
 .layernote b{color:#fff}
 .tile .lockb{position:absolute;top:10px;left:10px;background:var(--red);border-radius:999px;padding:4px 9px;font-family:var(--unb);font-weight:900;font-size:9px;letter-spacing:.08em}
@@ -190,7 +200,7 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
     <div class="logo">INSPO<span class="box">BOX</span></div>
     <div id="counter">— / —</div>
     <div id="tapHint">TAP A PIECE TO LOCK ITS GENRE</div>
-    <div id="buildTag">BUILD V23</div>
+    <div id="buildTag">BUILD V25</div>
   </div>
   <div class="topbtns">
     <button class="chipbtn" id="boxBtn">BOX <span class="n" id="boxCount">0</span></button>
@@ -215,7 +225,7 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
   <div id="starterBody">
     <svg class="star" style="top:6px;right:30px" width="24" height="24" viewBox="0 0 24 24"><path d="M12 0 L14.5 9.5 L24 12 L14.5 14.5 L12 24 L9.5 14.5 L0 12 L9.5 9.5 Z" fill="#FF2E4D"/></svg>
     <div class="skicker">✳ EVERY IDEA IS A DISNEY IDEA — 10 SECONDS, THREE BEATS</div>
-    <textarea id="promptInput" rows="2" placeholder="NAME A TWIST — OR A MASHUP: MOANA MEETS ELSA…" autocomplete="off"></textarea>
+    <textarea id="promptInput" rows="2" placeholder="Spark a new idea" autocomplete="off"></textarea>
     <div class="selrow">
       <label class="selfield"><span class="slbl">VISUAL STYLE</span><select id="styleSel" aria-label="Visual style"></select></label>
       <label class="selfield"><span class="slbl">MOVEMENT</span><select id="moveSel" aria-label="Movement"></select></label>
@@ -251,6 +261,20 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
     <div style="display:flex;align-items:center;gap:12px"><span class="mode">YOUR BOX</span><button class="xbtn" data-close>✕</button></div>
   </div>
   <div id="boxList"></div>
+</section>
+
+<!-- STORY PROMPT SHEET -->
+<section class="layer sheetlayer" id="promptLayer" aria-hidden="true">
+  <div class="sheetback" data-sheetback></div>
+  <div class="sheetpanel" data-sheetpanel>
+    <div class="grab" data-drag><i></i></div>
+    <div class="layerhead">
+      <div class="logo">INSPO<span class="box">BOX</span></div>
+      <div style="display:flex;align-items:center;gap:12px"><span class="mode">STORY PROMPT</span><button class="xbtn" data-close>✕</button></div>
+    </div>
+    <div class="sheetbody"><pre id="promptText"></pre></div>
+    <div class="sheetfoot"><button id="copyPromptBtn">COPY PROMPT</button></div>
+  </div>
 </section>
 
 <script>
@@ -426,9 +450,12 @@ function buildPrompt(item) {
     const st = (DATA.atoms.styles || []).find((s) => s.id === c.styleId);
     const mv = (DATA.atoms.moves || {})[c.movementId] || {};
     const lines = [];
+    if (c.person) lines.push(sent(cap(c.subject)));
     if (st) lines.push(sent(cap(st.look)));
     if (mv.dress) lines.push(sent(`Dress the world in ${mv.dress}; light: ${mv.light}`));
-    lines.push(sent(`From ${c.studio}'s ${c.ip}${c.ip2 ? `, crossed with ${c.ip2} in a mashup` : ""}: ${cap(c.subject)}, in ${c.place}`));
+    lines.push(sent(c.person
+      ? `From ${c.studio}'s ${c.ip}${c.ip2 ? `, crossed with ${c.ip2} in a mashup` : ""}: set in ${c.place}`
+      : `From ${c.studio}'s ${c.ip}${c.ip2 ? `, crossed with ${c.ip2} in a mashup` : ""}: ${cap(c.subject)}, in ${c.place}`));
     lines.push(`0-3s OPEN: ${sent(cap(c.open))}`);
     lines.push(`3-7s PIVOT: ${sent(cap(c.pivot))}`);
     lines.push(`7-10s FINAL FRAME: ${sent(cap(c.final))}`);
@@ -442,6 +469,8 @@ function buildPrompt(item) {
       `IP: ${c.ip || "—"}${c.ip2 ? " ✕ " + c.ip2 + " (mashup)" : ""}`,
       c.seed ? `Seed: ${c.seed}` : null,
       `Subject: ${c.subject || "—"}`,
+      c.person ? `Newcomer: ${c.person} — ${c.role || "—"}` : null,
+      c.look ? `Look: ${c.look}` : null,
       `Setting: ${c.place || "—"}`,
       `Open (0-3s): ${c.open}`,
       `Pivot (3-7s): ${c.pivot}`,
@@ -469,6 +498,9 @@ function buildPrompt(item) {
     `Twist: ${c.twist || "—"}`,
     `Sources: ${c.tags || "—"}`,
   ].filter((x) => x !== null).join("\n");
+}
+function conceptItem(c) {
+  return { type: "spark", title: c.title, label: c.kind + " · " + c.label + " · " + c.tags, concept: { n: c.n, kind: c.kind, label: c.label, title: c.title, seed: c.seedLine, styleId: c.styleId, style: c.style, movementId: c.movementId, movement: c.movement, studio: c.studio, ip: c.ip, ip2: c.ip2, mashup: c.mashup, subject: c.subject, place: c.place, open: c.open, pivot: c.pivot, final: c.final, tags: c.tags, person: c.person || null, role: c.role || null, look: c.look || null } };
 }
 function downloadPrompt(i) {
   const item = box[i]; if (!item) return;
@@ -509,25 +541,46 @@ $("#indexGrid").addEventListener("click", (e) => {
 
 /* ---------------- layers ---------------- */
 function openLayer(sel) { const l = $(sel); l.classList.add("open"); l.setAttribute("aria-hidden", "false"); }
-function closeLayer(sel) { const l = $(sel); l.classList.remove("open"); l.setAttribute("aria-hidden", "true"); l.style.transform = ""; }
+function closeLayer(sel) { const l = $(sel); l.classList.remove("open"); l.setAttribute("aria-hidden", "true"); l.style.transform = ""; const p = l.querySelector("[data-sheetpanel]"); if (p) p.style.transform = ""; const b = l.querySelector("[data-sheetback]"); if (b) b.style.opacity = ""; }
 $("#igniteBtn").addEventListener("click", () => openLayer("#starter"));
 $("#boxBtn").addEventListener("click", () => openLayer("#boxLayer"));
 $$("[data-close]").forEach((b) => b.addEventListener("click", () => closeLayer("#" + b.closest(".layer").id)));
 document.addEventListener("keydown", (e) => { if (e.key === "Escape") $$(".layer.open").forEach((l) => closeLayer("#" + l.id)); });
-// swipe-down to close, dragged from the grab handle / layer head (standing rule)
+// swipe-down to close, dragged from the grab handle / layer head (standing rule).
+// Bottom-sheet layers ([data-sheetpanel]) drag the panel itself while their
+// backdrop fades with the drag; full-screen layers drag as one piece.
 $$(".layer").forEach((layer) => {
   const handle = layer.querySelector("[data-drag]");
   const head = layer.querySelector(".layerhead");
+  const panel = layer.querySelector("[data-sheetpanel]");
+  const back = layer.querySelector("[data-sheetback]");
   let startY = null, dy = 0;
-  const begin = (y) => { startY = y; dy = 0; layer.style.transition = "none"; };
-  const move = (y) => { if (startY === null) return; dy = Math.max(0, y - startY); layer.style.transform = `translateY(${dy}px)`; };
-  const end = () => { if (startY === null) return; layer.style.transition = ""; if (dy > layer.offsetHeight / 3.2) closeLayer("#" + layer.id); else layer.style.transform = ""; startY = null; };
+  const begin = (y) => { startY = y; dy = 0; layer.style.transition = "none"; if (panel) panel.style.transition = "none"; };
+  const move = (y) => { if (startY === null) return; dy = Math.max(0, y - startY);
+    if (panel) { panel.style.transform = `translateY(${dy}px)`; if (back) back.style.opacity = String(Math.max(0, 1 - dy / Math.max(1, panel.offsetHeight))); }
+    else layer.style.transform = `translateY(${dy}px)`; };
+  const end = () => { if (startY === null) return; layer.style.transition = ""; if (panel) panel.style.transition = "";
+    const h = panel ? panel.offsetHeight : layer.offsetHeight;
+    if (dy > h / 3.2) closeLayer("#" + layer.id);
+    else if (panel) { panel.style.transform = ""; if (back) back.style.opacity = ""; }
+    else layer.style.transform = "";
+    startY = null; };
   for (const zone of [handle, head]) {
     zone.addEventListener("touchstart", (e) => begin(e.touches[0].clientY), { passive: true });
     zone.addEventListener("touchmove", (e) => move(e.touches[0].clientY), { passive: true });
     zone.addEventListener("touchend", end);
     zone.addEventListener("mousedown", (e) => { begin(e.clientY); const mm = (ev) => move(ev.clientY); const mu = () => { end(); removeEventListener("mousemove", mm); removeEventListener("mouseup", mu); }; addEventListener("mousemove", mm); addEventListener("mouseup", mu); });
   }
+});
+// story prompt sheet: backdrop tap closes; COPY ships the full prompt text
+$("#promptLayer [data-sheetback]").addEventListener("click", () => closeLayer("#promptLayer"));
+$("#copyPromptBtn").addEventListener("click", async (e) => {
+  const btn = e.currentTarget, txt = $("#promptText").textContent;
+  let ok = false;
+  try { await navigator.clipboard.writeText(txt); ok = true; } catch {}
+  if (!ok) { try { const ta = document.createElement("textarea"); ta.value = txt; ta.style.position = "fixed"; ta.style.opacity = "0"; document.body.appendChild(ta); ta.select(); ok = document.execCommand("copy"); ta.remove(); } catch {} }
+  btn.textContent = ok ? "COPIED ✓" : "COPY FAILED — LONG-PRESS THE TEXT";
+  setTimeout(() => { btn.textContent = "COPY PROMPT"; }, 1600);
 });
 
 /* ---------------- two-axis navigation ---------------- */
@@ -733,7 +786,14 @@ function generate() {
     const others = D.studios.filter((s) => s.id !== studio.id);
     ipB = pick(r, D.packs[pick(r, others).id]);
   } else ipA = pick(r, pack);
-  const hero = pick(r, ipA.chars), H = heroName(hero);
+  // v25: the hero is an ordinary person dropped into this world as a NEW
+  // character — a persona in a role the IP's world would give a newcomer,
+  // dressed by that world. The IP's own cast no longer headlines the concept.
+  const person = pick(r, D.people);
+  const role = ipA.roles ? pick(r, ipA.roles) : "a brand-new face in this world";
+  const look = ipA.looks ? pick(r, ipA.looks) : "dressed to belong here at first sight";
+  const H = person.name;
+  const subject = `${person.name}, ${person.who} — now ${role}, ${look}`;
   const place = pick(r, ipA.places);
   const open = fillTok(pick(r, ipA.opens), { H });
   let pivot, final;
@@ -755,7 +815,7 @@ function generate() {
     seedLine: prompt || null,
     styleId: style.id, style: style.name, movementId: sel.movement, movement: mvName(sel.movement),
     studio: studio.name, ip: ipA.name, ip2: ipB ? ipB.name : null, mashup: !!ipB,
-    subject: hero, place, open, pivot, final, tags,
+    subject, person: person.name, role, look, place, open, pivot, final, tags,
   };
   renderConcept();
 }
@@ -775,12 +835,18 @@ function renderConcept() {
       <div class="ctitle">${esc(c.title)}</div>
       ${rows.join("")}
       <div class="ctags">${esc(c.tags)}</div>
-      <div class="cardbtns"><button id="rerollBtn">↻ REROLL</button><button class="savec" id="saveSparkBtn">SAVE TO BOX</button></div>
+      <div class="cardbtns"><button id="rerollBtn">↻ REROLL</button><button id="promptBtn">CREATE PROMPT</button><button class="savec" id="saveSparkBtn">SAVE TO BOX</button></div>
     </div>`;
   $("#rerollBtn").addEventListener("click", () => { rerolls += 1; generate(); });
+  $("#promptBtn").addEventListener("click", () => {
+    $("#promptText").textContent = buildPrompt(conceptItem(c));
+    $("#copyPromptBtn").textContent = "COPY PROMPT";
+    openLayer("#promptLayer");
+  });
   $("#saveSparkBtn").addEventListener("click", (e) => {
     const body = `${c.subject} — ${c.place}. Open: ${c.open} · Pivot: ${c.pivot} · Final: ${c.final}`;
-    box.unshift({ type: "spark", title: c.title, label: c.kind + " · " + c.label + " · " + c.tags, body, concept: { n: c.n, kind: c.kind, label: c.label, title: c.title, seed: c.seedLine, styleId: c.styleId, style: c.style, movementId: c.movementId, movement: c.movement, studio: c.studio, ip: c.ip, ip2: c.ip2, mashup: c.mashup, subject: c.subject, place: c.place, open: c.open, pivot: c.pivot, final: c.final, tags: c.tags }, ts: Date.now() });
+    const item = conceptItem(c); item.body = body; item.ts = Date.now();
+    box.unshift(item);
     store.set("inspobox.box.v1", box); renderBox();
     e.target.textContent = "SAVED ✓";
   });
