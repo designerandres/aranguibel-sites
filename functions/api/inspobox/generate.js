@@ -8,11 +8,15 @@ import { ATOMS, DISNEY } from "../../_lib/inspobox-data.js";
 const ASPECTS = ["VERTICAL 9:16", "WIDE 16:9", "SQUARE 1:1"];
 const CROSS = /\b(mashup|mash-up|crossover|cross-over|meets|versus|vs)\b/i;
 
-const SYSTEM = `You write concept cards for INSPOBOX's Idea Starter. Each concept is a 10-second video set entirely inside one Disney IP world (or exactly two, for a mashup). The hero is always a newcomer to that world — the person using this concept will feed their own reference photo into a video tool — so the hero is called only "the newcomer": never give them a name, age, gender, or appearance. Named characters from the world may appear as encounters, never as the hero.
+const SYSTEM = `You write concept cards for INSPOBOX's Idea Starter. Each concept is a 10-second video set entirely inside one Disney IP world (or exactly two, for a mashup). You are given the world (or worlds) by name, a visual style, a genre movement's dressing and light (or none, when you are told to keep the world's native look), and possibly the user's own seed line. Build the concept entirely inside the named world, from your own knowledge of it — its places, its society, its signature objects, weather and light.
 
-You are given the world pack (setting, characters, places, signature prop, example beats in the house voice), a visual style, a genre movement's dressing and light (or none, when you are told to keep the world's native look), and possibly the user's own seed line. If a seed line is present, genuinely use it: lift its concrete images, actions, objects and mood into this world's terms. If it is empty, invent freely within the world.
+The hero is always a newcomer to that world — the person using this concept will feed their own reference photo into a video tool — so the hero is called only "the newcomer": never give them a name, age, gender, or appearance. Named characters from the world may appear as encounters, never as the hero.
 
-Write three beats: OPEN (0-3s) a hook in motion; PIVOT (3-7s) a turn or reveal; FINAL (7-10s) a held, poster-worthy closing frame. Present tense, vivid, specific. Each beat at most 200 characters. Choose the role and the look VERBATIM from the pack's lists. Choose the place from the pack's places, or invent a new place clearly inside this world. Title: "THE " plus one to three evocative words, ideally drawn from the world's nouns.
+Invent the newcomer's role: a job or place in the world's own society — never a named character. Invent their look: the wardrobe, gear and telling details that world would dress a newcomer in. Choose a place that belongs unmistakably to the world.
+
+If a seed line is present, genuinely use it: lift its concrete images, actions, objects and mood into this world's terms. If it is empty, invent freely within the world.
+
+Write three beats: OPEN (0-3s) a hook in motion; PIVOT (3-7s) a turn or reveal; FINAL (7-10s) a held, poster-worthy closing frame. Present tense, vivid, specific. Each beat at most 200 characters. Title: "THE " plus one to three evocative words, ideally drawn from the world's signature nouns.
 
 Reply with ONLY a JSON object, no markdown, no commentary:
 {"title":"THE ...","role":"...","look":"...","place":"...","open":"...","pivot":"...","final":"...","aspect":"VERTICAL 9:16"} where aspect is one of "VERTICAL 9:16", "WIDE 16:9", "SQUARE 1:1".`;
@@ -32,9 +36,9 @@ const rnd = (arr) => arr[Math.floor(Math.random() * arr.length)];
 // mash up; a mashup keyword with one named IP crosses it with a random
 // pick from the chosen studio; keyword alone crosses two random IPs.
 export function pickGrounding({ prompt, studioId }) {
-  const studio = DISNEY.studios.find((s) => s.id === studioId) || DISNEY.studios[0];
-  const pack = DISNEY.packs[studio.id];
   const named = findNamedIPs(prompt);
+  const studio = (named.length ? named[0].studio : null) || DISNEY.studios.find((s) => s.id === studioId) || DISNEY.studios[0];
+  const pack = DISNEY.packs[studio.id];
   const wantsCross = named.length >= 2 || CROSS.test(prompt || "");
   let ipA = null, ipB = null;
   if (named.length >= 2) { ipA = named[0].ip; ipB = named[1].ip; }
@@ -82,28 +86,22 @@ export function buildMessages({ prompt, styleId, movementId, studioId, reroll })
   const move = noMove ? null : (ATOMS.moves[movementId] || ATOMS.moves.surreal);
   const moveName = noMove ? "none" : (movementId || "surreal").replace(/-/g, " ");
   const g = pickGrounding({ prompt, studioId });
-  const packBlock = (label, p) => [
-    `${label}: ${p.name}`,
-    `World: ${p.world}`,
-    `Characters (encounters only): ${p.chars.join("; ")}`,
-    `Places: ${p.places.join("; ")}`,
-    `Signature prop: ${p.prop}`,
-    `Nouns for the title: ${p.nouns.join(", ")}`,
-    `Roles (pick one verbatim): ${p.roles.join(" | ")}`,
-    `Looks (pick one verbatim): ${p.looks.join(" | ")}`,
-    `House voice — example beats: OPEN "${p.opens[0]}" / PIVOT "${p.pivots[0]}" / FINAL "${p.finals[0]}" (the hero token in the examples stands for "the newcomer")`,
-  ].join("\n");
+  // Claude-first (v47): the dynamic path sends the world by NAME plus the
+  // rules — Claude builds from its own knowledge of the world. The packs
+  // remain the content of the offline banks fallback and the roster the
+  // world names are drawn from; they no longer gate what Claude may use.
+  const ipA = { name: g.ipA.name, free: true };
+  const ipB = g.ipB ? { name: g.ipB.name, free: true } : null;
   const lines = [
     `Visual style: ${style.name} — ${style.look}`,
     noMove ? "Movement: none — do not dress the world in any genre movement; keep the world's own native look and light." : `Movement: ${moveName} — dress the world in ${move.dress}; light: ${move.light}`,
     `Studio: ${g.studio.name}`,
+    `World: ${ipA.name}`,
   ];
-  if (g.ipA.free) lines.push(`IP: ${g.ipA.name} — this world has NO curated pack. Build the concept entirely inside ${g.ipA.name}, from your own knowledge of that world: invent a role, a look and a place that belong unmistakably to it, with the same specificity a pack would give. The hero is still only "the newcomer"; named characters may appear only as encounters.`);
-  else lines.push(packBlock("IP pack", g.ipA));
-  if (g.ipB) lines.push(packBlock("MASHUP — second IP pack (the two worlds collide; the pivot is where they meet)", g.ipB));
+  if (ipB) lines.push(`Second world (mashup): ${ipB.name} — the two worlds collide; the pivot is where they meet.`);
   lines.push(prompt ? `The user's seed line (use it): "${prompt}"` : "Seed line: none — invent freely within the world.");
   if (reroll > 0) lines.push(`This is take ${reroll + 1} — make it distinctly different from the obvious take.`);
-  return { system: SYSTEM, user: lines.join("\n"), grounding: g };
+  return { system: SYSTEM, user: lines.join("\n"), grounding: { studio: g.studio, ipA, ipB } };
 }
 
 const cap = (s, n) => (typeof s === "string" ? s.trim().slice(0, n) : "");
