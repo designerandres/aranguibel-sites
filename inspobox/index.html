@@ -215,7 +215,7 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
     <div class="logo">INSPO<span class="box">BOX</span></div>
     <div id="counter">— / —</div>
     <div id="tapHint">TAP A PIECE TO LOCK ITS GENRE</div>
-    <div id="buildTag">BUILD V55</div>
+    <div id="buildTag">BUILD V57</div>
   </div>
   <div class="topbtns">
     <button class="chipbtn" id="boxBtn">BOX <span class="n" id="boxCount">0</span></button>
@@ -457,6 +457,7 @@ function watchPieces(els) {
 const liveCols = {};
 function liveKey() { return state.movement + "|" + state.media; }
 function liveCol() { const k = liveKey(); return liveCols[k] || (liveCols[k] = { cursor: null, done: false, loading: false, pieces: [], empties: 0 }); }
+function liveColFor(movement, media) { const k = movement + "|" + media; return liveCols[k] || (liveCols[k] = { cursor: null, done: false, loading: false, pieces: [], empties: 0 }); }
 /* Cross-session freshness (v50): every live piece ever delivered is
    remembered in localStorage (last 900) and excluded from future fetches,
    so the feed does not keep re-serving the same head of the galleries. */
@@ -574,6 +575,16 @@ async function maybeFetchHome(force) {
     }
     col.cursor = data.cursor; col.done = !!data.done; col.lastError = ""; col.failed = false;
     if (data.stats) col.stats = data.stats;
+    // Banked surplus (v57): pieces the river classified but capped out of
+    // the deck are filed into their genre's locked column, ready-made.
+    if (data.banked) {
+      const filed = [];
+      for (const [mv, arr] of Object.entries(data.banked)) {
+        const lc = liveColFor(mv, media);
+        for (const p of arr) if (!lc.pieces.some((x) => x.id === p.id)) { lc.pieces.push(p); filed.push(p); }
+      }
+      if (filed.length) recordSeen(filed);
+    }
     const fresh = (data.pieces || []).filter((p) => !col.pieces.some((x) => x.id === p.id));
     if (fresh.length) {
       col.pieces.push(...fresh); recordSeen(fresh);

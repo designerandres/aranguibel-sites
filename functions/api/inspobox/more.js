@@ -77,16 +77,15 @@ export function toPiece(item, modelName, movement, media) {
 // vocabulary fluently, the intent is explicit and no vision call is spent.
 // Score: genre name in the text = 3; each distinct affinity term = 1.
 // >= 3 passes on metadata alone.
-export function metaScore(piece, modelName) {
-  return scoreAll(piece, modelName)[piece.movement] || 0;
+export function metaScore(piece, modelName, modelText) {
+  return scoreAll(piece, modelName, modelText)[piece.movement] || 0;
 }
 
 // Score a candidate's metadata against EVERY genre at once (v51): the
 // prompt is the artist's own declaration of intent, so it can file a piece
 // — including one found in the WRONG genre's gallery — better than a
 // gallery label can. Genre name in the text = 3; each affinity term = 1.
-export function scoreAll(piece, modelName) {
-  const hay = (((piece && piece.prompt) || "") + " " + (modelName || "") + " " + ((piece && piece.title) || "")).toLowerCase();
+export function scoreHay(hay) {
   const out = {};
   for (const mv of Object.keys(AFFINITY)) {
     let score = 0;
@@ -95,6 +94,42 @@ export function scoreAll(piece, modelName) {
     if (score) out[mv] = score;
   }
   return out;
+}
+
+// The model's own declarations — its human-applied tags and trained
+// trigger words (v56) — corroborate the image's prompt. They describe the
+// model rather than this one image, so their contribution is capped at
+// +3 per genre: enough to firm up a whisper, never enough to outvote
+// what the image's own prompt says.
+export function scoreAll(piece, modelName, modelText) {
+  const out = scoreHay((((piece && piece.prompt) || "") + " " + (modelName || "") + " " + ((piece && piece.title) || "")).toLowerCase());
+  if (modelText) {
+    const ms = scoreHay(String(modelText).toLowerCase());
+    for (const mv of Object.keys(ms)) out[mv] = (out[mv] || 0) + Math.min(3, ms[mv]);
+  }
+  return out;
+}
+
+// Gallery quality prior from the community stats the API actually
+// returns (thumbs up/down, downloads — the website's star rating is not
+// exposed). Trusted = a real thumbs volume with few downvotes.
+export function mapModel(md) {
+  const ver = (md.modelVersions || [])[0];
+  if (!ver || !ver.id) return null;
+  const st = md.stats || {};
+  const up = st.thumbsUpCount || 0, down = st.thumbsDownCount || 0;
+  return {
+    v: ver.id,
+    n: md.name,
+    mt: ((md.tags || []).join(" ") + " " + ((ver.trainedWords || []).join(" "))).trim(),
+    trusted: up >= 100 && down * 20 <= up ? 1 : 0,
+  };
+}
+export function orderModels(list) {
+  const arr = list.slice();
+  for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); const t = arr[i]; arr[i] = arr[j]; arr[j] = t; }
+  arr.sort((a, b) => (b.trusted || 0) - (a.trusted || 0)); // stable: the shuffle survives within each tier
+  return arr;
 }
 
 // Subject + medium signals (v54). Civitai showcase galleries are
@@ -291,8 +326,7 @@ export async function fetchHomeBatch({ cursor, exclude, media }, fetchFn, env) {
       const qs = new URLSearchParams({ query: walk[st.q].q, limit: "6", sort: "Most Downloaded", nsfw: "false" });
       qs.append("types", "LORA"); qs.append("types", "Checkpoint");
       const models = await civGet(fetchFn, "/models?" + qs.toString()); calls++;
-      st.m = (models.items || []).map((md) => ({ v: (md.modelVersions || [])[0] && md.modelVersions[0].id, n: md.name })).filter((x) => x.v);
-      for (let i = st.m.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); const t = st.m[i]; st.m[i] = st.m[j]; st.m[j] = t; }
+      st.m = orderModels((models.items || []).map(mapModel).filter(Boolean));
       st.v = 0; st.c = null;
       if (!st.m.length) { st.q++; st.m = null; continue; }
     }
@@ -311,7 +345,7 @@ export async function fetchHomeBatch({ cursor, exclude, media }, fetchFn, env) {
       // when their style signal is dominant, and at most 2 per batch;
       // everything else needs designed-media subject matter in the
       // prompt, or an overwhelming style score.
-      const scores = scoreAll(p, ver.n);
+      const scores = scoreAll(p, ver.n, ver.mt);
       const topScore = Math.max(0, ...Object.values(scores));
       const slot = classifySlot(scores);
       const charStrong = subjectHits(p.prompt) >= 2;
@@ -341,15 +375,30 @@ export async function fetchHomeBatch({ cursor, exclude, media }, fetchFn, env) {
       if (total >= HOME_BATCH) break;
     }
   }
-  // Round-robin interleave: every genre takes its turn, no genre twice in
-  // a row while another bucket still holds pieces.
+  // Round-robin interleave with a per-genre cap (v57): one deep bucket
+  // (surreal is the usual suspect — its vocabulary is everywhere) may not
+  // flood the river. Surplus classified pieces are BANKED under their
+  // genre instead of discarded: the client files them into that genre's
+  // locked column, so locking Surreal opens a pre-filled stack and home
+  // stays diverse. Filing is bookkeeping on the same payload — no extra
+  // calls, no extra spend.
+  const HOME_GENRE_CAP = 3, BANK_CAP = 8;
   const mvs = Object.keys(buckets).filter((k) => buckets[k].length);
   const pieces = [];
+  const counts = {};
   let guard = 0;
-  while (pieces.length < total && guard++ < 500) {
-    for (const mv of mvs) { if (buckets[mv].length) pieces.push(buckets[mv].shift()); if (pieces.length >= total) break; }
+  while (pieces.length < HOME_BATCH && guard++ < 500) {
+    let progressed = false;
+    for (const mv of mvs) {
+      if ((counts[mv] || 0) >= HOME_GENRE_CAP) continue;
+      if (buckets[mv].length) { pieces.push(buckets[mv].shift()); counts[mv] = (counts[mv] || 0) + 1; progressed = true; if (pieces.length >= HOME_BATCH) break; }
+    }
+    if (!progressed) break;
   }
-  return { pieces, cursor: st, done: st.q >= walk.length, stats: { examined, passed: pieces.length, claude, civCalls: calls, genres: mvs.length, charCapped, skipped } };
+  const banked = {};
+  let bankedCount = 0;
+  for (const mv of mvs) if (buckets[mv].length) { banked[mv] = buckets[mv].slice(0, BANK_CAP); bankedCount += banked[mv].length; }
+  return { pieces, banked, cursor: st, done: st.q >= walk.length, stats: { examined, passed: pieces.length, claude, civCalls: calls, genres: mvs.length, charCapped, skipped, banked: bankedCount } };
 }
 
 export async function fetchMoreBatch({ movement, media, cursor, exclude }, fetchFn, env) {
@@ -371,8 +420,7 @@ export async function fetchMoreBatch({ movement, media, cursor, exclude }, fetch
       const qs = new URLSearchParams({ query: queries[st.q], limit: "6", sort: "Most Downloaded", nsfw: "false" });
       qs.append("types", "LORA"); qs.append("types", "Checkpoint");
       const models = await civGet(fetchFn, "/models?" + qs.toString()); calls++;
-      st.m = (models.items || []).map((md) => ({ v: (md.modelVersions || [])[0] && md.modelVersions[0].id, n: md.name })).filter((x) => x.v);
-      for (let i = st.m.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); const t = st.m[i]; st.m[i] = st.m[j]; st.m[j] = t; }
+      st.m = orderModels((models.items || []).map(mapModel).filter(Boolean));
       st.v = 0; st.c = null;
       if (!st.m.length) { st.q++; st.m = null; continue; }
     }
@@ -395,7 +443,7 @@ export async function fetchMoreBatch({ movement, media, cursor, exclude }, fetch
       const fromNeighbor = !rawQueries.includes(queries[st.q]); // rotation shuffles the combined walk, so tag by query ownership, not index
       const strong = [], rest = [];
       for (const p of cands) {
-        const scores = scoreAll(p, ver.n);
+        const scores = scoreAll(p, ver.n, ver.mt);
         const t = scores[movement] || 0;
         let bestOther = 0;
         for (const k in scores) if (k !== movement && scores[k] > bestOther) bestOther = scores[k];
