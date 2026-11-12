@@ -52,9 +52,7 @@ img{display:block}
 .savebtn{position:absolute;right:16px;top:108px;z-index:5;width:44px;height:44px;border-radius:50%;background:var(--glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--glassline);font-size:23px;font-weight:500;display:flex;align-items:center;justify-content:center}
 .savebtn.saved{background:var(--grad);border-color:transparent}
 .panel{position:absolute;left:14px;right:14px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:4;border-radius:14px;background:var(--glass);backdrop-filter:blur(22px) saturate(1.5);-webkit-backdrop-filter:blur(22px) saturate(1.5);border:1px solid var(--glassline);padding:16px 16px 12px}
-.kicker{font-size:10.5px;letter-spacing:.3em;font-weight:700;color:#FFB3C0;display:flex;justify-content:space-between;gap:10px}
-.kicker .mv{cursor:pointer}
-.ptitle{font-family:var(--anton);font-size:26px;line-height:1.06;margin-top:7px;letter-spacing:.01em}
+.ptitle{font-family:var(--anton);font-size:26px;line-height:1.06;margin-top:0;letter-spacing:.01em}
 .pby{font-size:12.5px;color:var(--dim);margin-top:5px;font-weight:500}
 a.pby{display:block;text-decoration:underline dotted rgba(255,255,255,.42);text-underline-offset:3px}
 .pby .ext{font-size:10px;color:var(--faint)}
@@ -162,7 +160,6 @@ a.bb{color:var(--dim);text-decoration:underline dotted rgba(255,255,255,.35);tex
 body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF3CAC 105%);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none}
 #tapHint{font-size:8.5px;letter-spacing:.26em;font-weight:700;color:var(--faint);margin-top:5px}
 #buildTag{font-size:7.5px;letter-spacing:.3em;font-weight:700;color:#33333F;margin-top:4px}
-.kicker [data-step]{cursor:pointer;text-decoration:underline dotted rgba(255,255,255,.45);text-underline-offset:3px}
 #veil{position:fixed;inset:0;background:#050508;background-image:radial-gradient(rgba(255,255,255,.13) 1px, transparent 1.5px);background-size:22px 22px;opacity:0;pointer-events:none;transition:opacity .19s ease;z-index:65}
 #veil.on{opacity:1}
 #switcher{position:fixed;inset:0;z-index:66;display:flex;align-items:center;overflow:hidden;opacity:0;pointer-events:none;transition:opacity .19s ease}
@@ -206,7 +203,7 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
     <div class="logo">INSPO<span class="box">BOX</span></div>
     <div id="counter">— / —</div>
     <div id="tapHint">TAP A PIECE TO LOCK ITS GENRE</div>
-    <div id="buildTag">BUILD V31</div>
+    <div id="buildTag">BUILD V32</div>
   </div>
   <div class="topbtns">
     <button class="chipbtn" id="boxBtn">BOX <span class="n" id="boxCount">0</span></button>
@@ -370,7 +367,6 @@ function renderDeck(startId) {
       <div class="vtitle" data-open-index title="All movements">${esc(mvName(p.movement).toUpperCase())}</div>
       <button class="savebtn ${isSavedPiece(p.id) ? "saved" : ""}" data-save="${p.id}" aria-label="Save to your box">${isSavedPiece(p.id) ? "✓" : "+"}</button>
       <div class="panel">
-        <div class="kicker"><span class="mv" data-open-index>${state.movement === "all" ? "MOVEMENT" : "GENRE LOCKED"} — ${esc(mvName(p.movement).toUpperCase())}</span><span data-step="1">${esc(mdName(p.media).toUpperCase())} ›</span></div>
         <div class="ptitle">${esc(p.title)}</div>
         ${p.url ? `<a class="pby" href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.by)} <span class="ext">↗</span></a>` : `<div class="pby">${esc(p.by)}</div>`}
         <div class="rail">${railHtml()}</div>
@@ -440,7 +436,6 @@ $("#deck").addEventListener("click", (e) => {
   if (mediaBtn) { jumpToMedia(mediaBtn.dataset.media); return; }
   const saveBtn = e.target.closest("[data-save]");
   if (saveBtn) { toggleSavePiece(saveBtn.dataset.save); return; }
-  if (e.target.closest("[data-step]")) { disciplineStep(1); return; }
   if (e.target.closest("[data-open-index]")) {
     if (state.movement !== "all") { const keepId = deckList[state.current] && deckList[state.current].id; state.movement = "all"; renderIndex(); renderDeck(keepId); flash("UNLOCKED"); }
     else openLayer("#indexLayer");
