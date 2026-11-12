@@ -72,6 +72,7 @@ a.bb{color:var(--dim);text-decoration:underline dotted rgba(255,255,255,.35);tex
 /* ---------- layers ---------- */
 .layer{position:fixed;inset:0;z-index:60;background:var(--bg);transform:translateY(102%);transition:transform .48s cubic-bezier(.32,.72,.24,1);display:flex;flex-direction:column;overflow:hidden}
 .layer.open{transform:translateY(0)}
+.layer.open.settled{transform:none}
 .layer .grab{flex:none;padding:12px 0 4px;display:flex;justify-content:center;cursor:grab}
 .layer .grab i{width:44px;height:5px;border-radius:3px;background:rgba(255,255,255,.35);display:block}
 .layerhead{flex:none;display:flex;justify-content:space-between;align-items:center;padding:8px 20px 4px}
@@ -85,7 +86,7 @@ a.bb{color:var(--dim);text-decoration:underline dotted rgba(255,255,255,.35);tex
 #starter .dotgrid{position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.12) 1px,transparent 1.4px);background-size:26px 26px;opacity:.45;pointer-events:none}
 #starterBody{position:relative;flex:1;overflow-y:auto;padding:14px 24px calc(20px + env(safe-area-inset-bottom));display:flex;flex-direction:column}
 .skicker{font-family:var(--unb);font-weight:900;font-size:11.5px;letter-spacing:.13em;background:linear-gradient(90deg,#FF2E4D,#FF8A1F);-webkit-background-clip:text;background-clip:text;color:transparent}
-#promptInput{margin-top:12px;width:100%;background:none;border:none;resize:none;color:#fff;font-family:var(--anton);font-size:42px;line-height:1.06;letter-spacing:.004em;text-transform:uppercase;min-height:96px;outline:none}
+#promptInput{margin-top:12px;width:100%;background:none;border:none;resize:none;color:#fff;font-family:var(--anton);font-size:42px;line-height:1.06;letter-spacing:.004em;text-transform:uppercase;height:118px;overflow-y:auto;outline:none;-webkit-user-select:text;user-select:text;touch-action:manipulation}
 #promptInput::placeholder{color:rgba(255,255,255,.28)}
 .selrow{display:flex;flex-direction:column;gap:11px;margin-top:18px}
 .selfield{display:block}
@@ -213,7 +214,7 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
     <div class="logo">INSPO<span class="box">BOX</span></div>
     <div id="counter">— / —</div>
     <div id="tapHint">TAP A PIECE TO LOCK ITS GENRE</div>
-    <div id="buildTag">BUILD V43</div>
+    <div id="buildTag">BUILD V44</div>
   </div>
   <div class="topbtns">
     <button class="chipbtn" id="boxBtn">BOX <span class="n" id="boxCount">0</span></button>
@@ -658,7 +659,17 @@ $("#indexGrid").addEventListener("click", (e) => {
 });
 
 /* ---------------- layers ---------------- */
-function openLayer(sel) { const l = $(sel); l.classList.add("open"); l.setAttribute("aria-hidden", "false"); }
+function openLayer(sel) {
+  const l = $(sel);
+  l.classList.remove("settled");
+  l.classList.add("open"); l.setAttribute("aria-hidden", "false");
+  /* A lingering transform on the sheet breaks iOS text-input assistance
+     (autocorrect/predictive insertion) inside it — once the slide lands,
+     drop the transform entirely while the layer stays open. */
+  const settle = () => { if (l.classList.contains("open")) l.classList.add("settled"); };
+  l.addEventListener("transitionend", function h(e) { if (e.target === l && e.propertyName === "transform") { l.removeEventListener("transitionend", h); settle(); } });
+  setTimeout(settle, 600);
+}
 function closeLayer(sel) { const l = $(sel); l.classList.remove("open"); l.setAttribute("aria-hidden", "true"); l.style.transform = ""; const p = l.querySelector("[data-sheetpanel]"); if (p) p.style.transform = ""; const b = l.querySelector("[data-sheetback]"); if (b) b.style.opacity = ""; }
 $("#igniteBtn").addEventListener("click", () => openLayer("#starter"));
 $("#boxBtn").addEventListener("click", () => openLayer("#boxLayer"));
@@ -937,7 +948,8 @@ function findNamedIPs(text) {
   return hits;
 }
 const promptEl = $("#promptInput");
-promptEl.addEventListener("input", () => { promptEl.style.height = "auto"; promptEl.style.height = Math.min(promptEl.scrollHeight, 170) + "px"; });
+/* no per-keystroke JS touches the field: iOS suggestion insertion is
+   fragile against layout writes during typing, so the box is CSS-sized */
 
 function generateLocal(why) {
   const A = DATA.atoms, D = DATA.disney;

@@ -119,7 +119,7 @@ export async function callAnthropic(env, built) {
         method: "POST",
         signal: ctl.signal,
         headers: { "x-api-key": env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json" },
-        body: JSON.stringify({ model, max_tokens: 650, system: built.system, messages: [{ role: "user", content: built.user }] }),
+        body: JSON.stringify({ model, max_tokens: 1400, system: built.system, messages: [{ role: "user", content: built.user }] }),
       });
       const data = await res.json().catch(() => null);
       if (!res.ok) {
@@ -127,9 +127,11 @@ export async function callAnthropic(env, built) {
         if (res.status === 401 || res.status === 403) throw new Error(lastErr); // a bad key fails every model — say so fast
         continue; // 404 / 429 / 5xx — try the next model while budget remains
       }
-      const text = (data.content || []).filter((b) => b.type === "text").map((b) => b.text).join("");
-      const concept = parseConceptText(text, built.grounding);
-      if (!concept) { lastErr = model + ": unparseable concept"; continue; }
+      const blocks = data.content || [];
+      const textPool = blocks.filter((b) => b.type === "text").map((b) => b.text).join("");
+      const thinkPool = blocks.filter((b) => b.type === "thinking").map((b) => b.thinking || "").join("");
+      const concept = parseConceptText(textPool, built.grounding) || (thinkPool ? parseConceptText(thinkPool, built.grounding) : null);
+      if (!concept) { const snip = (textPool || thinkPool).slice(0, 60).replace(/\s+/g, " "); lastErr = model + ": unparseable concept" + (snip ? ": " + snip : " (empty response)"); continue; }
       return concept;
     } catch (e) {
       if (e && /: (authentication_error|permission_error)/.test(e.message || "")) throw e;
