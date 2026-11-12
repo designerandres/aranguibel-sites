@@ -1,6 +1,6 @@
 // INSPOBOX service worker — cache-first for the app shell and cover art,
 // network-only for the gated data API. Bump the cache name on any shell fix.
-const CACHE = "inspobox-v66";
+const CACHE = "inspobox-v67";
 const CORE = ["/inspobox/", "/inspobox/index.html", "/inspobox/manifest.webmanifest", "/inspobox/icons/icon.svg", "/inspobox/fonts/anton.woff2", "/inspobox/fonts/unbounded.woff2", "/inspobox/fonts/unbounded700.woff2", "/inspobox/fonts/sg500.woff2", "/inspobox/fonts/sg700.woff2"];
 
 self.addEventListener("install", (e) => {

@@ -307,7 +307,7 @@ const HOME_BATCH = 16;
 // Vision budget for one river batch: the harvest stops here so EVERY
 // harvested candidate gets a vision verdict attempt (v66 — the river
 // files fail-closed; see the filing loop below).
-const HOME_VISION_BUDGET = 18;
+const HOME_VISION_BUDGET = 24;
 
 // The home river (v65): one walk across the requested LANE's style
 // pools, round-robin. Candidates are pre-filtered by their metadata
@@ -401,8 +401,10 @@ export async function fetchHomeBatch({ cursor, exclude, media }, fetchFn, env) {
   // candidate with no verdict (judge infra failure, or no judge key)
   // is skipped, never metadata-filed: an unverdicted piece must not
   // render under a guessed lane or style. Honest verdicts rule; style
-  // "none" still decks unstyled in its verdicted lane; "none"
-  // grouping and quality failures still cull.
+  // "none" verdicts tally their theme for the discovery loop but do
+  // not deck (v67 — unstyled pieces rendered as the content-free
+  // "Open River" title and flooded shallow lanes); "none" grouping
+  // and quality failures cull.
   let visionChecked = 0, visionCulled = 0, unstyled = 0, unverified = 0;
   const noneThemes = {};
   const toVerify = harvest.slice(0, HOME_VISION_BUDGET);
@@ -419,13 +421,15 @@ export async function fetchHomeBatch({ cursor, exclude, media }, fetchFn, env) {
     if (v.ok === false || v.grouping === "none") { visionCulled++; if (v.theme) tallyTheme(noneThemes, primary, v.theme); continue; }
     p.media = v.grouping;
     if (v.style === "none") {
-      p.movement = null;
+      // v67: an honest "no style fits" verdict is information, not
+      // content. The theme tallies for the discovery loop; the piece
+      // itself does not deck in any river.
       unstyled++;
       if (v.theme) tallyTheme(noneThemes, v.grouping, v.theme);
-    } else {
-      p.movement = v.style;
-      p.gated = true;
+      continue;
     }
+    p.movement = v.style;
+    p.gated = true;
     if (v.phrase) p.style = v.phrase;
     if (p.fresh) freshFiled++;
     (buckets[p.media] = buckets[p.media] || []).push(p); total++;
@@ -434,7 +438,7 @@ export async function fetchHomeBatch({ cursor, exclude, media }, fetchFn, env) {
   // Round-robin interleave by STYLE with a per-style cap: one deep style
   // may not flood the river. Surplus styled pieces BANK into their
   // style's locked column; other-lane pieces bank into their home river.
-  const HOME_STYLE_CAP = 3, BANK_CAP = 8;
+  const HOME_STYLE_CAP = 2, BANK_CAP = 8; // cap 2 since v67: batches run shallower after the none-drop, and one deep style (brutalist) was repeating through the deck
   const inLane = (buckets[primary] || []).slice();
   const byStyle = {};
   for (const p of inLane) (byStyle[p.movement || "none"] = byStyle[p.movement || "none"] || []).push(p);

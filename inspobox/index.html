@@ -226,7 +226,7 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
     <div class="logo">INSPO<span class="box">BOX</span></div>
     <div id="counter">— / —</div>
     <div id="tapHint">TAP A PIECE TO LOCK ITS STYLE</div>
-    <div id="buildTag">BUILD V66</div>
+    <div id="buildTag">BUILD V67</div>
   </div>
   <div class="topbtns">
     <button class="chipbtn" id="boxBtn">BOX <span class="n" id="boxCount">0</span></button>
@@ -591,7 +591,7 @@ const homeCols = {};
 function homeCol() { return homeColFor(state.media); }
 function homeColFor(k) { return homeCols[k] || (homeCols[k] = { cursor: null, done: false, loading: false, pieces: [], fetchedOnce: false, failed: false, coolUntil: 0, lastError: "", flashedErr: false }); }
 function hydrateHome() { maybeFetchHome(!homeCol().fetchedOnce); }
-async function maybeFetchHome(force) {
+async function maybeFetchHome(force, chained) {
   if (state.movement !== "all") return;
   const col = homeCol();
   if (col.done || col.loading) return;
@@ -640,6 +640,10 @@ async function maybeFetchHome(force) {
       col.pieces.push(...fresh); recordSeen(fresh);
       if (state.movement === "all" && state.media === media) {
         if (deckList.length) appendPieces(fresh); else renderDeck();
+        // v67 start depth: a lane's river opens with a real bench, not
+        // one shallow batch — keep pulling (bounded) until this lane
+        // holds at least 19 pieces or its walk is done.
+        if (col.pieces.length < 19 && !col.done && (chained || 0) < 4) { col.loading = false; maybeFetchHome(true, (chained || 0) + 1); return; }
       }
     } else if (!col.done && state.movement === "all" && state.media === media && deckList.length) {
       col.loading = false; maybeFetchHome(true); return;
