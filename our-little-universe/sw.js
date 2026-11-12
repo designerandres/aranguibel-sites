@@ -1,5 +1,5 @@
 // Our Little Universe — offline cache for the shell and the app page.
-const CACHE = 'olu-v3';
+const CACHE = 'olu-v4';
 const SHELL = ['./', './index.html', './icons/icon.svg'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting())); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
