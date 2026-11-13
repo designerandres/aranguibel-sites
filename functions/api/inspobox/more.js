@@ -9,7 +9,8 @@ import { getDoc, putDoc } from "../../_lib/docStore.js";
 // 5 of each river batch's 12 vision slots come from a DeviantArt tag
 // pool, judged and filed by the same vision verdicts as Civitai pieces.
 // Without the secrets the source is inert and the feed behaves exactly
-// as before. Nothing here is persisted except the none-theme sightings
+// as before. (Secrets added Nov 13, 2026 — the producer is live.)
+// Nothing here is persisted except the none-theme sightings
 // doc (the discovery loop, below). Pieces live only in the client's
 // in-memory deck.
 //
