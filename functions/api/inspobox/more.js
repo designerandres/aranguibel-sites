@@ -371,6 +371,14 @@ async function daGet(fetchFn, tok, path, ms = 10000) {
     return await res.json();
   } finally { clearTimeout(to); }
 }
+export function daDeckImg(dev) {
+  const c = dev.content || {}, pv = dev.preview || {};
+  const fs = c.filesize || 0, pvLong = Math.max(pv.width || 0, pv.height || 0);
+  if (c.src && fs && fs <= 2500000) return c.src;
+  if (pv.src && pvLong >= 1000) return pv.src;
+  if (c.src && fs && fs <= 8000000) return c.src;
+  return pv.src || c.src;
+}
 export function daPiece(dev, tag) {
   if (!dev || dev.is_mature) return null;
   const c = dev.content || {}, pv = dev.preview || {};
@@ -381,7 +389,7 @@ export function daPiece(dev, tag) {
     id, uuid: id, movement: null, media: null,
     title: cleanTitle(dev.title),
     by: ((dev.author && dev.author.username) || "unknown") + " · via DeviantArt",
-    img: (c.filesize && c.filesize > 8000000 && pv.src) ? pv.src : c.src,
+    img: daDeckImg(dev),
     judgeImg: pv.src || c.src,
     url: dev.url || ("https://www.deviantart.com/deviation/" + dev.deviationid),
     prompt: cleanPrompt((dev.title || "") + " " + (tag || "")),
@@ -407,7 +415,7 @@ export async function daHarvest(env, fetchFn, lane, st) {
     const p = daPiece(dev, tag);
     if (p) pieces.push(p);
   }
-  if (data.hasMore && data.nextOffset != null) st.da.off = data.nextOffset;
+  if (data.has_more && data.next_offset != null) st.da.off = data.next_offset;
   else { st.da.tag = (st.da.tag || 0) + 1; st.da.off = 0; if (st.da.tag >= tags.length) st.da.done = true; }
   return { pieces, calls: 1, examined };
 }
