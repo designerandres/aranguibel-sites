@@ -207,6 +207,12 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
 .switem.on span{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
 #flash{position:fixed;left:0;right:0;top:34%;z-index:45;text-align:center;font-family:var(--anton);font-size:52px;letter-spacing:.05em;color:transparent;-webkit-text-stroke:2px rgba(255,255,255,.9);opacity:0;transition:opacity .25s;pointer-events:none;text-shadow:none}
 #flash.show{opacity:.95}
+#pullHint{position:fixed;top:calc(66px + env(safe-area-inset-top));left:50%;transform:translate(-50%,-18px);z-index:36;display:flex;align-items:center;gap:8px;padding:9px 15px;border-radius:999px;background:var(--glass);backdrop-filter:blur(16px) saturate(1.5);-webkit-backdrop-filter:blur(16px) saturate(1.5);border:1px solid var(--glassline);font-family:var(--unb);font-weight:700;font-size:10px;letter-spacing:.22em;color:#fff;opacity:0;pointer-events:none;white-space:nowrap}
+#pullHint.anim{transition:transform .25s ease,opacity .25s ease}
+#pullHint.ready{border-color:rgba(255,46,77,.65);color:#FFC2CC}
+#pullSpin{display:none;width:13px;height:13px;flex:none;border-radius:50%;border:2px solid rgba(255,255,255,.25);border-top-color:#FF2E4D;animation:pspin .7s linear infinite}
+#pullHint.busy #pullSpin{display:block}
+@keyframes pspin{to{transform:rotate(360deg)}}
 #infoTitle,#infoStyle,#infoBy,#vtitleEl{transition:filter .16s ease,opacity .16s ease}
 .blurx{filter:blur(9px);opacity:.2}
 #infoBy:not([href]){text-decoration:none}
@@ -261,6 +267,7 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
 <div id="vtitleEl" class="vtitle" title="All styles"></div>
 <button id="saveBtn" class="savebtn" aria-label="Save to your box">+</button>
 <button id="searchBtn" class="searchbtn" aria-label="Search by movement"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 L21 21"/></svg></button>
+<div id="pullHint" aria-hidden="true"><span id="pullSpin"></span><span id="pullText">PULL FOR FRESH PIECES</span></div>
 <div id="infobar" class="panel">
   <div class="ptitle" id="infoTitle"></div>
   <div class="pstyle" id="infoStyle"></div>
@@ -533,7 +540,7 @@ function pieceHtml(p, i, total) {
 }
 
 /* ---------------- fixed info chrome (v72) ---------------- */
-const APP_BUILD = "V72";
+const APP_BUILD = "V73";
 let infoTimer = null, infoCtx = "", lastInfoId = null;
 function updateInfo(animate) {
   const p = deckList[state.current] || null;
@@ -1364,7 +1371,79 @@ $("#deck").addEventListener("pointerup", (e) => {
   }
   else flash(styleName(p.media, p.movement).toUpperCase());
 });
-window.INSPOBOX = { disciplineStep, jumpToMedia, getSw: () => ({ open: sw.open, dragging: !!sw.drag, pending: sw.pending }), fetchLive: () => maybeFetchLive(true), getLive: () => Object.fromEntries(Object.entries(liveCols).map(([k, c]) => [k, { n: c.pieces.length, done: c.done, err: c.lastError || "", stats: c.stats || null }])), getState: () => ({ movement: state.movement, current: state.current, count: deckList.length, media: state.media, seen: seenList().length }), getHome: () => { const c = homeCol(); return { n: c.pieces.length, done: c.done, failed: c.failed, stats: c.stats || null }; }, getConcept: () => lastConcept };
+/* ---------------- pull to refresh (v73) ----------------
+   At the top of any deck — a lane's river or a locked column — drag
+   down and release to pull a fresh batch of images for that view.
+   The fetch restarts the view's walk with everything already seen
+   excluded, so what arrives is genuinely new; pieces weave into the
+   deck in place and the scroll position never moves. */
+let pullX = null, pullY = null, pullDy = 0, pullArmed = false, pullRefreshing = false, pullCount = 0;
+const PULL_THRESHOLD = 72;
+function pullHintShow(dy) {
+  const h = $("#pullHint");
+  h.classList.remove("anim");
+  h.style.opacity = String(Math.min(dy / PULL_THRESHOLD, 1));
+  h.style.transform = "translate(-50%," + (-18 + Math.min(dy * 0.45, 52)) + "px)";
+  h.classList.toggle("ready", dy >= PULL_THRESHOLD);
+  $("#pullText").textContent = dy >= PULL_THRESHOLD ? "RELEASE FOR FRESH PIECES" : "PULL FOR FRESH PIECES";
+}
+function pullHintHide() {
+  const h = $("#pullHint");
+  h.classList.add("anim");
+  h.style.opacity = "0";
+  h.style.transform = "translate(-50%,-18px)";
+  h.classList.remove("ready");
+}
+async function refreshCurrentView() {
+  if (pullRefreshing) return;
+  pullRefreshing = true; pullCount++;
+  const h = $("#pullHint");
+  h.classList.remove("anim"); h.classList.add("busy");
+  h.style.opacity = "1"; h.style.transform = "translate(-50%,34px)";
+  $("#pullText").textContent = "FETCHING FRESH PIECES";
+  const before = deckList.length;
+  try {
+    if (state.movement === "all") {
+      const col = homeCol(); col.done = false; col.coolUntil = 0; col.failed = false; col.cursor = null;
+      await maybeFetchHome(true);
+      const t0 = Date.now(); while (homeCol().loading && Date.now() - t0 < 45000) await new Promise((r) => setTimeout(r, 300));
+    } else {
+      const col = liveCol(); col.done = false; col.coolUntil = 0; col.cursor = null; col.empties = 0;
+      await maybeFetchLive(true);
+      const t0 = Date.now(); while (liveCol().loading && Date.now() - t0 < 45000) await new Promise((r) => setTimeout(r, 300));
+    }
+  } catch (e) { /* the fetchers record their own errors as notices */ }
+  h.classList.remove("busy");
+  $("#pullText").textContent = deckList.length > before ? "✓ FRESH PIECES ADDED" : "ALREADY UP TO DATE";
+  setTimeout(pullHintHide, 1100);
+  pullRefreshing = false;
+}
+$("#deck").addEventListener("touchstart", (e) => {
+  if (e.touches.length === 1 && $("#deck").scrollTop <= 0 && !pullRefreshing) { pullX = e.touches[0].clientX; pullY = e.touches[0].clientY; pullDy = 0; pullArmed = false; }
+  else { pullX = pullY = null; }
+}, { passive: true });
+$("#deck").addEventListener("touchmove", (e) => {
+  if (pullY === null || pullRefreshing) return;
+  const t = e.touches[0], dy = t.clientY - pullY, dx = Math.abs(t.clientX - pullX);
+  if (!pullArmed) {
+    if (dy > 10 && dy > dx * 1.25) pullArmed = true;
+    else { if (dy < -6) pullY = null; return; }
+  }
+  if (dy <= 0) { pullArmed = false; pullHintHide(); return; }
+  e.preventDefault();
+  pullDy = dy;
+  pullHintShow(dy);
+}, { passive: false });
+function pullEnd() {
+  if (pullY === null) return;
+  const go = pullArmed && pullDy >= PULL_THRESHOLD;
+  pullX = pullY = null; pullArmed = false; pullDy = 0;
+  if (go) refreshCurrentView(); else if (!pullRefreshing) pullHintHide();
+}
+$("#deck").addEventListener("touchend", pullEnd);
+$("#deck").addEventListener("touchcancel", pullEnd);
+
+window.INSPOBOX = { disciplineStep, jumpToMedia, getSw: () => ({ open: sw.open, dragging: !!sw.drag, pending: sw.pending }), fetchLive: () => maybeFetchLive(true), getLive: () => Object.fromEntries(Object.entries(liveCols).map(([k, c]) => [k, { n: c.pieces.length, done: c.done, err: c.lastError || "", stats: c.stats || null }])), getState: () => ({ movement: state.movement, current: state.current, count: deckList.length, media: state.media, seen: seenList().length, pulls: pullCount }), getHome: () => { const c = homeCol(); return { n: c.pieces.length, done: c.done, failed: c.failed, stats: c.stats || null }; }, getConcept: () => lastConcept };
 
 /* ---------------- idea starter ---------------- */
 const sel = { style: "cgi", movement: "none", studio: "animation" };
