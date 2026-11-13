@@ -207,6 +207,11 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
 .switem.on span{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
 #flash{position:fixed;left:0;right:0;top:34%;z-index:45;text-align:center;font-family:var(--anton);font-size:52px;letter-spacing:.05em;color:transparent;-webkit-text-stroke:2px rgba(255,255,255,.9);opacity:0;transition:opacity .25s;pointer-events:none;text-shadow:none}
 #flash.show{opacity:.95}
+#pullReveal{position:fixed;top:0;left:0;right:0;height:190px;z-index:0;background:#050508;background-image:radial-gradient(rgba(255,255,255,.13) 1px,transparent 1.5px);background-size:22px 22px;display:flex;align-items:flex-start;justify-content:center;padding-top:calc(70px + env(safe-area-inset-top));opacity:0;pointer-events:none}
+#pullReveal span{font-family:var(--unb);font-weight:700;font-size:11px;letter-spacing:.3em;color:rgba(255,255,255,.45);transition:color .15s ease}
+#pullReveal.ready span{color:#FF5A76}
+#deck{position:relative;z-index:1}
+#deck.snapping{transition:transform .5s cubic-bezier(.3,1.35,.4,1)}
 #pullHint{position:fixed;top:calc(66px + env(safe-area-inset-top));left:50%;transform:translate(-50%,-18px);z-index:36;display:flex;align-items:center;gap:8px;padding:9px 15px;border-radius:999px;background:var(--glass);backdrop-filter:blur(16px) saturate(1.5);-webkit-backdrop-filter:blur(16px) saturate(1.5);border:1px solid var(--glassline);font-family:var(--unb);font-weight:700;font-size:10px;letter-spacing:.22em;color:#fff;opacity:0;pointer-events:none;white-space:nowrap}
 #pullHint.anim{transition:transform .25s ease,opacity .25s ease}
 #pullHint.ready{border-color:rgba(255,46,77,.65);color:#FFC2CC}
@@ -263,6 +268,7 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
 <div id="flash"></div>
 <div id="toast" role="status"><div class="ttag" id="toastTag"></div><div class="tmsg" id="toastMsg"></div><div class="tbuild" id="toastBuild"></div><button id="toastX" aria-label="Dismiss notification">✕</button></div>
 
+<div id="pullReveal" aria-hidden="true"><span>RELEASE TO REFRESH</span></div>
 <main id="deck"></main>
 <div id="vtitleEl" class="vtitle" title="All styles"></div>
 <button id="saveBtn" class="savebtn" aria-label="Save to your box">+</button>
@@ -540,7 +546,7 @@ function pieceHtml(p, i, total) {
 }
 
 /* ---------------- fixed info chrome (v72) ---------------- */
-const APP_BUILD = "V73";
+const APP_BUILD = "V74";
 let infoTimer = null, infoCtx = "", lastInfoId = null;
 function updateInfo(animate) {
   const p = deckList[state.current] || null;
@@ -1379,13 +1385,25 @@ $("#deck").addEventListener("pointerup", (e) => {
    deck in place and the scroll position never moves. */
 let pullX = null, pullY = null, pullDy = 0, pullArmed = false, pullRefreshing = false, pullCount = 0;
 const PULL_THRESHOLD = 72;
-function pullHintShow(dy) {
-  const h = $("#pullHint");
-  h.classList.remove("anim");
-  h.style.opacity = String(Math.min(dy / PULL_THRESHOLD, 1));
-  h.style.transform = "translate(-50%," + (-18 + Math.min(dy * 0.45, 52)) + "px)";
-  h.classList.toggle("ready", dy >= PULL_THRESHOLD);
-  $("#pullText").textContent = dy >= PULL_THRESHOLD ? "RELEASE FOR FRESH PIECES" : "PULL FOR FRESH PIECES";
+/* Tension: the sheet follows the finger at 55% up to the threshold,
+   then at 22% beyond it, capped — a rubber-band feel, not a scroll. */
+function pullOffset(dy) {
+  if (dy <= PULL_THRESHOLD) return dy * 0.55;
+  return Math.min(PULL_THRESHOLD * 0.55 + (dy - PULL_THRESHOLD) * 0.22, 96);
+}
+function pullDragShow(dy) {
+  const off = pullOffset(dy), deck = $("#deck"), rv = $("#pullReveal");
+  deck.classList.remove("snapping");
+  deck.style.transform = "translateY(" + off + "px)";
+  rv.style.opacity = String(Math.min(off / 44, 1));
+  rv.classList.toggle("ready", dy >= PULL_THRESHOLD);
+}
+function pullSnapBack() {
+  const deck = $("#deck"), rv = $("#pullReveal");
+  deck.classList.add("snapping");
+  deck.style.transform = "translateY(0px)";
+  rv.style.opacity = "0";
+  rv.classList.remove("ready");
 }
 function pullHintHide() {
   const h = $("#pullHint");
@@ -1400,7 +1418,7 @@ async function refreshCurrentView() {
   const h = $("#pullHint");
   h.classList.remove("anim"); h.classList.add("busy");
   h.style.opacity = "1"; h.style.transform = "translate(-50%,34px)";
-  $("#pullText").textContent = "FETCHING FRESH PIECES";
+  $("#pullText").textContent = "REFRESHING CONTENT";
   const before = deckList.length;
   try {
     if (state.movement === "all") {
@@ -1429,16 +1447,17 @@ $("#deck").addEventListener("touchmove", (e) => {
     if (dy > 10 && dy > dx * 1.25) pullArmed = true;
     else { if (dy < -6) pullY = null; return; }
   }
-  if (dy <= 0) { pullArmed = false; pullHintHide(); return; }
+  if (dy <= 0) { pullArmed = false; pullSnapBack(); return; }
   e.preventDefault();
   pullDy = dy;
-  pullHintShow(dy);
+  pullDragShow(dy);
 }, { passive: false });
 function pullEnd() {
   if (pullY === null) return;
   const go = pullArmed && pullDy >= PULL_THRESHOLD;
   pullX = pullY = null; pullArmed = false; pullDy = 0;
-  if (go) refreshCurrentView(); else if (!pullRefreshing) pullHintHide();
+  pullSnapBack();
+  if (go) refreshCurrentView();
 }
 $("#deck").addEventListener("touchend", pullEnd);
 $("#deck").addEventListener("touchcancel", pullEnd);
