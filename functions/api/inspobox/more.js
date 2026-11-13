@@ -4,8 +4,14 @@ import { getDoc, putDoc } from "../../_lib/docStore.js";
 
 // INSPOBOX live feed — the app pulls fresh pieces from Civitai's public API
 // itself, per session, when a river or a locked (lane, style) column runs
-// low. Nothing here is persisted except the none-theme sightings doc (the
-// discovery loop, below). Pieces live only in the client's in-memory deck.
+// low. Since v75 DeviantArt is a second producer on rivers: when the
+// DEVIANTART_CLIENT_ID / DEVIANTART_CLIENT_SECRET secrets are set, up to
+// 5 of each river batch's 12 vision slots come from a DeviantArt tag
+// pool, judged and filed by the same vision verdicts as Civitai pieces.
+// Without the secrets the source is inert and the feed behaves exactly
+// as before. Nothing here is persisted except the none-theme sightings
+// doc (the discovery loop, below). Pieces live only in the client's
+// in-memory deck.
 //
 // v65 filing model: a piece's lockable category is its STYLE within its
 // LANE (one of the five subject groupings). The vision judge files style —
@@ -210,7 +216,7 @@ export async function visionClassify(env, piece, fetchFn) {
   const ctl = new AbortController();
   const to = setTimeout(() => ctl.abort(), 15000);
   try {
-    const imgUrl = String(piece.img).replace("/width=1200/", "/width=640/");
+    const imgUrl = String(piece.judgeImg || piece.img).replace("/width=1200/", "/width=640/");
     let imgRes;
     try { imgRes = await fetchFn(imgUrl, { signal: ctl.signal, headers: { "user-agent": "INSPOBOX live feed" } }); }
     catch { return fail("image download failed"); }
@@ -316,6 +322,96 @@ const HOME_BATCH = 16;
 // pulls to reach its start-depth target (v68).
 const HOME_VISION_BUDGET = 12;
 
+// ---------------- DeviantArt (v75) ----------------
+// Second live source, rivers only (locked columns stay Civitai — its
+// LoRA galleries are the sharper tool for a single style). Auth is the
+// app-only OAuth2 client_credentials flow: the Worker mints a 1-hour
+// token from the client_id/secret Pages secrets (no user sign-in), caches
+// it in-module, and browses tag pools lane by lane. Candidates are shaped
+// exactly like Civitai pieces and filed by the same vision verdicts;
+// is_mature work and anything under the size bar never reach the judge.
+// A DeviantArt failure is fail-soft: the pull proceeds Civitai-only.
+export const DA_API = "https://www.deviantart.com/api/v1/oauth2";
+export const DA_HOME_SLOTS = 5;
+export const DA_LANE_TAGS = {
+  design: ["graphicdesign", "poster", "typography"],
+  world: ["landscape", "fantasylandscape", "environment"],
+  architecture: ["architecture", "building", "interior"],
+  character: ["characterdesign", "originalcharacter", "anime"],
+  prop: ["productdesign", "vehicle", "steampunk"],
+};
+let daTok = { v: "", exp: 0 };
+export function daConfigured(env) { return !!(env && env.DEVIANTART_CLIENT_ID && env.DEVIANTART_CLIENT_SECRET); }
+export function daResetTokenForTests() { daTok = { v: "", exp: 0 }; }
+async function daToken(env, fetchFn) {
+  if (!daConfigured(env)) return "";
+  if (daTok.v && Date.now() < daTok.exp) return daTok.v;
+  const ctl = new AbortController();
+  const to = setTimeout(() => ctl.abort(), 10000);
+  try {
+    const res = await fetchFn("https://www.deviantart.com/oauth2/token", {
+      method: "POST", signal: ctl.signal,
+      headers: { "content-type": "application/x-www-form-urlencoded", "user-agent": "INSPOBOX live feed" },
+      body: new URLSearchParams({ grant_type: "client_credentials", client_id: env.DEVIANTART_CLIENT_ID, client_secret: env.DEVIANTART_CLIENT_SECRET }).toString(),
+    });
+    if (!res.ok) return "";
+    const d = await res.json().catch(() => null);
+    if (!d || !d.access_token) return "";
+    daTok = { v: d.access_token, exp: Date.now() + Math.max(60, (d.expires_in || 3600) - 120) * 1000 };
+    return daTok.v;
+  } catch { return ""; } finally { clearTimeout(to); }
+}
+async function daGet(fetchFn, tok, path, ms = 10000) {
+  const ctl = new AbortController();
+  const to = setTimeout(() => ctl.abort(), ms);
+  try {
+    const res = await fetchFn(DA_API + path, { signal: ctl.signal, headers: { authorization: "Bearer " + tok, "user-agent": "INSPOBOX live feed" } });
+    if (res.status === 429) { const e = new Error("rate_limited"); e.code = 429; throw e; }
+    if (!res.ok) throw new Error("deviantart " + path.split("?")[0] + " -> " + res.status);
+    return await res.json();
+  } finally { clearTimeout(to); }
+}
+export function daPiece(dev, tag) {
+  if (!dev || dev.is_mature) return null;
+  const c = dev.content || {}, pv = dev.preview || {};
+  const cw = c.width || 0, ch = c.height || 0;
+  if (Math.min(cw, ch) < 800 || Math.max(cw, ch) < 1000) return null;
+  const id = "da-" + dev.deviationid;
+  return {
+    id, uuid: id, movement: null, media: null,
+    title: cleanTitle(dev.title),
+    by: ((dev.author && dev.author.username) || "unknown") + " · via DeviantArt",
+    img: (c.filesize && c.filesize > 8000000 && pv.src) ? pv.src : c.src,
+    judgeImg: pv.src || c.src,
+    url: dev.url || ("https://www.deviantart.com/deviation/" + dev.deviationid),
+    prompt: cleanPrompt((dev.title || "") + " " + (tag || "")),
+    session: true,
+  };
+}
+export async function daHarvest(env, fetchFn, lane, st) {
+  if (!daConfigured(env)) return { pieces: [], calls: 0, examined: 0 };
+  const tok = await daToken(env, fetchFn);
+  if (!tok) return { pieces: [], calls: 1, examined: 0 };
+  const tags = DA_LANE_TAGS[lane] || DA_LANE_TAGS.design;
+  st.da = st.da && typeof st.da === "object" ? st.da : { tag: 0, off: 0, done: false };
+  if (st.da.done) return { pieces: [], calls: 0, examined: 0 };
+  const tag = tags[st.da.tag % tags.length];
+  const qs = new URLSearchParams({ tag, mature_content: "false", limit: "24", offset: String(st.da.off || 0) });
+  let data;
+  try { data = await daGet(fetchFn, tok, "/browse/tags?" + qs.toString()); }
+  catch (e) { if (e && e.code === 429) throw e; return { pieces: [], calls: 1, examined: 0 }; }
+  const pieces = [];
+  let examined = 0;
+  for (const dev of data.results || []) {
+    examined++;
+    const p = daPiece(dev, tag);
+    if (p) pieces.push(p);
+  }
+  if (data.hasMore && data.nextOffset != null) st.da.off = data.nextOffset;
+  else { st.da.tag = (st.da.tag || 0) + 1; st.da.off = 0; if (st.da.tag >= tags.length) st.da.done = true; }
+  return { pieces, calls: 1, examined };
+}
+
 // The home river (v65): one walk across the requested LANE's style
 // pools, round-robin. Candidates are pre-filtered by their metadata
 // (designed-media subject matter, or a subject-led piece under a small
@@ -329,6 +425,12 @@ export async function fetchHomeBatch({ cursor, exclude, media }, fetchFn, env) {
   const seen = new Set(exclude || []);
   const st = cursor && typeof cursor === "object" ? { q: 0, v: 0, c: null, m: null, rot: 0, ...cursor } : { q: 0, v: 0, c: null, m: null, rot: Math.floor(Math.random() * 1024) };
   const walk = laneWalk(primary, st.rot || 0);
+  // DeviantArt (v75): its tag-pool harvest starts now and runs alongside
+  // the Civitai walk below (awaited only after the walk), so the sources
+  // overlap instead of stacking serially. Civitai fills cap slots; DA
+  // takes up to DA_HOME_SLOTS of the 12-piece vision budget.
+  const cap = daConfigured(env) ? HOME_VISION_BUDGET - DA_HOME_SLOTS : HOME_VISION_BUDGET;
+  const daPromise = daHarvest(env, fetchFn, primary, st).catch(() => ({ pieces: [], calls: 0, examined: 0 }));
   const buckets = {}; // lane -> pieces (filed)
   let total = 0, calls = 0, examined = 0, charFiled = 0, charCapped = 0, skipped = 0;
   let freshFiled = 0;
@@ -350,13 +452,13 @@ export async function fetchHomeBatch({ cursor, exclude, media }, fetchFn, env) {
       if (fresh) p.fresh = true;
       p._mt = ver.mt;
       harvest.push(p);
-      if (harvest.length >= HOME_VISION_BUDGET) break;
+      if (harvest.length >= cap) break;
     }
   };
   if (!st.f) st.f = { i: 0, m: null, v: 0, c: null, done: false };
   const freshWalk = freshEntries(primary, st.rot || 0);
   let fCalls = 0;
-  while (harvest.length < HOME_VISION_BUDGET && fCalls < 5 && !st.f.done) {
+  while (harvest.length < cap && fCalls < 5 && !st.f.done) {
     if (st.f.i >= freshWalk.length) { st.f.done = true; break; }
     const entry = freshWalk[st.f.i];
     if (!st.f.m) {
@@ -380,7 +482,7 @@ export async function fetchHomeBatch({ cursor, exclude, media }, fetchFn, env) {
     st.f.c = (page.metadata && page.metadata.nextCursor) || null;
     if (!st.f.c) st.f.v++;
   }
-  while (harvest.length < HOME_VISION_BUDGET && calls < 10 && st.q < walk.length) {
+  while (harvest.length < cap && calls < 10 && st.q < walk.length) {
     if (!st.m) {
       const qs = new URLSearchParams({ query: walk[st.q].q, limit: "6", sort: "Most Downloaded", nsfw: "false" });
       qs.append("types", "LORA"); qs.append("types", "Checkpoint");
@@ -401,6 +503,21 @@ export async function fetchHomeBatch({ cursor, exclude, media }, fetchFn, env) {
     absorb(page, ver, false);
     st.c = (page.metadata && page.metadata.nextCursor) || null;
     if (!st.c) st.v++;
+  }
+  // Merge the DeviantArt candidates into the harvest (v75): up to
+  // DA_HOME_SLOTS of the 12-piece vision budget, deduped by the same
+  // seen set as Civitai pieces. A DA failure is already an empty result
+  // by the time we get here — the pull proceeds Civitai-only.
+  let daCalls = 0, daExamined = 0;
+  if (daConfigured(env)) {
+    const da = await daPromise;
+    daCalls = da.calls || 0; daExamined = da.examined || 0;
+    for (const p of da.pieces || []) {
+      if (harvest.length >= HOME_VISION_BUDGET) break;
+      if (seen.has(p.uuid)) continue;
+      seen.add(p.uuid);
+      harvest.push(p);
+    }
   }
   // Vision-first filing (v66): the harvest is capped at the vision
   // budget, so every harvested candidate gets a verdict attempt — and
@@ -471,7 +588,7 @@ export async function fetchHomeBatch({ cursor, exclude, media }, fetchFn, env) {
   }
   for (const mv of Object.keys(banked)) { banked[mv] = banked[mv].slice(0, BANK_CAP); bankedCount += banked[mv].length; }
   for (const md of Object.keys(bankedHome)) { bankedHome[md] = bankedHome[md].slice(0, BANK_CAP); bankedHomeCount += bankedHome[md].length; }
-  return { pieces, banked, bankedHome, cursor: st, done: st.q >= walk.length, stats: { examined, passed: pieces.length, civCalls: calls, styles: Object.keys(counts).length, charCapped, skipped, banked: bankedCount, bankedHome: bankedHomeCount, freshFiled, visionChecked, visionCulled, unstyled, unverified, noneThemes } };
+  return { pieces, banked, bankedHome, cursor: st, done: st.q >= walk.length, stats: { examined, passed: pieces.length, civCalls: calls, daCalls, daExamined, styles: Object.keys(counts).length, charCapped, skipped, banked: bankedCount, bankedHome: bankedHomeCount, freshFiled, visionChecked, visionCulled, unstyled, unverified, noneThemes } };
 }
 
 // A locked column (v65): contract is {media: lane, movement: style id
