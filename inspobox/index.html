@@ -51,17 +51,17 @@ img{display:block}
 .piece .bgvid{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .piece .scrim{position:absolute;inset:0;background:linear-gradient(180deg,rgba(5,5,10,.40) 0%,transparent 26%,transparent 44%,rgba(5,5,10,.88) 84%)}
 .piece .prog{position:absolute;top:0;left:0;height:3px;background:var(--grad);z-index:3}
-.vtitle{position:absolute;left:12px;top:158px;max-height:calc(100dvh - 400px);overflow:hidden;writing-mode:vertical-rl;transform:rotate(180deg);font-family:var(--anton);font-size:58px;letter-spacing:.03em;color:#fff;text-shadow:5px 5px 0 rgba(255,46,77,.85);z-index:2;cursor:pointer}
-.savebtn{position:absolute;right:16px;top:108px;z-index:5;width:44px;height:44px;border-radius:50%;background:var(--glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--glassline);font-size:23px;font-weight:500;display:flex;align-items:center;justify-content:center}
+.vtitle{position:fixed;left:12px;top:158px;max-height:calc(100dvh - 400px);overflow:hidden;writing-mode:vertical-rl;transform:rotate(180deg);font-family:var(--anton);font-size:58px;letter-spacing:.03em;color:#fff;text-shadow:5px 5px 0 rgba(255,46,77,.85);z-index:2;cursor:pointer}
+.savebtn{position:fixed;right:16px;top:108px;z-index:35;width:44px;height:44px;border-radius:50%;background:var(--glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--glassline);font-size:23px;font-weight:500;display:flex;align-items:center;justify-content:center}
 .savebtn.saved{background:var(--grad);border-color:transparent}
-.searchbtn{position:absolute;right:16px;top:164px;z-index:5;width:44px;height:44px;border-radius:50%;background:var(--glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--glassline);display:flex;align-items:center;justify-content:center;color:inherit}
+.searchbtn{position:fixed;right:16px;top:164px;z-index:35;width:44px;height:44px;border-radius:50%;background:var(--glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--glassline);display:flex;align-items:center;justify-content:center;color:inherit}
 .idxsearchrow{padding:2px 20px 12px}
 .idxsearchrow input{width:100%;box-sizing:border-box;background:rgba(255,255,255,.06);border:1px solid var(--glassline);border-radius:999px;padding:11px 16px;color:inherit;font-family:var(--sg);font-size:13px;letter-spacing:.08em;outline:none}
 .idxsearchrow input::placeholder{color:var(--dim)}
 .idxmediarow{display:flex;gap:8px;flex-wrap:wrap;padding:0 20px 12px}
 .idxmedia{background:rgba(255,255,255,.05);border:1px solid var(--glassline);color:var(--dim);border-radius:999px;padding:7px 12px;font-family:var(--sg);font-size:11px;letter-spacing:.1em;cursor:pointer}
 .idxmedia.on{color:#fff;border-color:rgba(255,255,255,.45);background:rgba(255,255,255,.12)}
-.panel{position:absolute;left:14px;right:14px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:4;border-radius:14px;background:var(--glass);backdrop-filter:blur(22px) saturate(1.5);-webkit-backdrop-filter:blur(22px) saturate(1.5);border:1px solid var(--glassline);padding:16px 16px 12px}
+.panel{position:fixed;left:14px;right:14px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:34;border-radius:14px;background:var(--glass);backdrop-filter:blur(22px) saturate(1.5);-webkit-backdrop-filter:blur(22px) saturate(1.5);border:1px solid var(--glassline);padding:16px 16px 12px}
 .ptitle{font-family:var(--anton);font-size:26px;line-height:1.06;margin-top:0;letter-spacing:.01em;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .pstyle{font-size:11.5px;line-height:1.35;color:var(--faint);font-weight:500;margin-top:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .pby{font-size:12.5px;color:var(--dim);margin-top:5px;font-weight:500}
@@ -190,9 +190,7 @@ a.bb{color:var(--dim);text-decoration:underline dotted rgba(255,255,255,.35);tex
 .star{position:absolute;pointer-events:none}
 body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF3CAC 105%);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none}
 #tapHint{font-size:8.5px;letter-spacing:.26em;font-weight:700;color:var(--faint);margin-top:5px}
-#buildTag{font-size:7.5px;letter-spacing:.3em;font-weight:700;color:#33333F}
-.buildrow{display:flex;align-items:center;gap:8px;margin-top:4px}
-#errBtn{display:inline-flex;align-items:center;gap:4px;background:rgba(255,90,31,.14);border:1px solid rgba(255,138,31,.55);color:#FF8A1F;border-radius:999px;padding:2px 8px;font:700 10px/1.5 "Space Grotesk",sans-serif;cursor:pointer}
+#errBtn{margin-top:7px;display:inline-flex;align-items:center;gap:4px;background:rgba(255,90,31,.14);border:1px solid rgba(255,138,31,.55);color:#FF8A1F;border-radius:999px;padding:2px 8px;font:700 10px/1.5 "Space Grotesk",sans-serif;cursor:pointer}
 #errBtn[hidden]{display:none}
 #errBtn.pulse{animation:errpulse .5s ease}
 @keyframes errpulse{0%{transform:scale(1)}35%{transform:scale(1.25)}100%{transform:scale(1)}}
@@ -209,6 +207,10 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
 .switem.on span{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
 #flash{position:fixed;left:0;right:0;top:34%;z-index:45;text-align:center;font-family:var(--anton);font-size:52px;letter-spacing:.05em;color:transparent;-webkit-text-stroke:2px rgba(255,255,255,.9);opacity:0;transition:opacity .25s;pointer-events:none;text-shadow:none}
 #flash.show{opacity:.95}
+#infoTitle,#infoStyle,#infoBy,#vtitleEl{transition:filter .16s ease,opacity .16s ease}
+.blurx{filter:blur(9px);opacity:.2}
+#infoBy:not([href]){text-decoration:none}
+.tbuild{margin-top:8px;font-size:9px;letter-spacing:.28em;color:#55556a;font-weight:700}
 #toast{position:fixed;left:14px;right:14px;bottom:228px;z-index:46;background:rgba(13,11,22,.94);border:1px solid rgba(255,255,255,.16);border-radius:14px;padding:12px 42px 12px 14px;backdrop-filter:blur(18px) saturate(1.4);-webkit-backdrop-filter:blur(18px) saturate(1.4);box-shadow:0 14px 34px rgba(0,0,0,.5);opacity:0;transform:translateY(8px);pointer-events:none;transition:opacity .25s,transform .25s}
 #toast.show{opacity:1;transform:none;pointer-events:auto}
 #toast .ttag{font-family:var(--unb);font-weight:700;font-size:10px;letter-spacing:.18em;color:#FF8A1F;margin-bottom:4px}
@@ -244,8 +246,7 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
   <div>
     <div class="logo">INSPO<span class="box">BOX</span></div>
     <div id="counter">— / —</div>
-    <div id="tapHint">TAP A PIECE TO LOCK ITS STYLE</div>
-    <div class="buildrow"><div id="buildTag">BUILD V70</div><button id="errBtn" hidden aria-label="Show feed notices">⚠<span id="errCount"></span></button></div>
+    <button id="errBtn" hidden aria-label="Show feed notices">⚠<span id="errCount"></span></button>
   </div>
   <div class="topbtns">
     <button class="chipbtn" id="boxBtn">BOX <span class="n" id="boxCount">0</span></button>
@@ -254,9 +255,18 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
 <div id="veil"></div>
 <div id="switcher"><div id="swTrack"></div></div>
 <div id="flash"></div>
-<div id="toast" role="status"><div class="ttag" id="toastTag"></div><div class="tmsg" id="toastMsg"></div><button id="toastX" aria-label="Dismiss notification">✕</button></div>
+<div id="toast" role="status"><div class="ttag" id="toastTag"></div><div class="tmsg" id="toastMsg"></div><div class="tbuild" id="toastBuild"></div><button id="toastX" aria-label="Dismiss notification">✕</button></div>
 
 <main id="deck"></main>
+<div id="vtitleEl" class="vtitle" title="All styles"></div>
+<button id="saveBtn" class="savebtn" aria-label="Save to your box">+</button>
+<button id="searchBtn" class="searchbtn" aria-label="Search by movement"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 L21 21"/></svg></button>
+<div id="infobar" class="panel">
+  <div class="ptitle" id="infoTitle"></div>
+  <div class="pstyle" id="infoStyle"></div>
+  <a class="pby" id="infoBy" target="_blank" rel="noopener"></a>
+  <div class="rail" id="infoRail"></div>
+</div>
 <button id="igniteBtn" aria-label="Ignite — open the idea starter"><svg viewBox="0 0 48 48" width="22" height="22" aria-hidden="true"><path d="M24 3 L27.3 16.1 L38.8 9.2 L31.9 20.7 L45 24 L31.9 27.3 L38.8 38.8 L27.3 31.9 L24 45 L20.7 31.9 L9.2 38.8 L16.1 27.3 L3 24 L16.1 20.7 L9.2 9.2 L20.7 16.1 Z" fill="#fff" stroke="#fff" stroke-width="2.5" stroke-linejoin="round"/></svg><span>IGNITE</span></button>
 
 <!-- IDEA STARTER -->
@@ -294,7 +304,6 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
     <div class="logo">INSPO<span class="box">BOX</span></div>
     <div style="display:flex;align-items:center;gap:12px"><span class="mode">STYLES</span><button class="xbtn" data-close>✕</button></div>
   </div>
-  <div class="layernote"><b>Tap any piece</b> in the feed to lock its style — or pick one here. Every lane carries its <b>own native styles</b>: Design thinks in Bauhaus and Swiss type, Architecture in Deco and Brutalism, World in forests and wastes. <b>Left/right</b> swipes switch lane. Tap the colored style title on any piece to unlock.</div>
   <div class="idxsearchrow"><input id="idxSearch" type="search" placeholder="SEARCH STYLES…" autocomplete="off" aria-label="Search styles"></div>
   <div id="indexMedia" class="idxmediarow"></div>
   <div id="indexGrid"></div>
@@ -342,6 +351,43 @@ const pick = (r, arr) => arr[Math.floor(r() * arr.length)];
 let DATA = null;
 const state = { media: "design", movement: "all", current: 0 };
 let box = store.get("inspobox.box.v1", []);
+/* Box account sync (v71): the box also lives in his account (D1 doc via
+   /api/inspobox/box). localStorage remains the working cache — every
+   mutation saves locally first, then a debounced PUT carries the whole
+   box up. On load, the server copy union-merges into the local one
+   (nothing either side holds is lost) and the union is pushed back up.
+   Sync failures keep the local box and note it once behind the icon. */
+function boxKey(b) { return b && b.type === "piece" ? "p:" + b.id : "s:" + (b && b.title || "") + ":" + (b && b.ts || 0); }
+let boxSyncTimer = null, boxSyncNoted = false;
+function scheduleBoxSync() {
+  clearTimeout(boxSyncTimer);
+  boxSyncTimer = setTimeout(async () => {
+    try {
+      const r = await fetch("/api/inspobox/box", { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify({ box }) });
+      if (!r.ok) throw new Error("HTTP " + r.status);
+    } catch (e) {
+      if (!boxSyncNoted) { boxSyncNoted = true; showToast("BOX SYNC", "Couldn't reach your account to back up the Box — saves are safe on this device and will sync later. (" + String(e && e.message || e) + ")"); }
+    }
+  }, 700);
+}
+async function boxSyncLoad() {
+  try {
+    const r = await fetch("/api/inspobox/box", { headers: { accept: "application/json" } });
+    if (!r.ok) return;
+    const data = await r.json();
+    const server = data && Array.isArray(data.box) ? data.box : null;
+    if (server === null) { if (box.length) scheduleBoxSync(); return; }
+    const have = new Set(box.map(boxKey));
+    const fresh = server.filter((b) => !have.has(boxKey(b)));
+    if (fresh.length) {
+      box = box.concat(fresh).sort((a, b) => (b.ts || 0) - (a.ts || 0)).slice(0, 500);
+      store.set("inspobox.box.v1", box);
+      renderBox(); renderDeckSoft();
+    }
+    const serverKeys = new Set(server.map(boxKey));
+    if (box.some((b) => !serverKeys.has(boxKey(b)))) scheduleBoxSync();
+  } catch (e) { /* offline: the local box is the cache */ }
+}
 let sparks = store.get("inspobox.sparks.v1", []);
 let genCount = store.get("inspobox.count.v1", 0);
 
@@ -369,7 +415,7 @@ async function load() {
     if (touched) store.set("inspobox.box.v1", box);
   } catch (e) { /* best-effort */ }
   $("#loading").style.display = "none";
-  buildSelects(); renderDeck(); renderIndex(); renderBox(); renderSparks();
+  buildSelects(); renderDeck(); renderIndex(); renderBox(); renderSparks(); boxSyncLoad();
 }
 
 /* ---------------- session image cache ----------------
@@ -473,61 +519,106 @@ function mdName(id) { const m = DATA.media.find((x) => x.id === id); return m ? 
 function isSavedPiece(id) { return box.some((b) => b.type === "piece" && b.id === id); }
 
 function pieceHtml(p, i, total) {
+  // v72: pieces are pure media. The save/search buttons, the style title
+  // and the info tile are fixed chrome (below) that persist across
+  // swipes; only their text content changes, with a blur transition.
   return `
-    <section class="piece" data-id="${p.id}" data-idx="${i}">
+    <section class="piece" data-id="${p.id}" data-idx="${i}" data-mv="${p.movement}" data-media="${p.media}">
       ${p.video
         ? `<video class="bgvid" src="${esc(p.video)}" poster="${esc(p.img)}" muted loop playsinline preload="metadata"></video>`
         : `<img class="bgimg" src="${esc(imgSrc(p))}" alt="" decoding="async">`}
       <div class="scrim"></div>
       <div class="prog" style="width:${Math.round(((i + 1) / total) * 100)}%"></div>
-      <div class="vtitle ${vtSize(p.media, p.movement)}" data-open-index title="All styles">${esc(styleName(p.media, p.movement).toUpperCase())}</div>
-      <button class="savebtn ${isSavedPiece(p.id) ? "saved" : ""}" data-save="${p.id}" aria-label="Save to your box">${isSavedPiece(p.id) ? "✓" : "+"}</button>
-      <button class="searchbtn" data-search aria-label="Search by movement"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 L21 21"/></svg></button>
-      <div class="panel">
-        <div class="ptitle">${esc(p.title)}</div>
-        ${p.style ? `<div class="pstyle">${esc(p.style)}</div>` : ""}
-        ${p.url ? `<a class="pby" href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.by)}${p.session ? ` <span class="ext">· ${p.fresh ? "TODAY" : "LIVE"}${p.gated ? " ✓" : ""}</span>` : ""}</a>` : `<div class="pby">${esc(p.by)}${p.session ? ` <span class="ext">· ${p.fresh ? "TODAY" : "LIVE"}${p.gated ? " ✓" : ""}</span>` : ""}</div>`}
-        <div class="rail">${railHtml()}</div>
-      </div>
     </section>`;
 }
+
+/* ---------------- fixed info chrome (v72) ---------------- */
+const APP_BUILD = "V72";
+let infoTimer = null, infoCtx = "", lastInfoId = null;
+function updateInfo(animate) {
+  const p = deckList[state.current] || null;
+  const bar = $("#infobar"), vt = $("#vtitleEl"), sv = $("#saveBtn"), sr = $("#searchBtn");
+  if (!p) { for (const el of [bar, vt, sv, sr]) el.style.display = "none"; lastInfoId = null; return; }
+  for (const el of [bar, vt, sv, sr]) el.style.display = "";
+  const changed = lastInfoId !== p.id;
+  lastInfoId = p.id;
+  const apply = () => {
+    vt.textContent = styleName(p.media, p.movement).toUpperCase();
+    vt.className = "vtitle " + vtSize(p.media, p.movement);
+    $("#infoTitle").textContent = p.title;
+    const st = $("#infoStyle");
+    if (p.style) { st.textContent = p.style; st.style.display = ""; } else st.style.display = "none";
+    const by = $("#infoBy");
+    by.innerHTML = esc(p.by) + (p.session ? ` <span class="ext">· ${p.fresh ? "TODAY" : "LIVE"}${p.gated ? " ✓" : ""}</span>` : "");
+    if (p.url) by.setAttribute("href", p.url); else by.removeAttribute("href");
+    sv.dataset.save = p.id;
+    const saved = isSavedPiece(p.id);
+    sv.classList.toggle("saved", saved);
+    sv.textContent = saved ? "✓" : "+";
+    const ctx = state.movement + "|" + state.media + "|" + document.body.classList.contains("locked");
+    if (ctx !== infoCtx) { infoCtx = ctx; $("#infoRail").innerHTML = railHtml(); }
+    $$("#infoRail button").forEach((b) => b.classList.toggle("on", b.dataset.media === p.media));
+  };
+  if (!animate || !changed) { apply(); return; }
+  const fields = [vt, $("#infoTitle"), $("#infoStyle"), $("#infoBy")];
+  for (const el of fields) el.classList.add("blurx");
+  clearTimeout(infoTimer);
+  infoTimer = setTimeout(() => { apply(); for (const el of fields) el.classList.remove("blurx"); }, 160);
+}
+$("#saveBtn").addEventListener("click", () => { const id = $("#saveBtn").dataset.save; if (id) toggleSavePiece(id); });
+$("#searchBtn").addEventListener("click", () => openIndex());
+$("#vtitleEl").addEventListener("click", () => {
+  if (state.movement !== "all") { state.movement = "all"; renderIndex(); renderDeck(); flash("UNLOCKED"); }
+  else openIndex();
+});
+$("#infobar").addEventListener("click", (e) => { const mb = e.target.closest("[data-media]"); if (mb) jumpToMedia(mb.dataset.media); });
 function renderDeck(startId) {
+  renderingDeck = true;
+  const wantId = startId || viewPos[state.movement + "|" + state.media] || null;
   const feed = deckFeed(); deckList = feed;
   const deck = $("#deck");
   if (!feed.length) {
     if (state.movement === "all" && !homeCol().failed) {
+      updateInfo(false);
       deck.innerHTML = `<div class="deckempty"><div class="big">CASTING THE NET</div><p>Pulling a fresh river from today's pools — every piece filed by Claude's eye, not its gallery label.</p><div class="skelpanel" aria-hidden="true"><div class="skbar" style="width:58%;height:26px"></div><div class="skbar" style="width:82%;height:11px"></div><div class="skbar" style="width:44%;height:12px"></div><div class="skrail"><div class="skbar"></div><div class="skbar"></div><div class="skbar"></div><div class="skbar"></div><div class="skbar"></div></div></div></div>`;
       $("#counter").textContent = "00 / 00";
       maybeFetchHome(true);
+      renderingDeck = false;
       return;
     }
+    updateInfo(false);
     deck.innerHTML = `<div class="deckempty"><div class="big">NOTHING HERE… YET</div><p>This style has no pieces in the current drop. Live pulls and the next curation pass fill gaps like this.</p><button class="chipbtn" id="clearFilters">UNLOCK — SHOW EVERYTHING</button></div>`;
     hydrateLive();
     $("#clearFilters").addEventListener("click", () => { state.movement = "all"; renderIndex(); renderDeck(); });
     $("#counter").textContent = "0 / 0";
+    renderingDeck = false;
     return;
   }
   deck.innerHTML = feed.map((p, i) => pieceHtml(p, i, feed.length)).join("");
   state.current = 0; updateChrome(feed.length);
   deck.scrollTop = 0;
-  if (startId) {
-    const ix = feed.findIndex((p) => p.id === startId);
+  if (wantId) {
+    const ix = feed.findIndex((p) => p.id === wantId);
     if (ix > 0) { const el = $$(".piece", deck)[ix]; if (el) { deck.scrollTop = el.offsetTop; state.current = ix; updateChrome(feed.length); } }
   }
   for (const p of feed) cacheSessionImage(p);
   bindDeck(feed);
   if (state.movement === "all") hydrateHome(); else hydrateLive();
+  renderingDeck = false;
 }
 function railHtml() {
   const present = presentMedia();
   return DATA.media.filter((m) => present.includes(m.id)).map((m) => `<button data-media="${m.id}">${esc(m.name.toUpperCase())}</button>`).join("");
 }
+const viewPos = {};
+let renderingDeck = false;
 function updateChrome(total) {
   $("#counter").textContent = String(state.current + 1).padStart(2, "0") + " / " + String(total).padStart(2, "0");
+  if (!renderingDeck && deckList[state.current]) viewPos[state.movement + "|" + state.media] = deckList[state.current].id;
   const cur = deckList[state.current];
   $$(".rail button").forEach((b) => b.classList.toggle("on", !!cur && b.dataset.media === cur.media));
-  $("#tapHint").style.display = state.movement === "all" ? "" : "none";
   document.body.classList.toggle("locked", state.movement !== "all");
+  updateInfo(true);
 }
 let deckObs = null;
 function bindDeck(feed) {
@@ -772,19 +863,6 @@ $("#deck").addEventListener("scroll", () => {
   snapTimer = setTimeout(() => { if (!deckTouch && !sw.drag) snapFix(); }, 160);
 }, { passive: true });
 window.addEventListener("resize", () => { clearTimeout(snapTimer); snapTimer = setTimeout(snapFix, 200); });
-$("#deck").addEventListener("click", (e) => {
-  const mediaBtn = e.target.closest("[data-media]");
-  if (mediaBtn) { jumpToMedia(mediaBtn.dataset.media); return; }
-  const searchBtn = e.target.closest("[data-search]");
-  if (searchBtn) { openIndex(); return; }
-  const saveBtn = e.target.closest("[data-save]");
-  if (saveBtn) { toggleSavePiece(saveBtn.dataset.save); return; }
-  if (e.target.closest("[data-open-index]")) {
-    if (state.movement !== "all") { const keepId = deckList[state.current] && deckList[state.current].id; state.movement = "all"; renderIndex(); renderDeck(keepId); flash("UNLOCKED"); }
-    else { openIndex(); }
-  }
-});
-
 /* ---------------- box ---------------- */
 function toggleSavePiece(id) {
   const p = DATA.feed.find((x) => x.id === id) || deckList.find((x) => x.id === id);
@@ -792,8 +870,8 @@ function toggleSavePiece(id) {
   const ix = box.findIndex((b) => b.type === "piece" && b.id === id);
   if (ix >= 0) box.splice(ix, 1);
   else box.unshift({ type: "piece", id: p.id, title: p.title, movement: p.movement, media: p.media, img: p.img, by: p.by, url: p.url || "", ts: Date.now() });
-  store.set("inspobox.box.v1", box);
-  $$(`[data-save="${id}"]`).forEach((b) => { const on = ix < 0; b.classList.toggle("saved", on); b.textContent = on ? "✓" : "+"; });
+  store.set("inspobox.box.v1", box); scheduleBoxSync();
+  updateInfo(false);
   renderBox();
 }
 let boxTab = "refs";
@@ -848,7 +926,7 @@ $("#boxList").addEventListener("click", (e) => {
   const dl = e.target.closest("[data-dl]");
   if (dl) { copyBoxPrompt(Number(dl.dataset.dl), dl); return; }
   const del = e.target.closest("[data-del]");
-  if (del) { box.splice(Number(del.dataset.del), 1); store.set("inspobox.box.v1", box); renderBox(); renderDeckSoft(); }
+  if (del) { box.splice(Number(del.dataset.del), 1); store.set("inspobox.box.v1", box); scheduleBoxSync(); renderBox(); renderDeckSoft(); }
 });
 function buildPrompt(item) {
   const head = [`INSPOBOX — ${item.title}`, item.label || ""];
@@ -922,7 +1000,7 @@ async function copyBoxPrompt(i, btn) {
   if (btn) { const old = btn.textContent; btn.textContent = ok ? "COPIED \u2713" : "COPY FAILED"; setTimeout(() => { btn.textContent = old; }, 1600); }
 }
 function renderDeckSoft() { // refresh save states without rebuilding scroll position
-  $$("[data-save]").forEach((b) => { const on = isSavedPiece(b.dataset.save); b.classList.toggle("saved", on); b.textContent = on ? "✓" : "+"; });
+  updateInfo(false);
 }
 
 /* ---------------- movement index ---------------- */
@@ -1068,8 +1146,8 @@ function renderNotice() {
   if (!n) return hideToast();
   $("#toastTag").textContent = n.tag;
   $("#toastMsg").textContent = n.msg;
-  const piece = document.querySelectorAll("#deck .piece")[state.current];
-  const panel = piece ? piece.querySelector(".panel") : null;
+  $("#toastBuild").textContent = "INSPOBOX · BUILD " + APP_BUILD;
+  const panel = $("#infobar");
   let bottom = 228;
   if (panel) { const r = panel.getBoundingClientRect(); if (r.height > 0) bottom = Math.max(96, Math.round(window.innerHeight - r.top + 10)); }
   toastEl.style.bottom = bottom + "px";
@@ -1091,8 +1169,7 @@ function landOn(next) {
     state.media = next;
     if (twin) {
       state.movement = twin.id;
-      const first = scopeFeed().find((p) => p.media === next);
-      renderIndex(); renderDeck(first && first.id);
+      renderIndex(); renderDeck();
     } else {
       state.movement = "all";
       renderIndex(); renderDeck(); flash("UNLOCKED");
@@ -1469,7 +1546,7 @@ function renderConcept() {
     const body = `${c.subject} — ${c.place}. Open: ${c.open} · Pivot: ${c.pivot} · Final: ${c.final}`;
     const item = conceptItem(c); item.body = body; item.ts = Date.now();
     box.unshift(item);
-    store.set("inspobox.box.v1", box); renderBox();
+    store.set("inspobox.box.v1", box); scheduleBoxSync(); renderBox();
     e.target.textContent = "SAVED ✓";
   });
   // history strip
