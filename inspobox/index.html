@@ -552,7 +552,7 @@ function pieceHtml(p, i, total) {
 }
 
 /* ---------------- fixed info chrome (v72) ---------------- */
-const APP_BUILD = "V78";
+const APP_BUILD = "V79";
 let infoTimer = null, infoCtx = "", lastInfoId = null;
 function updateInfo(animate) {
   const p = deckList[state.current] || null;
@@ -674,21 +674,30 @@ function liveKey() { return state.movement + "|" + state.media; }
 function liveCol() { const k = liveKey(); return liveCols[k] || (liveCols[k] = { cursor: null, done: false, loading: false, pieces: [], empties: 0 }); }
 function liveColFor(movement, media) { const k = movement + "|" + media; return liveCols[k] || (liveCols[k] = { cursor: null, done: false, loading: false, pieces: [], empties: 0 }); }
 /* Cross-session freshness (v50): every live piece ever delivered is
-   remembered in localStorage (last 900) and excluded from future fetches,
-   so the feed does not keep re-serving the same head of the galleries. */
+   remembered in localStorage (last 3000) and excluded from future fetches,
+   so the feed does not keep re-serving the same head of the galleries.
+   v79: the cap was 900 and rolled over in ~two weeks of real use — the
+   entries that fell off were the gallery heads, which the walk then
+   happily re-served. The exclude payload also lists the seen newest
+   FIRST, so if the server ever truncates it, the oldest go, not the
+   pieces from the last session. */
 const SEEN_KEY = "inspobox.seen.v1";
 function seenList() { const v = store.get(SEEN_KEY, []); return Array.isArray(v) ? v : []; }
 function recordSeen(pieces) {
   const cur = seenList(); const have = new Set(cur); let changed = false;
   for (const p of pieces) if (p.uuid && !have.has(p.uuid)) { cur.push(p.uuid); have.add(p.uuid); changed = true; }
-  if (changed) store.set(SEEN_KEY, cur.slice(-900));
+  if (changed) store.set(SEEN_KEY, cur.slice(-3000));
 }
 function excludeUuids() {
   const out = [];
-  for (const p of DATA.feed) if (p.movement === state.movement && p.img) { const u = p.img.split("/").pop().replace(/\.jpg$/, ""); if (u) out.push(u); }
+  const seen = seenList();
+  for (let i = seen.length - 1; i >= 0; i--) out.push(seen[i]);
   for (const col of Object.values(liveCols)) for (const p of col.pieces) if (p.uuid) out.push(p.uuid);
   for (const col of Object.values(homeCols)) for (const p of col.pieces) if (p.uuid) out.push(p.uuid);
-  for (const u of seenList()) out.push(u);
+  for (const p of DATA.feed) {
+    const inScope = state.movement === "all" ? p.media === state.media : p.movement === state.movement;
+    if (inScope && p.img) { const u = p.img.split("/").pop().replace(/\.jpg$/, ""); if (u) out.push(u); }
+  }
   return out;
 }
 function reindexDeck() {

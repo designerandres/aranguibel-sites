@@ -703,7 +703,7 @@ export async function onRequestPost({ request, env }) {
     if (body.home === true) {
       const out = await fetchHomeBatch({
         cursor: body.cursor || null,
-        exclude: Array.isArray(body.exclude) ? body.exclude.slice(0, 1000).map(String) : [],
+        exclude: Array.isArray(body.exclude) ? body.exclude.slice(0, 4000).map(String) : [],
         media: String(body.media || "design"),
       }, fetch, env);
       return json({ ok: true, ...out });
@@ -712,7 +712,7 @@ export async function onRequestPost({ request, env }) {
       movement: String(body.movement || ""),
       media: String(body.media || "design"),
       cursor: body.cursor || null,
-      exclude: Array.isArray(body.exclude) ? body.exclude.slice(0, 1000).map(String) : [],
+      exclude: Array.isArray(body.exclude) ? body.exclude.slice(0, 4000).map(String) : [],
     }, fetch, env);
     return json({ ok: true, ...out });
   } catch (e) {
