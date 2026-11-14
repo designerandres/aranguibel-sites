@@ -55,6 +55,8 @@ img{display:block}
 .savebtn{position:fixed;right:16px;top:108px;z-index:35;width:44px;height:44px;border-radius:50%;background:var(--glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--glassline);font-size:23px;font-weight:500;display:flex;align-items:center;justify-content:center}
 .savebtn.saved{background:var(--grad);border-color:transparent}
 .savebtn.blocked{background:rgba(255,46,77,.25);border-color:rgba(255,46,77,.65);font-size:19px}
+#sparkSheetBody .card{margin-top:2px}
+.boxitem.sparkitem{cursor:pointer}
 .searchbtn{position:fixed;right:16px;top:164px;z-index:35;width:44px;height:44px;border-radius:50%;background:var(--glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--glassline);display:flex;align-items:center;justify-content:center;color:inherit}
 .idxsearchrow{padding:2px 20px 12px}
 .idxsearchrow input{width:100%;box-sizing:border-box;background:rgba(255,255,255,.06);border:1px solid var(--glassline);border-radius:999px;padding:11px 16px;color:inherit;font-family:var(--sg);font-size:13px;letter-spacing:.08em;outline:none}
@@ -361,6 +363,18 @@ body.peek .piece .scrim{opacity:0}
     <div class="sheetfoot"><button id="copyPromptBtn">COPY PROMPT</button></div>
   </div>
 </section>
+<section class="layer sheetlayer" id="sparkLayer" aria-hidden="true">
+  <div class="sheetback" data-sheetback></div>
+  <div class="sheetpanel" data-sheetpanel>
+    <div class="grab" data-drag><i></i></div>
+    <div class="layerhead">
+      <div class="logo">INSPO<span class="box">BOX</span></div>
+      <div style="display:flex;align-items:center;gap:12px"><span class="mode">STORY SPARK</span><button class="xbtn" data-close>✕</button></div>
+    </div>
+    <div class="sheetbody" id="sparkSheetBody"></div>
+    <div class="sheetfoot"><button id="sparkCopyBtn">COPY PROMPT</button></div>
+  </div>
+</section>
 
 <script>
 "use strict";
@@ -563,7 +577,7 @@ function pieceHtml(p, i, total) {
 }
 
 /* ---------------- fixed info chrome (v72) ---------------- */
-const APP_BUILD = "V83";
+const APP_BUILD = "V84";
 let infoTimer = null, infoCtx = "", lastInfoId = null;
 function updateInfo(animate) {
   const p = deckList[state.current] || null;
@@ -998,7 +1012,7 @@ function renderBox() {
       <div class="bti">${esc(b.title)}</div>${b.url ? `<a class="bb" href="${esc(b.url)}" target="_blank" rel="noopener">${esc(b.by || "")}</a>` : `<div class="bb">${esc(b.by || "")}</div>`}</div>
       <button class="del" data-del="${i}">✕</button></div>
     </div>` : `
-    <div class="boxitem sparkitem">
+    <div class="boxitem sparkitem" data-spark="${i}">
       <div class="bhead"><div class="bt"><div class="bk">SPARK · ${esc(b.label || "")}</div>
       <div class="bti">${esc(b.title)}</div></div>
       <div class="bacts"><button class="dl" data-dl="${i}">COPY PROMPT</button><button class="del" data-del="${i}">✕</button></div></div>
@@ -1026,8 +1040,44 @@ $("#boxList").addEventListener("click", (e) => {
   const dl = e.target.closest("[data-dl]");
   if (dl) { copyBoxPrompt(Number(dl.dataset.dl), dl); return; }
   const del = e.target.closest("[data-del]");
-  if (del) { box.splice(Number(del.dataset.del), 1); store.set("inspobox.box.v1", box); scheduleBoxSync(); renderBox(); renderDeckSoft(); }
+  if (del) { box.splice(Number(del.dataset.del), 1); store.set("inspobox.box.v1", box); scheduleBoxSync(); renderBox(); renderDeckSoft(); return; }
+  const sp = e.target.closest("[data-spark]");
+  if (sp) openSparkSheet(Number(sp.dataset.spark));
 });
+/* v84: a saved idea opens as a bottom sheet carrying the full
+   concept card — seed, subject, world, the three beats, tags —
+   exactly as it rendered in the Idea Starter, with its prompt a
+   tap away. Older sparks without a stored concept fall back to
+   their title + summary line. */
+function openSparkSheet(i) {
+  const b = box[i];
+  if (!b || b.type !== "spark") return;
+  const body = $("#sparkSheetBody");
+  if (b.concept) {
+    const c = b.concept;
+    const rows = [];
+    if (c.seed) rows.push(`<div class="crow"><b>SEED</b>“${esc(c.seed)}”</div>`);
+    if (c.subject) rows.push(`<div class="crow"><b>SUBJECT</b>${esc(c.subject)}</div>`);
+    if (c.ip) rows.push(`<div class="crow"><b>WORLD</b>${esc(c.ip)} — ${esc(c.place || "")}</div>`);
+    if (c.open) rows.push(`<div class="crow"><b>OPEN · 0–3S</b>${esc(cap1(c.open))}</div>`);
+    if (c.pivot) rows.push(`<div class="crow"><b>PIVOT · 3–7S</b>${esc(cap1(c.pivot))}</div>`);
+    if (c.final) rows.push(`<div class="crow"><b>FINAL · 7–10S</b>${esc(cap1(c.final))}</div>`);
+    body.innerHTML = `<div class="card">
+      <div class="ghostnum">${String(c.n || 0).padStart(2, "0")}</div>
+      <div class="clabel">CONCEPT Nº ${String(c.n || 0).padStart(3, "0")} — ${esc(c.kind || "")} · ${esc(c.label || "")}${c.dynamic ? " · LIVE" : ""}</div>
+      <div class="ctitle">${esc(c.title || b.title || "")}</div>
+      ${rows.join("")}
+      <div class="ctags">${esc(c.tags || "")}</div>
+    </div>`;
+  } else {
+    body.innerHTML = `<div class="card"><div class="clabel">SPARK · ${esc(b.label || "")}</div><div class="ctitle">${esc(b.title || "")}</div><div class="crow">${esc(b.body || "")}</div></div>`;
+  }
+  const cp = $("#sparkCopyBtn");
+  cp.dataset.i = i; cp.textContent = "COPY PROMPT";
+  openLayer("#sparkLayer");
+}
+$("#sparkCopyBtn").addEventListener("click", (e) => { const i = Number(e.target.dataset.i); if (!Number.isNaN(i)) copyBoxPrompt(i, e.target); });
+$("#sparkLayer [data-sheetback]").addEventListener("click", () => closeLayer("#sparkLayer"));
 function buildPrompt(item) {
   const head = [`INSPOBOX — ${item.title}`, item.label || ""];
   if (!item.concept) return [...head, "", "PROMPT — paste into your genAI tool:", item.body || item.title, ""].join("\n");
