@@ -421,6 +421,44 @@ export async function daHarvest(env, fetchFn, lane, st) {
   return { pieces, calls: 1, examined };
 }
 
+// ---------------- Global Civitai feeds (v81) ----------------
+// The lane walks only ever look inside model galleries the app already
+// knows, ranked by all-time reactions — a finite greatest-hits list
+// that a heavy user burns through (field report Nov 13, 2026: a Design
+// pull found 6 judgeable candidates, 2 new). The GLOBAL image feed is
+// the way out: sort=Most Reactions inside a Week window is Civitai's
+// trending view — new work rising fast, from models never catalogued
+// here — and sort=Newest is the raw upload firehose. Both renew daily
+// and paginate by cursor. Candidates arrive untargeted (no gallery,
+// no style pool); the metadata pre-pass and the vision judge file
+// them, exactly like DeviantArt pieces. Fail-soft like DA: an error
+// yields an empty harvest and the pull proceeds without it.
+export const GLOBAL_HOME_SLOTS = 5;
+export const GLOBAL_FEEDS = [
+  { sort: "Most Reactions", period: "Week", name: "TRENDING ON CIVITAI" },
+  { sort: "Newest", period: "Week", name: "FRESH ON CIVITAI" },
+];
+export async function civGlobalHarvest(env, fetchFn, st) {
+  st.g = st.g && typeof st.g === "object" ? st.g : { mode: 0, c: null, done: false };
+  if (st.g.done) return { pieces: [], calls: 0, examined: 0 };
+  const feed = GLOBAL_FEEDS[st.g.mode % GLOBAL_FEEDS.length];
+  const qs = new URLSearchParams({ limit: "40", nsfw: "false", sort: feed.sort, period: feed.period, withMeta: "true" });
+  if (st.g.c) qs.set("cursor", st.g.c);
+  let page;
+  try { page = await civGet(fetchFn, "/images?" + qs.toString()); }
+  catch (e) { if (e && e.code === 429) throw e; return { pieces: [], calls: 1, examined: 0 }; }
+  const pieces = [];
+  let examined = 0;
+  for (const item of page.items || []) {
+    examined++;
+    const p = toPiece(item, feed.name, null, null);
+    if (p) { p.fresh = true; pieces.push(p); }
+  }
+  st.g.c = (page.metadata && page.metadata.nextCursor) || null;
+  if (!st.g.c) { st.g.mode = (st.g.mode || 0) + 1; if (st.g.mode >= GLOBAL_FEEDS.length) st.g.done = true; }
+  return { pieces, calls: 1, examined };
+}
+
 // The home river (v65): one walk across the requested LANE's style
 // pools, round-robin. Candidates are pre-filtered by their metadata
 // (designed-media subject matter, or a subject-led piece under a small
@@ -440,6 +478,10 @@ export async function fetchHomeBatch({ cursor, exclude, media }, fetchFn, env) {
   // takes up to DA_HOME_SLOTS of the 12-piece vision budget.
   const cap = daConfigured(env) ? HOME_VISION_BUDGET - DA_HOME_SLOTS : HOME_VISION_BUDGET;
   const daPromise = daHarvest(env, fetchFn, primary, st).catch(() => ({ pieces: [], calls: 0, examined: 0 }));
+  // Global feeds (v81): trending + newest, started alongside DA for
+  // the same reason — the sources overlap instead of stacking. The
+  // 429 contract still applies: a rate limit aborts the whole pull.
+  const gPromise = civGlobalHarvest(env, fetchFn, st).catch((e) => { if (e && e.code === 429) throw e; return { pieces: [], calls: 0, examined: 0 }; });
   const buckets = {}; // lane -> pieces (filed)
   const seenAdd = []; // v80: judged-and-rejected uuids — the client
   // remembers them as seen so later sessions stop paying the judge
@@ -515,6 +557,28 @@ export async function fetchHomeBatch({ cursor, exclude, media }, fetchFn, env) {
     absorb(page, ver, false);
     st.c = (page.metadata && page.metadata.nextCursor) || null;
     if (!st.c) st.v++;
+  }
+  // Merge the global-feed candidates (v81): up to GLOBAL_HOME_SLOTS
+  // of the vision budget, deduped by the same seen set, screened by
+  // the same metadata pre-pass as gallery candidates (ineligible ones
+  // are remembered as seen, per v80). The judge files what survives
+  // by what the image actually is — cross-lane verdicts bank home.
+  let gCalls = 0, gExamined = 0;
+  {
+    const g = await gPromise;
+    gCalls = g.calls || 0; gExamined = g.examined || 0;
+    let gTaken = 0;
+    for (const p of g.pieces || []) {
+      if (harvest.length >= HOME_VISION_BUDGET || gTaken >= GLOBAL_HOME_SLOTS) break;
+      if (seen.has(p.uuid)) continue;
+      seen.add(p.uuid);
+      const med = mediumHits(p.prompt);
+      const charStrong = subjectHits(p.prompt) >= 2;
+      const eligible = !p.prompt || med >= 1 || charStrong;
+      if (!eligible) { skipped++; seenAdd.push(p.uuid); continue; }
+      harvest.push(p);
+      gTaken++;
+    }
   }
   // Merge the DeviantArt candidates into the harvest (v75): up to
   // DA_HOME_SLOTS of the 12-piece vision budget, deduped by the same
@@ -601,7 +665,7 @@ export async function fetchHomeBatch({ cursor, exclude, media }, fetchFn, env) {
   }
   for (const mv of Object.keys(banked)) { banked[mv] = banked[mv].slice(0, BANK_CAP); bankedCount += banked[mv].length; }
   for (const md of Object.keys(bankedHome)) { bankedHome[md] = bankedHome[md].slice(0, BANK_CAP); bankedHomeCount += bankedHome[md].length; }
-  return { pieces, banked, bankedHome, seenAdd, cursor: st, done: st.q >= walk.length, stats: { examined, passed: pieces.length, civCalls: calls, daCalls, daExamined, styles: Object.keys(counts).length, charCapped, skipped, banked: bankedCount, bankedHome: bankedHomeCount, freshFiled, visionChecked, visionCulled, unstyled, unverified, noneThemes } };
+  return { pieces, banked, bankedHome, seenAdd, cursor: st, done: st.q >= walk.length && !!(st.g && st.g.done), stats: { examined, passed: pieces.length, civCalls: calls, daCalls, daExamined, gCalls, gExamined, styles: Object.keys(counts).length, charCapped, skipped, banked: bankedCount, bankedHome: bankedHomeCount, freshFiled, visionChecked, visionCulled, unstyled, unverified, noneThemes } };
 }
 
 // A locked column (v65): contract is {media: lane, movement: style id
