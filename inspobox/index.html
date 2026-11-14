@@ -226,6 +226,15 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
 #infoBy:not([href]){text-decoration:none}
 .tbuild{margin-top:8px;font-size:9px;letter-spacing:.28em;color:#55556a;font-weight:700}
 .tdiag{margin-top:5px;font-size:10px;letter-spacing:.06em;color:#8a8aa0;line-height:1.5}
+/* v82: press-and-hold clean view — the deck never offers the iOS
+   selection callout, and body.peek strips every overlay so the held
+   image stands alone until release. */
+#deck{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+#deck img{-webkit-user-drag:none}
+#topbar,#saveBtn,#searchBtn,#igniteBtn,#pullReveal,#flash,#infobar{transition:opacity .18s ease}
+.piece .scrim{transition:opacity .18s ease}
+body.peek #topbar,body.peek #vtitleEl,body.peek #saveBtn,body.peek #searchBtn,body.peek #infobar,body.peek #igniteBtn,body.peek #toast,body.peek #pullHint,body.peek #pullReveal,body.peek #flash{opacity:0!important;pointer-events:none!important}
+body.peek .piece .scrim{opacity:0}
 #toast{position:fixed;left:14px;right:14px;bottom:228px;z-index:46;background:rgba(13,11,22,.94);border:1px solid rgba(255,255,255,.16);border-radius:14px;padding:12px 42px 12px 14px;backdrop-filter:blur(18px) saturate(1.4);-webkit-backdrop-filter:blur(18px) saturate(1.4);box-shadow:0 14px 34px rgba(0,0,0,.5);opacity:0;transform:translateY(8px);pointer-events:none;transition:opacity .25s,transform .25s}
 #toast.show{opacity:1;transform:none;pointer-events:auto}
 #toast .ttag{font-family:var(--unb);font-weight:700;font-size:10px;letter-spacing:.18em;color:#FF8A1F;margin-bottom:4px}
@@ -553,7 +562,7 @@ function pieceHtml(p, i, total) {
 }
 
 /* ---------------- fixed info chrome (v72) ---------------- */
-const APP_BUILD = "V80";
+const APP_BUILD = "V82";
 let infoTimer = null, infoCtx = "", lastInfoId = null;
 function updateInfo(animate) {
   const p = deckList[state.current] || null;
@@ -1479,6 +1488,28 @@ async function refreshCurrentView() {
   setTimeout(pullHintHide, 1100);
   pullRefreshing = false;
 }
+// v82: press-and-hold clean view. A still hold (260ms, under the
+// movement threshold that marks a swipe or scroll) fades every
+// overlay out; releasing the finger brings them all back. An open
+// layer suppresses it — the hold belongs to the deck.
+let peekTimer = null, peekX = 0, peekY = 0;
+function peekOff() {
+  if (peekTimer) { clearTimeout(peekTimer); peekTimer = null; }
+  document.body.classList.remove("peek");
+}
+$("#deck").addEventListener("pointerdown", (e) => {
+  if (e.isPrimary === false) return;
+  peekX = e.clientX; peekY = e.clientY;
+  if (peekTimer) clearTimeout(peekTimer);
+  peekTimer = setTimeout(() => { peekTimer = null; if (!document.querySelector(".layer.open")) document.body.classList.add("peek"); }, 260);
+});
+$("#deck").addEventListener("pointermove", (e) => {
+  if (peekTimer && (Math.abs(e.clientX - peekX) > 10 || Math.abs(e.clientY - peekY) > 10)) { clearTimeout(peekTimer); peekTimer = null; }
+});
+$("#deck").addEventListener("pointerup", peekOff);
+$("#deck").addEventListener("pointercancel", peekOff);
+window.addEventListener("blur", peekOff);
+$("#deck").addEventListener("contextmenu", (e) => e.preventDefault());
 $("#deck").addEventListener("touchstart", (e) => {
   if (e.touches.length === 1 && $("#deck").scrollTop <= 0 && !pullRefreshing) { pullX = e.touches[0].clientX; pullY = e.touches[0].clientY; pullDy = 0; pullArmed = false; }
   else { pullX = pullY = null; }
