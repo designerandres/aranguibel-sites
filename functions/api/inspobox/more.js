@@ -733,3 +733,5 @@ export async function onRequestGet({ request, env }) {
   }
   return json({ error: "POST only" }, 405);
 }
+
+// redeploy touch 2026-11-13 (v78 deploy did not trigger on the fix commit)
