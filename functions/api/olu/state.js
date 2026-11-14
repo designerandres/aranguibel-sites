@@ -180,13 +180,23 @@ async function buildState(db, viewer) {
 // Routes: GET (viewer = the signed-in partner) · POST {action:"submitAnswer"|"updateNames", ...}
 // ---------------------------------------------------------------------------
 // Who is writing is derived from the signed-in account — never from the
-// client. The account whose name matches the "B" partner is B; the one
-// matching "A" is A; the admin account is Andres (B) as a fallback. Any
-// other account is not one of the two partners and gets a 403.
+// client. Matching is generous about HOW a partner's name got stored
+// (exact, first name, or the Poppy's Picks attribution rule — the
+// partner's first name appearing in the account name or email), because
+// an exact-only match locked Sarah out in Nov 2026: the endpoint's 403
+// made the app bounce to the shell, which forwarded her straight back
+// in — an endless loop. The admin account is Andres (B) as a fallback.
+// Any other account is not one of the two partners and gets a 403.
 function authorFor(id, settings) {
-  const n = (id.name || "").trim().toLowerCase();
-  if (n && n === settings.nameB.trim().toLowerCase()) return "B";
-  if (n && n === settings.nameA.trim().toLowerCase()) return "A";
+  const norm = (s) => (s || "").trim().toLowerCase();
+  const firstOf = (s) => norm(s).split(/\s+/)[0] || "";
+  const name = norm(id.name), emailLocal = norm(id.email).split("@")[0];
+  const aN = norm(settings.nameA), bN = norm(settings.nameB);
+  const aF = firstOf(aN), bF = firstOf(bN);
+  if (name && (name === bN || name.split(/\s+/)[0] === bF)) return "B";
+  if (name && (name === aN || name.split(/\s+/)[0] === aF)) return "A";
+  if (bF.length >= 3 && ((name && name.includes(bF)) || (emailLocal && emailLocal.includes(bF)))) return "B";
+  if (aF.length >= 3 && ((name && name.includes(aF)) || (emailLocal && emailLocal.includes(aF)))) return "A";
   if (id.role === "admin") return "B";
   return null;
 }

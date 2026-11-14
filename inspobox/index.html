@@ -173,6 +173,9 @@ a.bb{color:var(--dim);text-decoration:underline dotted rgba(255,255,255,.35);tex
 .boxitem .dl{font-family:var(--unb);font-weight:900;font-size:9.5px;letter-spacing:.07em;padding:7px 9px;border-radius:8px;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.16);color:#fff;white-space:nowrap}
 .boxitem .dl:active{background:var(--grad)}
 .boxitem.sparkitem{flex-direction:column;gap:9px}
+.boxitem.refitem{flex-direction:column;padding:0;gap:0;overflow:hidden}
+.boxitem.refitem img.bthumb{width:100%;height:auto;max-height:440px;object-fit:cover;border-radius:0;flex:none;display:block}
+.boxitem .bmeta{display:flex;gap:12px;padding:11px 12px 12px;align-items:flex-start;width:100%}
 .sparkitem .bhead{display:flex;gap:12px;width:100%;align-items:flex-start}
 .sparkitem .bacts{flex-direction:row;align-items:center;gap:2px}
 .sparkitem .bb{font-size:12.5px;color:var(--dim);line-height:1.55}
@@ -549,7 +552,7 @@ function pieceHtml(p, i, total) {
 }
 
 /* ---------------- fixed info chrome (v72) ---------------- */
-const APP_BUILD = "V76";
+const APP_BUILD = "V77";
 let infoTimer = null, infoCtx = "", lastInfoId = null;
 function updateInfo(animate) {
   const p = deckList[state.current] || null;
@@ -920,11 +923,11 @@ function renderBox() {
     return;
   }
   list.innerHTML = entries.map(({ b, i }) => b.type === "piece" ? `
-    <div class="boxitem">
+    <div class="boxitem refitem">
       <img class="bthumb" data-view="${i}" src="${esc(imgCache.get(b.img) || b.img)}" alt="">
-      <div class="bt"><div class="bk">${esc(styleName(b.media, b.movement).toUpperCase())} · ${esc(mdName(b.media).toUpperCase())}</div>
+      <div class="bmeta"><div class="bt"><div class="bk">${esc(styleName(b.media, b.movement).toUpperCase())} · ${esc(mdName(b.media).toUpperCase())}</div>
       <div class="bti">${esc(b.title)}</div>${b.url ? `<a class="bb" href="${esc(b.url)}" target="_blank" rel="noopener">${esc(b.by || "")}</a>` : `<div class="bb">${esc(b.by || "")}</div>`}</div>
-      <button class="del" data-del="${i}">✕</button>
+      <button class="del" data-del="${i}">✕</button></div>
     </div>` : `
     <div class="boxitem sparkitem">
       <div class="bhead"><div class="bt"><div class="bk">SPARK · ${esc(b.label || "")}</div>
