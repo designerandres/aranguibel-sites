@@ -578,7 +578,7 @@ function pieceHtml(p, i, total) {
 }
 
 /* ---------------- fixed info chrome (v72) ---------------- */
-const APP_BUILD = "V87";
+const APP_BUILD = "V88";
 let infoTimer = null, infoCtx = "", lastInfoId = null;
 function updateInfo(animate) {
   const p = deckList[state.current] || null;
@@ -588,7 +588,7 @@ function updateInfo(animate) {
   const changed = lastInfoId !== p.id;
   lastInfoId = p.id;
   const apply = () => {
-    vt.textContent = styleName(p.media, p.movement).toUpperCase();
+    vt.textContent = p.movement === "none" ? "" : styleName(p.media, p.movement).toUpperCase(); // v88: untagged pieces wear no title
     vt.className = "vtitle " + vtSize(p.media, p.movement);
     $("#infoTitle").textContent = p.title;
     const st = $("#infoStyle");
@@ -818,13 +818,13 @@ function insertPieces(fresh) {
   updateChrome(deckList.length);
 }
 function hydrateLive() {
-  if (state.movement === "all") return;
+  if (state.movement === "all" || state.movement === "none") return; // v88: the untagged column decks curated pieces only
   const col = liveCol();
   if (col.pieces.length) appendPieces(col.pieces);
   maybeFetchLive(!col.fetchedOnce);
 }
 async function maybeFetchLive(force) {
-  if (state.movement === "all") return;
+  if (state.movement === "all" || state.movement === "none") return;
   const col = liveCol();
   if (col.done || col.loading) return;
   if (!force && state.current < deckList.length - 5) return;
@@ -1223,6 +1223,7 @@ function renderIndex() {
   const laneTotal = DATA.feed.filter((p) => p.media === lane).length;
   $("#indexGrid").innerHTML = `
     <button class="tile alltile ${state.movement === "all" ? "on" : ""}" data-mv="all" data-name="all styles"><span class="tn"><span class="nm">ALL<br>STYLES</span><span class="tg" style="display:block">${laneTotal} pieces in ${esc(mdName(lane))} · tap a style to lock it</span></span></button>
+    <button class="tile gradtile ${state.movement === "none" ? "on" : ""}" data-mv="none" data-name="untagged"><span class="bigletter">✳</span><span class="tsc"></span><span class="cnt">${counts["none"] || 0}</span>${state.movement === "none" ? '<span class="lockb">LOCKED</span>' : ""}<span class="tn"><span class="nm">UNTAGGED</span><span class="tg" style="display:block">strong pieces, no style fits</span></span></button>
     ` + laneStyles(lane).map((m) => `
     <button class="tile ${state.movement === m.id ? "on" : ""} ${m.img ? "" : "gradtile"}" data-mv="${m.id}" data-name="${esc(m.name.toLowerCase())}">
       ${m.img ? `<img src="${esc(m.img)}" alt="" loading="lazy">` : `<span class="bigletter">${esc(m.name.charAt(0))}</span>`}<span class="tsc"></span>
@@ -1588,7 +1589,7 @@ $("#deck").addEventListener("pointerup", (e) => {
     if (!p.movement) { openIndex(); return; }
     state.movement = p.movement; renderIndex(); renderDeck(p.id); flash("LOCKED");
   }
-  else flash(styleName(p.media, p.movement).toUpperCase());
+  else flash(p.movement === "none" ? "UNTAGGED" : styleName(p.media, p.movement).toUpperCase());
 });
 /* ---------------- pull to refresh (v73) ----------------
    At the top of any deck — a lane's river or a locked column — drag

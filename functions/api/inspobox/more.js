@@ -621,12 +621,18 @@ export async function fetchHomeBatch({ cursor, exclude, media }, fetchFn, env) {
     if (v.ok === false || v.grouping === "none") { visionCulled++; seenAdd.push(p.uuid); if (v.theme) tallyTheme(noneThemes, primary, v.theme); continue; }
     p.media = v.grouping;
     if (v.style === "none") {
-      // v67: an honest "no style fits" verdict is information, not
-      // content. The theme tallies for the discovery loop; the piece
-      // itself does not deck in any river.
+      // v88 (Andres): a quality-passing piece with a clear lane but no
+      // fitting style decks UNTAGGED in its lane's river — no style
+      // title, filed under "untagged" in the index. The theme still
+      // tallies for the discovery loop. It is NOT added to seenAdd:
+      // being unstyled is not a rejection. The bar doesn't drop —
+      // quality failures and grouping-"none" verdicts still cull above.
       unstyled++;
-      seenAdd.push(p.uuid);
       if (v.theme) tallyTheme(noneThemes, v.grouping, v.theme);
+      p.movement = "none";
+      p.gated = true;
+      if (v.phrase) p.style = v.phrase;
+      (buckets[p.media] = buckets[p.media] || []).push(p); total++;
       continue;
     }
     p.movement = v.style;
@@ -719,7 +725,7 @@ export async function fetchMoreBatch({ movement, media, cursor, exclude }, fetch
         const v = verdicts.get(p);
         if (!v || v.grouping === null) { unstyled++; continue; }
         if (v.ok === false || v.grouping === "none") { visionCulled++; seenAdd.push(p.uuid); if (v.theme) tallyTheme(noneThemes, lane, v.theme); continue; }
-        if (v.style === "none") { visionCulled++; seenAdd.push(p.uuid); if (v.theme) tallyTheme(noneThemes, v.grouping, v.theme); continue; }
+        if (v.style === "none") { visionCulled++; if (v.theme) tallyTheme(noneThemes, v.grouping, v.theme); continue; }
         p.movement = v.style; p.media = v.grouping; p.gated = true;
         if (v.phrase) p.style = v.phrase;
         if (v.grouping === lane && v.style === styleId) { if (pieces.length < BATCH) pieces.push(p); else banked.push(p); }
