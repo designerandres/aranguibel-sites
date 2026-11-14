@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>INSPOBOX — Ideas &amp; Eye Candy</title>
 <meta name="theme-color" content="#07070C">
 <link rel="manifest" href="/inspobox/manifest.webmanifest">
@@ -56,6 +56,7 @@ img{display:block}
 .savebtn.saved{background:var(--grad);border-color:transparent}
 .savebtn.blocked{background:rgba(255,46,77,.25);border-color:rgba(255,46,77,.65);font-size:19px}
 #sparkSheetBody .card{margin-top:2px}
+html,body,#deck,.layer,.sheetpanel,#viewer{touch-action:pan-y}
 .boxitem.sparkitem{cursor:pointer}
 .searchbtn{position:fixed;right:16px;top:164px;z-index:35;width:44px;height:44px;border-radius:50%;background:var(--glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--glassline);display:flex;align-items:center;justify-content:center;color:inherit}
 .idxsearchrow{padding:2px 20px 12px}
@@ -577,7 +578,7 @@ function pieceHtml(p, i, total) {
 }
 
 /* ---------------- fixed info chrome (v72) ---------------- */
-const APP_BUILD = "V84";
+const APP_BUILD = "V85";
 let infoTimer = null, infoCtx = "", lastInfoId = null;
 function updateInfo(animate) {
   const p = deckList[state.current] || null;
@@ -1610,6 +1611,12 @@ $("#deck").addEventListener("pointerup", peekOff);
 $("#deck").addEventListener("pointercancel", peekOff);
 window.addEventListener("blur", peekOff);
 $("#deck").addEventListener("contextmenu", (e) => e.preventDefault());
+// v85: no pinch-to-zoom anywhere in the app. The viewport meta asks
+// politely; Safari's gesture events do the enforcing (a pinch fires
+// gesturestart before the page can scale), touch-action covers the
+// other browsers, and a stray double-tap never zooms either.
+for (const ev of ["gesturestart", "gesturechange"]) document.addEventListener(ev, (e) => e.preventDefault());
+document.addEventListener("dblclick", (e) => { if (!e.target.closest("input, textarea")) e.preventDefault(); }, { passive: false });
 $("#deck").addEventListener("touchstart", (e) => {
   if (e.touches.length === 1 && $("#deck").scrollTop <= 0 && !pullRefreshing) { pullX = e.touches[0].clientX; pullY = e.touches[0].clientY; pullDy = 0; pullArmed = false; }
   else { pullX = pullY = null; }
