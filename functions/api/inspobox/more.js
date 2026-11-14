@@ -441,6 +441,9 @@ export async function fetchHomeBatch({ cursor, exclude, media }, fetchFn, env) {
   const cap = daConfigured(env) ? HOME_VISION_BUDGET - DA_HOME_SLOTS : HOME_VISION_BUDGET;
   const daPromise = daHarvest(env, fetchFn, primary, st).catch(() => ({ pieces: [], calls: 0, examined: 0 }));
   const buckets = {}; // lane -> pieces (filed)
+  const seenAdd = []; // v80: judged-and-rejected uuids — the client
+  // remembers them as seen so later sessions stop paying the judge
+  // (and the harvest cap) to re-reject the same gallery heads.
   let total = 0, calls = 0, examined = 0, charFiled = 0, charCapped = 0, skipped = 0;
   let freshFiled = 0;
   const harvest = [];
@@ -453,7 +456,7 @@ export async function fetchHomeBatch({ cursor, exclude, media }, fetchFn, env) {
       const med = mediumHits(p.prompt);
       const charStrong = subjectHits(p.prompt) >= 2;
       const eligible = !p.prompt || med >= 1 || charStrong;
-      if (!eligible) { skipped++; continue; }
+      if (!eligible) { skipped++; seenAdd.push(p.uuid); continue; }
       if (charStrong && med === 0) {
         if (charFiled >= 2) { charCapped++; continue; }
         charFiled++;
@@ -551,13 +554,14 @@ export async function fetchHomeBatch({ cursor, exclude, media }, fetchFn, env) {
       continue;
     }
     visionChecked++;
-    if (v.ok === false || v.grouping === "none") { visionCulled++; if (v.theme) tallyTheme(noneThemes, primary, v.theme); continue; }
+    if (v.ok === false || v.grouping === "none") { visionCulled++; seenAdd.push(p.uuid); if (v.theme) tallyTheme(noneThemes, primary, v.theme); continue; }
     p.media = v.grouping;
     if (v.style === "none") {
       // v67: an honest "no style fits" verdict is information, not
       // content. The theme tallies for the discovery loop; the piece
       // itself does not deck in any river.
       unstyled++;
+      seenAdd.push(p.uuid);
       if (v.theme) tallyTheme(noneThemes, v.grouping, v.theme);
       continue;
     }
@@ -597,7 +601,7 @@ export async function fetchHomeBatch({ cursor, exclude, media }, fetchFn, env) {
   }
   for (const mv of Object.keys(banked)) { banked[mv] = banked[mv].slice(0, BANK_CAP); bankedCount += banked[mv].length; }
   for (const md of Object.keys(bankedHome)) { bankedHome[md] = bankedHome[md].slice(0, BANK_CAP); bankedHomeCount += bankedHome[md].length; }
-  return { pieces, banked, bankedHome, cursor: st, done: st.q >= walk.length, stats: { examined, passed: pieces.length, civCalls: calls, daCalls, daExamined, styles: Object.keys(counts).length, charCapped, skipped, banked: bankedCount, bankedHome: bankedHomeCount, freshFiled, visionChecked, visionCulled, unstyled, unverified, noneThemes } };
+  return { pieces, banked, bankedHome, seenAdd, cursor: st, done: st.q >= walk.length, stats: { examined, passed: pieces.length, civCalls: calls, daCalls, daExamined, styles: Object.keys(counts).length, charCapped, skipped, banked: bankedCount, bankedHome: bankedHomeCount, freshFiled, visionChecked, visionCulled, unstyled, unverified, noneThemes } };
 }
 
 // A locked column (v65): contract is {media: lane, movement: style id
@@ -618,6 +622,7 @@ export async function fetchMoreBatch({ movement, media, cursor, exclude }, fetch
   const pieces = [];
   const banked = [];
   const noneThemes = {};
+  const seenAdd = []; // v80: judged-and-rejected uuids (see fetchHomeBatch)
   let calls = 0, examined = 0, visionCulled = 0, unstyled = 0;
   while (pieces.length < BATCH && calls < 5) {
     if (st.q >= queries.length) break;
@@ -649,8 +654,8 @@ export async function fetchMoreBatch({ movement, media, cursor, exclude }, fetch
       for (const p of toVerify) {
         const v = verdicts.get(p);
         if (!v || v.grouping === null) { unstyled++; continue; }
-        if (v.ok === false || v.grouping === "none") { visionCulled++; if (v.theme) tallyTheme(noneThemes, lane, v.theme); continue; }
-        if (v.style === "none") { visionCulled++; if (v.theme) tallyTheme(noneThemes, v.grouping, v.theme); continue; }
+        if (v.ok === false || v.grouping === "none") { visionCulled++; seenAdd.push(p.uuid); if (v.theme) tallyTheme(noneThemes, lane, v.theme); continue; }
+        if (v.style === "none") { visionCulled++; seenAdd.push(p.uuid); if (v.theme) tallyTheme(noneThemes, v.grouping, v.theme); continue; }
         p.movement = v.style; p.media = v.grouping; p.gated = true;
         if (v.phrase) p.style = v.phrase;
         if (v.grouping === lane && v.style === styleId) { if (pieces.length < BATCH) pieces.push(p); else banked.push(p); }
@@ -664,7 +669,7 @@ export async function fetchMoreBatch({ movement, media, cursor, exclude }, fetch
     if (!st.c) st.v++;
   }
   if (Object.keys(noneThemes).length) await persistNoneThemes(env, noneThemes);
-  return { pieces, banked, cursor: st, done: st.q >= queries.length, stats: { examined, passed: pieces.length, gated: !!(env && env.ANTHROPIC_API_KEY), civCalls: calls, visionCulled, unstyled, mediaBanked: banked.length, noneThemes } };
+  return { pieces, banked, seenAdd, cursor: st, done: st.q >= queries.length, stats: { examined, passed: pieces.length, gated: !!(env && env.ANTHROPIC_API_KEY), civCalls: calls, visionCulled, unstyled, mediaBanked: banked.length, noneThemes } };
 }
 
 export async function readNoneThemes(env) {

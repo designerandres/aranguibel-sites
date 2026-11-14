@@ -225,6 +225,7 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
 .blurx{filter:blur(9px);opacity:.2}
 #infoBy:not([href]){text-decoration:none}
 .tbuild{margin-top:8px;font-size:9px;letter-spacing:.28em;color:#55556a;font-weight:700}
+.tdiag{margin-top:5px;font-size:10px;letter-spacing:.06em;color:#8a8aa0;line-height:1.5}
 #toast{position:fixed;left:14px;right:14px;bottom:228px;z-index:46;background:rgba(13,11,22,.94);border:1px solid rgba(255,255,255,.16);border-radius:14px;padding:12px 42px 12px 14px;backdrop-filter:blur(18px) saturate(1.4);-webkit-backdrop-filter:blur(18px) saturate(1.4);box-shadow:0 14px 34px rgba(0,0,0,.5);opacity:0;transform:translateY(8px);pointer-events:none;transition:opacity .25s,transform .25s}
 #toast.show{opacity:1;transform:none;pointer-events:auto}
 #toast .ttag{font-family:var(--unb);font-weight:700;font-size:10px;letter-spacing:.18em;color:#FF8A1F;margin-bottom:4px}
@@ -269,7 +270,7 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
 <div id="veil"></div>
 <div id="switcher"><div id="swTrack"></div></div>
 <div id="flash"></div>
-<div id="toast" role="status"><div class="ttag" id="toastTag"></div><div class="tmsg" id="toastMsg"></div><div class="tbuild" id="toastBuild"></div><button id="toastX" aria-label="Dismiss notification">✕</button></div>
+<div id="toast" role="status"><div class="ttag" id="toastTag"></div><div class="tmsg" id="toastMsg"></div><div class="tbuild" id="toastBuild"></div><div class="tdiag" id="toastDiag"></div><button id="toastX" aria-label="Dismiss notification">✕</button></div>
 
 <div id="pullReveal" aria-hidden="true"><span>RELEASE TO REFRESH</span></div>
 <main id="deck"></main>
@@ -552,7 +553,7 @@ function pieceHtml(p, i, total) {
 }
 
 /* ---------------- fixed info chrome (v72) ---------------- */
-const APP_BUILD = "V79";
+const APP_BUILD = "V80";
 let infoTimer = null, infoCtx = "", lastInfoId = null;
 function updateInfo(animate) {
   const p = deckList[state.current] || null;
@@ -764,6 +765,7 @@ async function maybeFetchLive(force) {
     }
     col.cursor = data.cursor; col.done = !!data.done; col.lastError = "";
     if (data.stats) col.stats = data.stats;
+    if (Array.isArray(data.seenAdd) && data.seenAdd.length) recordSeen(data.seenAdd.map((uuid) => ({ uuid })));
     // Cross-grouping bank (v59): pieces this fetch classified into other
     // groupings are filed into those columns of the same genre.
     if (Array.isArray(data.banked) && data.banked.length) {
@@ -813,6 +815,7 @@ async function maybeFetchHome(force, chained) {
     }
     col.cursor = data.cursor; col.done = !!data.done; col.lastError = ""; col.failed = false;
     if (data.stats) col.stats = data.stats;
+    if (Array.isArray(data.seenAdd) && data.seenAdd.length) recordSeen(data.seenAdd.map((uuid) => ({ uuid })));
     // Banked home overflow (v59): pieces classified into OTHER groupings
     // are filed into those groupings' home rivers.
     if (data.bankedHome) {
@@ -1181,12 +1184,25 @@ function syncErrBtn() {
   $("#errCount").textContent = notices.length > 1 ? " " + notices.length : "";
   b.classList.remove("pulse"); void b.offsetWidth; b.classList.add("pulse");
 }
+function feedDiag() {
+  // v80: one line of ground truth in the notice toast — how much the
+  // seen memory holds and what the current view's last pull actually
+  // did (new vs rejected vs no-style vs unverified). Screenshot-able.
+  let col, label;
+  if (state.movement === "all") { col = homeCol(); label = "RIVER · " + state.media.toUpperCase(); }
+  else { col = liveCol(); label = (styleName(state.media, state.movement) + " · " + state.media).toUpperCase(); }
+  let s = label + " — SEEN " + seenList().length.toLocaleString("en-US");
+  if (col && (col.failed || col.lastError)) s += " · LAST PULL FAILED" + (col.lastError ? " (" + col.lastError + ")" : "");
+  else if (col && col.stats) { const st = col.stats; s += " · LAST PULL " + (st.passed || 0) + " NEW / " + (st.visionCulled || 0) + " REJECTED / " + (st.unstyled || 0) + " NO STYLE" + (st.unverified ? " / " + st.unverified + " UNVERIFIED" : ""); }
+  return s;
+}
 function renderNotice() {
   const n = notices[notices.length - 1];
   if (!n) return hideToast();
   $("#toastTag").textContent = n.tag;
   $("#toastMsg").textContent = n.msg;
   $("#toastBuild").textContent = "INSPOBOX · BUILD " + APP_BUILD;
+  $("#toastDiag").textContent = feedDiag();
   const panel = $("#infobar");
   let bottom = 228;
   if (panel) { const r = panel.getBoundingClientRect(); if (r.height > 0) bottom = Math.max(96, Math.round(window.innerHeight - r.top + 10)); }
