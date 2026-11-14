@@ -469,15 +469,17 @@ function tourFeed() {
   }
   return reps;
 }
-/* The river's foundation (v69): the lane's STYLED curated pieces,
-   interleaved round-robin by style with a per-session shuffle, capped
-   at 24. Until v68 the river was live-only, which made its depth host
-   to fortune: a batch yields only a few deck pieces after verdicts,
-   banking and caps, so lanes opened with as few as 3 pieces and took
-   minutes of chained pulls to deepen. The curated bench is verified,
-   local and instant — it now leads every river, and live pieces weave
-   into it as they are verdicted. Unstyled curated pieces stay out
-   (the river shows styles, not filler). */
+/* The river's foundation (v69; demoted to backfill in v76): the
+   lane's STYLED curated pieces, interleaved round-robin by style with
+   a per-session shuffle, capped at 24. v69-v75 it led every river —
+   which is why opens felt stale: the same curated bench every time,
+   with only a handful of live pieces woven in. At Andres's direction
+   (Nov 13, 2026: "every time I open the app, refresh with a lot of
+   new content — old content is replaced with new") rivers are now
+   LIVE-FIRST: fresh pieces from both sources lead, the open chain
+   targets RIVER_TARGET live pieces, and this bench only backfills
+   the tail when live stock is under RIVER_FLOOR. Unstyled curated
+   pieces stay out (the river shows styles, not filler). */
 const riverBases = {};
 function riverBase(lane) {
   if (riverBases[lane]) return riverBases[lane];
@@ -496,21 +498,22 @@ function riverBase(lane) {
   riverBases[lane] = out;
   return out;
 }
+const RIVER_TARGET = 24; // live pieces a river chains toward at open (v76)
+const RIVER_FLOOR = 12;  // below this, curated backfill pads the tail
 function deckFeed() {
   if (state.movement !== "all") return scopeFeed().filter((p) => p.media === state.media);
-  // Home is a river: the curated foundation (above) with live pieces
-  // woven in as maybeFetchHome verdicts them.
+  // Home is a river (v76): LIVE pieces lead — col.pieces holds only
+  // session pieces now. The curated foundation backfills the tail
+  // only while live stock is under the floor, so an open always
+  // greets with new content and the bench disappears entirely once
+  // enough fresh pieces have landed.
   const col = homeCol();
-  if (!col.baseMerged) {
-    const base = riverBase(state.media);
-    if (base.length) {
-      const baseIds = new Set(base.map((p) => p.id));
-      col.pieces = base.concat(col.pieces.filter((p) => !baseIds.has(p.id)));
-      col.baseMerged = true;
-    }
-  }
-  if (col.pieces.length) return col.pieces.slice();
-  return col.failed ? tourFeed() : [];
+  const live = col.pieces.slice();
+  if (live.length >= RIVER_FLOOR) return live;
+  if (!live.length && col.failed) return tourFeed();
+  const seenIds = new Set(live.map((p) => p.id));
+  const backfill = riverBase(state.media).filter((p) => !seenIds.has(p.id));
+  return live.concat(backfill.slice(0, RIVER_FLOOR - live.length));
 }
 function mvName(id) { if (id === "none") return "None"; const m = DATA.movements.find((x) => x.id === id); return m ? m.name : id; }
 /* v65: feed pieces file by STYLE within their lane. styleName resolves a
@@ -546,7 +549,7 @@ function pieceHtml(p, i, total) {
 }
 
 /* ---------------- fixed info chrome (v72) ---------------- */
-const APP_BUILD = "V74";
+const APP_BUILD = "V76";
 let infoTimer = null, infoCtx = "", lastInfoId = null;
 function updateInfo(animate) {
   const p = deckList[state.current] || null;
@@ -824,11 +827,23 @@ async function maybeFetchHome(force, chained) {
       col.pieces.push(...fresh); recordSeen(fresh);
       for (const p of fresh) cacheSessionImage(p);
       if (state.movement === "all" && state.media === media) {
-        if (deckList.length) insertPieces(fresh); else renderDeck();
-        // v67 start depth: a lane's river opens with a real bench, not
-        // one shallow batch — keep pulling (bounded) until this lane
-        // holds at least 19 pieces or its walk is done.
-        if (col.pieces.length < 19 && !col.done && (chained || 0) < 8) { col.loading = false; maybeFetchHome(true, (chained || 0) + 1); return; }
+        if (!deckList.length) renderDeck();
+        else if (deckList.some((p) => !p.session)) {
+          // v76: the visible deck still carries curated backfill —
+          // rebuild so the fresh pieces LEAD (old replaced by new),
+          // landing back on the current piece if it survives the
+          // rebuild (it drops out only when the shrinking backfill
+          // slice passes it, in the first seconds after an open).
+          const cur = deckList[state.current];
+          renderDeck(cur ? cur.id : undefined);
+        }
+        else insertPieces(fresh);
+        // Start depth (v67, retargeted v76): a lane's river opens
+        // with a real bench of NEW pieces, not one shallow batch —
+        // keep pulling (bounded) until this lane holds RIVER_TARGET
+        // live pieces or its walk is done. col.pieces is live-only
+        // since v76, so the count is honest.
+        if (col.pieces.length < RIVER_TARGET && !col.done && (chained || 0) < 8) { col.loading = false; maybeFetchHome(true, (chained || 0) + 1); return; }
       }
     } else if (!col.done && state.movement === "all" && state.media === media && deckList.length) {
       col.loading = false; maybeFetchHome(true); return;
@@ -854,10 +869,10 @@ async function maybeFetchHome(force, chained) {
 // the start-depth target, retry once the cooldown lapses — once per
 // failure, only while he's still looking at that river.
 function scheduleRiverRetry(col, media) {
-  if (col.done || col.pieces.length >= 19 || col.retryT) return;
+  if (col.done || col.pieces.length >= RIVER_TARGET || col.retryT) return;
   col.retryT = setTimeout(() => {
     col.retryT = null;
-    if (state.movement === "all" && state.media === media && homeColFor(media) === col && !col.done && col.pieces.length < 19) maybeFetchHome(true);
+    if (state.movement === "all" && state.media === media && homeColFor(media) === col && !col.done && col.pieces.length < RIVER_TARGET) maybeFetchHome(true);
   }, 26000);
 }
 
