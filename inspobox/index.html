@@ -582,7 +582,7 @@ function pieceHtml(p, i, total) {
 }
 
 /* ---------------- fixed info chrome (v72) ---------------- */
-const APP_BUILD = "V89";
+const APP_BUILD = "V90";
 let infoTimer = null, infoCtx = "", lastInfoId = null;
 function updateInfo(animate) {
   const p = deckList[state.current] || null;
@@ -988,13 +988,16 @@ async function fetchHomeLane(media, chained) {
    lands on a deep river instead of a fresh fill. One river pull
    in flight app-wide; pauses while a style is locked or the app
    is in the background; a slow warden tick keeps it moving as
-   lanes settle and cooldowns lapse. */
+   lanes settle and cooldowns lapse.
+   v90: at his direction only WORLD and ARCHITECTURE prefetch;
+   character, design and prop fill when he actually visits them. */
+const PREFETCH_LANES = ["world", "architecture"];
 function kickPrefetch() {
   if (state.movement !== "all" || document.hidden) return;
   const cur = homeCol();
   if (!(cur.done || cur.failed || cur.pieces.length >= RIVER_TARGET)) return;
   if (Object.values(homeCols).some((c) => c.loading)) return;
-  const next = DATA.media.map((m) => m.id).find((id) => { if (id === state.media) return false; const c = homeColFor(id); return !c.done && !c.failed && c.pieces.length < RIVER_TARGET; });
+  const next = PREFETCH_LANES.find((id) => { if (id === state.media) return false; const c = homeColFor(id); return !c.done && !c.failed && c.pieces.length < RIVER_TARGET; });
   if (next) fetchHomeLane(next, 0);
 }
 setInterval(kickPrefetch, 5000);
