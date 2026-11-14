@@ -578,7 +578,7 @@ function pieceHtml(p, i, total) {
 }
 
 /* ---------------- fixed info chrome (v72) ---------------- */
-const APP_BUILD = "V86";
+const APP_BUILD = "V87";
 let infoTimer = null, infoCtx = "", lastInfoId = null;
 function updateInfo(animate) {
   const p = deckList[state.current] || null;
@@ -624,6 +624,7 @@ function renderDeck(startId) {
   renderingDeck = true;
   const wantId = startId || viewPos[state.movement + "|" + state.media] || null;
   const feed = deckFeed(); deckList = feed;
+  if (state.movement === "all") { const hc = homeCol(); if (!hc.done && !hc.loading && hc.pieces.length < RIVER_TARGET) maybeFetchHome(true); }
   const deck = $("#deck");
   if (!feed.length) {
     if (state.movement === "all" && !homeCol().failed) {
@@ -876,8 +877,17 @@ async function maybeFetchHome(force, chained) {
   if (col.done || col.loading) return;
   if (!force && col.pieces.length && state.current < deckList.length - 5) return;
   if (col.coolUntil && Date.now() < col.coolUntil) return;
+  return fetchHomeLane(state.media, chained);
+}
+/* v87: the river pull itself, parameterized by lane, so background
+   prefetch fills the lanes he's NOT looking at through exactly the
+   same code path as the foreground chain. */
+async function fetchHomeLane(media, chained) {
+  if (state.movement !== "all") return;
+  const col = homeColFor(media);
+  if (col.done || col.loading) return;
+  if (col.coolUntil && Date.now() < col.coolUntil) return;
   col.loading = true; col.fetchedOnce = true;
-  const media = state.media;
   try {
     const ctl = new AbortController(); const to = setTimeout(() => ctl.abort(), 45000);
     const res = await fetch("/api/inspobox/more", { method: "POST", headers: { "content-type": "application/json" }, signal: ctl.signal, body: JSON.stringify({ home: true, media, cursor: col.cursor, exclude: excludeUuids() }) });
@@ -937,7 +947,10 @@ async function maybeFetchHome(force, chained) {
         // keep pulling (bounded) until this lane holds RIVER_TARGET
         // live pieces or its walk is done. col.pieces is live-only
         // since v76, so the count is honest.
-        if (col.pieces.length < RIVER_TARGET && !col.done && (chained || 0) < 8) { col.loading = false; maybeFetchHome(true, (chained || 0) + 1); return; }
+        if (col.pieces.length < RIVER_TARGET && !col.done && (chained || 0) < 8) { col.loading = false; fetchHomeLane(media, (chained || 0) + 1); return; }
+      } else if (state.media !== media && col.pieces.length < RIVER_TARGET && !col.done && (chained || 0) < 8) {
+        // v87 prefetch lane: no deck to update — just keep filling.
+        col.loading = false; fetchHomeLane(media, (chained || 0) + 1); return;
       }
     } else if (!col.done && state.movement === "all" && state.media === media && deckList.length) {
       col.loading = false; maybeFetchHome(true); return;
@@ -947,8 +960,14 @@ async function maybeFetchHome(force, chained) {
       // instead of sitting on CASTING THE NET; after a few empty pulls,
       // fall back to the genre tour so the screen never wedges.
       col.emptyPulls = (col.emptyPulls || 0) + 1;
-      if (col.emptyPulls <= 4) { col.loading = false; maybeFetchHome(true); return; }
+      if (col.emptyPulls <= 4) { col.loading = false; fetchHomeLane(media, chained); return; }
       col.failed = true; renderDeck();
+    } else if (!col.done && state.media !== media) {
+      // v87: a prefetch batch that filed everything elsewhere (or
+      // nothing at all) — keep walking a few times, then rest.
+      col.emptyPulls = (col.emptyPulls || 0) + 1;
+      if (col.emptyPulls <= 4) { col.loading = false; fetchHomeLane(media, chained); return; }
+      col.failed = true;
     }
   } catch (e) {
     col.lastError = String(e && e.message || e); col.coolUntil = Date.now() + 25000;
@@ -957,7 +976,24 @@ async function maybeFetchHome(force, chained) {
     scheduleRiverRetry(col, media);
   }
   col.loading = false;
+  kickPrefetch();
 }
+/* v87: background prefetch, at his direction — once the lane he's
+   looking at has its full river (or is done/failed), quietly fill
+   the other lanes one pull-chain at a time, so switching lanes
+   lands on a deep river instead of a fresh fill. One river pull
+   in flight app-wide; pauses while a style is locked or the app
+   is in the background; a slow warden tick keeps it moving as
+   lanes settle and cooldowns lapse. */
+function kickPrefetch() {
+  if (state.movement !== "all" || document.hidden) return;
+  const cur = homeCol();
+  if (!(cur.done || cur.failed || cur.pieces.length >= RIVER_TARGET)) return;
+  if (Object.values(homeCols).some((c) => c.loading)) return;
+  const next = DATA.media.map((m) => m.id).find((id) => { if (id === state.media) return false; const c = homeColFor(id); return !c.done && !c.failed && c.pieces.length < RIVER_TARGET; });
+  if (next) fetchHomeLane(next, 0);
+}
+setInterval(kickPrefetch, 5000);
 // v68: a failed pull (e.g. a platform 503) used to strand a shallow
 // river until the user happened to scroll. If the lane is still below
 // the start-depth target, retry once the cooldown lapses — once per
@@ -1667,7 +1703,7 @@ function pullEnd() {
 $("#deck").addEventListener("touchend", pullEnd);
 $("#deck").addEventListener("touchcancel", pullEnd);
 
-window.INSPOBOX = { disciplineStep, jumpToMedia, getSw: () => ({ open: sw.open, dragging: !!sw.drag, pending: sw.pending }), fetchLive: () => maybeFetchLive(true), getLive: () => Object.fromEntries(Object.entries(liveCols).map(([k, c]) => [k, { n: c.pieces.length, done: c.done, err: c.lastError || "", stats: c.stats || null }])), getState: () => ({ movement: state.movement, current: state.current, count: deckList.length, media: state.media, seen: seenList().length, pulls: pullCount }), getHome: () => { const c = homeCol(); return { n: c.pieces.length, done: c.done, failed: c.failed, stats: c.stats || null }; }, getConcept: () => lastConcept };
+window.INSPOBOX = { disciplineStep, jumpToMedia, getSw: () => ({ open: sw.open, dragging: !!sw.drag, pending: sw.pending }), fetchLive: () => maybeFetchLive(true), getLive: () => Object.fromEntries(Object.entries(liveCols).map(([k, c]) => [k, { n: c.pieces.length, done: c.done, err: c.lastError || "", stats: c.stats || null }])), getState: () => ({ movement: state.movement, current: state.current, count: deckList.length, media: state.media, seen: seenList().length, pulls: pullCount }), getHome: () => { const c = homeCol(); return { n: c.pieces.length, done: c.done, failed: c.failed, stats: c.stats || null }; }, getHomeCols: () => DATA.media.map((m) => { const c = homeColFor(m.id); return { media: m.id, n: c.pieces.length, done: c.done, failed: c.failed }; }), getConcept: () => lastConcept };
 
 /* ---------------- idea starter ---------------- */
 const sel = { style: "cgi", movement: "none", studio: "animation" };
