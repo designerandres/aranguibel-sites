@@ -217,6 +217,9 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
 #pullReveal{position:fixed;top:0;left:0;right:0;height:190px;z-index:0;background:#050508;background-image:radial-gradient(rgba(255,255,255,.13) 1px,transparent 1.5px);background-size:22px 22px;display:flex;align-items:flex-start;justify-content:center;padding-top:calc(70px + env(safe-area-inset-top));opacity:0;pointer-events:none}
 #pullReveal span{font-family:var(--unb);font-weight:700;font-size:11px;letter-spacing:.3em;color:rgba(255,255,255,.45);transition:color .15s ease}
 #pullReveal.ready span{color:#FF5A76}
+#pullRevealBot{position:fixed;bottom:0;left:0;right:0;height:190px;z-index:0;background:#050508;background-image:radial-gradient(rgba(255,255,255,.13) 1px,transparent 1.5px);background-size:22px 22px;display:flex;align-items:flex-end;justify-content:center;padding-bottom:calc(70px + env(safe-area-inset-bottom));opacity:0;pointer-events:none}
+#pullRevealBot span{font-family:var(--unb);font-weight:700;font-size:11px;letter-spacing:.3em;color:rgba(255,255,255,.45);transition:color .15s ease}
+#pullRevealBot.ready span{color:#FF5A76}
 #deck{position:relative;z-index:1}
 #deck.snapping{transition:transform .5s cubic-bezier(.3,1.35,.4,1)}
 #pullHint{position:fixed;top:calc(66px + env(safe-area-inset-top));left:50%;transform:translate(-50%,-18px);z-index:36;display:flex;align-items:center;gap:8px;padding:9px 15px;border-radius:999px;background:var(--glass);backdrop-filter:blur(16px) saturate(1.5);-webkit-backdrop-filter:blur(16px) saturate(1.5);border:1px solid var(--glassline);font-family:var(--unb);font-weight:700;font-size:10px;letter-spacing:.22em;color:#fff;opacity:0;pointer-events:none;white-space:nowrap}
@@ -235,9 +238,9 @@ body.locked .vtitle{background:linear-gradient(180deg,#FF2E4D 5%,#FF5A1F 52%,#FF
    image stands alone until release. */
 #deck{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
 #deck img{-webkit-user-drag:none}
-#topbar,#saveBtn,#searchBtn,#igniteBtn,#pullReveal,#flash,#infobar{transition:opacity .18s ease}
+#topbar,#saveBtn,#searchBtn,#igniteBtn,#pullReveal,#pullRevealBot,#flash,#infobar{transition:opacity .18s ease}
 .piece .scrim{transition:opacity .18s ease}
-body.peek #topbar,body.peek #vtitleEl,body.peek #saveBtn,body.peek #searchBtn,body.peek #infobar,body.peek #igniteBtn,body.peek #toast,body.peek #pullHint,body.peek #pullReveal,body.peek #flash{opacity:0!important;pointer-events:none!important}
+body.peek #topbar,body.peek #vtitleEl,body.peek #saveBtn,body.peek #searchBtn,body.peek #infobar,body.peek #igniteBtn,body.peek #toast,body.peek #pullHint,body.peek #pullReveal,body.peek #pullRevealBot,body.peek #flash{opacity:0!important;pointer-events:none!important}
 body.peek .piece .scrim{opacity:0}
 #toast{position:fixed;left:14px;right:14px;bottom:228px;z-index:46;background:rgba(13,11,22,.94);border:1px solid rgba(255,255,255,.16);border-radius:14px;padding:12px 42px 12px 14px;backdrop-filter:blur(18px) saturate(1.4);-webkit-backdrop-filter:blur(18px) saturate(1.4);box-shadow:0 14px 34px rgba(0,0,0,.5);opacity:0;transform:translateY(8px);pointer-events:none;transition:opacity .25s,transform .25s}
 #toast.show{opacity:1;transform:none;pointer-events:auto}
@@ -286,6 +289,7 @@ body.peek .piece .scrim{opacity:0}
 <div id="toast" role="status"><div class="ttag" id="toastTag"></div><div class="tmsg" id="toastMsg"></div><div class="tbuild" id="toastBuild"></div><div class="tdiag" id="toastDiag"></div><button id="toastX" aria-label="Dismiss notification">✕</button></div>
 
 <div id="pullReveal" aria-hidden="true"><span>RELEASE TO REFRESH</span></div>
+<div id="pullRevealBot" aria-hidden="true"><span>RELEASE TO LOAD MORE</span></div>
 <main id="deck"></main>
 <div id="vtitleEl" class="vtitle" title="All styles"></div>
 <button id="saveBtn" class="savebtn" aria-label="Save to your box">+</button>
@@ -528,7 +532,7 @@ function riverBase(lane) {
   return out;
 }
 const RIVER_TARGET = 24; // live pieces a river chains toward at open (v76)
-const RIVER_FLOOR = 12;  // below this, curated backfill pads the tail
+const RIVER_FLOOR = 20;  // below this, curated backfill pads the tail (v89: raised 12 -> 20 at Andres's direction)
 function deckFeed() {
   if (state.movement !== "all") return scopeFeed().filter((p) => p.media === state.media && !isBlocked(p));
   // Home is a river (v76): LIVE pieces lead — col.pieces holds only
@@ -578,7 +582,7 @@ function pieceHtml(p, i, total) {
 }
 
 /* ---------------- fixed info chrome (v72) ---------------- */
-const APP_BUILD = "V88";
+const APP_BUILD = "V89";
 let infoTimer = null, infoCtx = "", lastInfoId = null;
 function updateInfo(animate) {
   const p = deckList[state.current] || null;
@@ -1704,7 +1708,79 @@ function pullEnd() {
 $("#deck").addEventListener("touchend", pullEnd);
 $("#deck").addEventListener("touchcancel", pullEnd);
 
-window.INSPOBOX = { disciplineStep, jumpToMedia, getSw: () => ({ open: sw.open, dragging: !!sw.drag, pending: sw.pending }), fetchLive: () => maybeFetchLive(true), getLive: () => Object.fromEntries(Object.entries(liveCols).map(([k, c]) => [k, { n: c.pieces.length, done: c.done, err: c.lastError || "", stats: c.stats || null }])), getState: () => ({ movement: state.movement, current: state.current, count: deckList.length, media: state.media, seen: seenList().length, pulls: pullCount }), getHome: () => { const c = homeCol(); return { n: c.pieces.length, done: c.done, failed: c.failed, stats: c.stats || null }; }, getHomeCols: () => DATA.media.map((m) => { const c = homeColFor(m.id); return { media: m.id, n: c.pieces.length, done: c.done, failed: c.failed }; }), getConcept: () => lastConcept };
+/* v89: pull-to-load-more — the top pull's mirror at the END of a deck
+   (Andres's request). Swipe up on the last piece and the sheet drags
+   with the same tension over a dotted "RELEASE TO LOAD MORE" reveal;
+   releasing past the threshold CONTINUES the view's walk (no cursor
+   reset — that's what refresh is for) and the new pieces append. A
+   view that's spent says so instead of pretending to fetch. */
+let pullBotX = 0, pullBotY = null, pullBotDy = 0, pullBotArmed = false, morePulls = 0;
+function deckAtEnd() { const d = $("#deck"); return d.scrollHeight > d.clientHeight + 4 && d.scrollTop + d.clientHeight >= d.scrollHeight - 4; }
+function pullBotDragShow(up) {
+  const off = pullOffset(up), deck = $("#deck"), rv = $("#pullRevealBot");
+  deck.classList.remove("snapping");
+  deck.style.transform = "translateY(" + (-off) + "px)";
+  rv.style.opacity = String(Math.min(off / 44, 1));
+  rv.classList.toggle("ready", up >= PULL_THRESHOLD);
+}
+function pullBotSnapBack() {
+  const deck = $("#deck"), rv = $("#pullRevealBot");
+  deck.classList.add("snapping");
+  deck.style.transform = "translateY(0px)";
+  rv.style.opacity = "0";
+  rv.classList.remove("ready");
+}
+async function loadMoreCurrentView() {
+  if (pullRefreshing) return;
+  pullRefreshing = true; morePulls++;
+  const h = $("#pullHint");
+  h.classList.remove("anim"); h.classList.add("busy");
+  h.style.opacity = "1"; h.style.transform = "translate(-50%,34px)";
+  $("#pullText").textContent = "LOADING MORE";
+  const before = deckList.length;
+  let col = null;
+  try {
+    if (state.movement === "all") {
+      col = homeCol();
+      if (!col.done && !col.failed) { col.coolUntil = 0; await maybeFetchHome(true); const t0 = Date.now(); while (homeCol().loading && Date.now() - t0 < 45000) await new Promise((r) => setTimeout(r, 300)); }
+    } else if (state.movement !== "none") {
+      col = liveCol();
+      if (!col.done) { col.coolUntil = 0; await maybeFetchLive(true); const t0 = Date.now(); while (liveCol().loading && Date.now() - t0 < 45000) await new Promise((r) => setTimeout(r, 300)); }
+    }
+  } catch (e) { /* the fetchers record their own errors as notices */ }
+  h.classList.remove("busy");
+  const grew = deckList.length > before;
+  $("#pullText").textContent = grew ? "✓ " + (deckList.length - before) + " MORE PIECES ADDED" : (state.movement === "none" || (col && (col.done || col.failed)) ? "THAT'S EVERYTHING" : "NO MORE PIECES YET");
+  setTimeout(pullHintHide, 1100);
+  pullRefreshing = false;
+}
+$("#deck").addEventListener("touchstart", (e) => {
+  if (e.touches.length === 1 && deckAtEnd() && !pullRefreshing) { pullBotX = e.touches[0].clientX; pullBotY = e.touches[0].clientY; pullBotDy = 0; pullBotArmed = false; }
+  else { pullBotY = null; }
+}, { passive: true });
+$("#deck").addEventListener("touchmove", (e) => {
+  if (pullBotY === null || pullRefreshing) return;
+  const t = e.touches[0], up = pullBotY - t.clientY, dx = Math.abs(t.clientX - pullBotX);
+  if (!pullBotArmed) {
+    if (up > 10 && up > dx * 1.25) pullBotArmed = true;
+    else { if (up < -6) pullBotY = null; return; }
+  }
+  if (up <= 0) { pullBotArmed = false; pullBotSnapBack(); return; }
+  e.preventDefault();
+  pullBotDy = up;
+  pullBotDragShow(up);
+}, { passive: false });
+function pullBotEnd() {
+  if (pullBotY === null) return;
+  const go = pullBotArmed && pullBotDy >= PULL_THRESHOLD;
+  pullBotY = null; pullBotArmed = false; pullBotDy = 0;
+  pullBotSnapBack();
+  if (go) loadMoreCurrentView();
+}
+$("#deck").addEventListener("touchend", pullBotEnd);
+$("#deck").addEventListener("touchcancel", pullBotEnd);
+
+window.INSPOBOX = { disciplineStep, jumpToMedia, getSw: () => ({ open: sw.open, dragging: !!sw.drag, pending: sw.pending }), fetchLive: () => maybeFetchLive(true), getLive: () => Object.fromEntries(Object.entries(liveCols).map(([k, c]) => [k, { n: c.pieces.length, done: c.done, err: c.lastError || "", stats: c.stats || null }])), getState: () => ({ movement: state.movement, current: state.current, count: deckList.length, media: state.media, seen: seenList().length, pulls: pullCount, mores: morePulls, floor: RIVER_FLOOR }), getHome: () => { const c = homeCol(); return { n: c.pieces.length, done: c.done, failed: c.failed, stats: c.stats || null }; }, getHomeCols: () => DATA.media.map((m) => { const c = homeColFor(m.id); return { media: m.id, n: c.pieces.length, done: c.done, failed: c.failed }; }), getConcept: () => lastConcept };
 
 /* ---------------- idea starter ---------------- */
 const sel = { style: "cgi", movement: "none", studio: "animation" };
