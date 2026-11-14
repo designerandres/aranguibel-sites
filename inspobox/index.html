@@ -54,6 +54,7 @@ img{display:block}
 .vtitle{position:fixed;left:12px;top:158px;max-height:calc(100dvh - 400px);overflow:hidden;writing-mode:vertical-rl;transform:rotate(180deg);font-family:var(--anton);font-size:58px;letter-spacing:.03em;color:#fff;text-shadow:5px 5px 0 rgba(255,46,77,.85);z-index:2;cursor:pointer}
 .savebtn{position:fixed;right:16px;top:108px;z-index:35;width:44px;height:44px;border-radius:50%;background:var(--glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--glassline);font-size:23px;font-weight:500;display:flex;align-items:center;justify-content:center}
 .savebtn.saved{background:var(--grad);border-color:transparent}
+.savebtn.blocked{background:rgba(255,46,77,.25);border-color:rgba(255,46,77,.65);font-size:19px}
 .searchbtn{position:fixed;right:16px;top:164px;z-index:35;width:44px;height:44px;border-radius:50%;background:var(--glass);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid var(--glassline);display:flex;align-items:center;justify-content:center;color:inherit}
 .idxsearchrow{padding:2px 20px 12px}
 .idxsearchrow input{width:100%;box-sizing:border-box;background:rgba(255,255,255,.06);border:1px solid var(--glassline);border-radius:999px;padding:11px 16px;color:inherit;font-family:var(--sg);font-size:13px;letter-spacing:.08em;outline:none}
@@ -375,7 +376,7 @@ function rng(seed) { let t = seed >>> 0; return () => { t += 0x6D2B79F5; let r =
 const pick = (r, arr) => arr[Math.floor(r() * arr.length)];
 
 let DATA = null;
-const state = { media: "design", movement: "all", current: 0 };
+const state = { media: "world", movement: "all", current: 0 };
 let box = store.get("inspobox.box.v1", []);
 /* Box account sync (v71): the box also lives in his account (D1 doc via
    /api/inspobox/box). localStorage remains the working cache — every
@@ -514,7 +515,7 @@ function riverBase(lane) {
 const RIVER_TARGET = 24; // live pieces a river chains toward at open (v76)
 const RIVER_FLOOR = 12;  // below this, curated backfill pads the tail
 function deckFeed() {
-  if (state.movement !== "all") return scopeFeed().filter((p) => p.media === state.media);
+  if (state.movement !== "all") return scopeFeed().filter((p) => p.media === state.media && !isBlocked(p));
   // Home is a river (v76): LIVE pieces lead — col.pieces holds only
   // session pieces now. The curated foundation backfills the tail
   // only while live stock is under the floor, so an open always
@@ -525,7 +526,7 @@ function deckFeed() {
   if (live.length >= RIVER_FLOOR) return live;
   if (!live.length && col.failed) return tourFeed();
   const seenIds = new Set(live.map((p) => p.id));
-  const backfill = riverBase(state.media).filter((p) => !seenIds.has(p.id));
+  const backfill = riverBase(state.media).filter((p) => !seenIds.has(p.id) && !isBlocked(p));
   return live.concat(backfill.slice(0, RIVER_FLOOR - live.length));
 }
 function mvName(id) { if (id === "none") return "None"; const m = DATA.movements.find((x) => x.id === id); return m ? m.name : id; }
@@ -562,7 +563,7 @@ function pieceHtml(p, i, total) {
 }
 
 /* ---------------- fixed info chrome (v72) ---------------- */
-const APP_BUILD = "V82";
+const APP_BUILD = "V83";
 let infoTimer = null, infoCtx = "", lastInfoId = null;
 function updateInfo(animate) {
   const p = deckList[state.current] || null;
@@ -581,9 +582,11 @@ function updateInfo(animate) {
     by.innerHTML = esc(p.by) + (p.session ? ` <span class="ext">· ${p.fresh ? "TODAY" : "LIVE"}${p.gated ? " ✓" : ""}</span>` : "");
     if (p.url) by.setAttribute("href", p.url); else by.removeAttribute("href");
     sv.dataset.save = p.id;
-    const saved = isSavedPiece(p.id);
+    const blocked = isBlocked(p);
+    const saved = !blocked && isSavedPiece(p.id);
     sv.classList.toggle("saved", saved);
-    sv.textContent = saved ? "✓" : "+";
+    sv.classList.toggle("blocked", blocked);
+    sv.textContent = blocked ? "👎" : saved ? "✓" : "+";
     const ctx = state.movement + "|" + state.media + "|" + document.body.classList.contains("locked");
     if (ctx !== infoCtx) { infoCtx = ctx; $("#infoRail").innerHTML = railHtml(); }
     $$("#infoRail button").forEach((b) => b.classList.toggle("on", b.dataset.media === p.media));
@@ -594,8 +597,8 @@ function updateInfo(animate) {
   clearTimeout(infoTimer);
   infoTimer = setTimeout(() => { apply(); for (const el of fields) el.classList.remove("blurx"); }, 160);
 }
-$("#saveBtn").addEventListener("click", () => { const id = $("#saveBtn").dataset.save; if (id) toggleSavePiece(id); });
-$("#searchBtn").addEventListener("click", () => openIndex());
+$("#saveBtn").addEventListener("click", () => { const id = $("#saveBtn").dataset.save; if (id) cyclePieceAction(id); });
+$("#searchBtn").addEventListener("click", () => openIndex(true));
 $("#vtitleEl").addEventListener("click", () => {
   if (state.movement !== "all") { state.movement = "all"; renderIndex(); renderDeck(); flash("UNLOCKED"); }
   else openIndex();
@@ -656,8 +659,10 @@ function bindDeck(feed) {
     for (const e of entries) {
       const v = e.target.querySelector("video");
       if (e.isIntersecting) {
+        const prevPiece = deckList[state.current];
         state.current = Number(e.target.dataset.idx);
         updateChrome(deckList.length);
+        if (prevPiece && (!deckList[state.current] || prevPiece.id !== deckList[state.current].id) && isBlocked(prevPiece)) purgeBlockedPiece(prevPiece);
         if (state.movement === "all") maybeFetchHome(); else maybeFetchLive();
         if (v) v.play().catch(() => {});
       } else if (v) v.pause();
@@ -693,6 +698,31 @@ function liveColFor(movement, media) { const k = movement + "|" + media; return 
    pieces from the last session. */
 const SEEN_KEY = "inspobox.seen.v1";
 function seenList() { const v = store.get(SEEN_KEY, []); return Array.isArray(v) ? v : []; }
+/* v83: the thumbs-down list. Pieces the user rejected via the save
+   button's third state: remembered by uuid, sent with every exclude
+   payload (first, so they survive any truncation), filtered out of
+   the curated foundation and locked columns, and purged from the
+   session's decks the moment he swipes away from one. */
+const BLOCKED_KEY = "inspobox.blocked.v1";
+function blockedList() { const v = store.get(BLOCKED_KEY, []); return Array.isArray(v) ? v : []; }
+function pieceUuid(p) { return p ? (p.uuid || (p.img ? String(p.img).split("/").pop().replace(/\.jpg$/, "") : "")) : ""; }
+function isBlocked(p) { const u = pieceUuid(p); return !!u && blockedList().includes(u); }
+function setBlocked(p, on) {
+  const u = pieceUuid(p); if (!u) return;
+  const cur = blockedList().filter((x) => x !== u);
+  if (on) cur.push(u);
+  store.set(BLOCKED_KEY, cur.slice(-2000));
+}
+let purgingBlocked = false;
+function purgeBlockedPiece(p) {
+  if (purgingBlocked) return; purgingBlocked = true;
+  const u = pieceUuid(p);
+  for (const col of Object.values(homeCols)) col.pieces = col.pieces.filter((x) => pieceUuid(x) !== u);
+  for (const col of Object.values(liveCols)) col.pieces = col.pieces.filter((x) => pieceUuid(x) !== u);
+  const cur = deckList[state.current];
+  renderDeck(cur && pieceUuid(cur) !== u ? cur.id : undefined);
+  purgingBlocked = false;
+}
 function recordSeen(pieces) {
   const cur = seenList(); const have = new Set(cur); let changed = false;
   for (const p of pieces) if (p.uuid && !have.has(p.uuid)) { cur.push(p.uuid); have.add(p.uuid); changed = true; }
@@ -700,6 +730,7 @@ function recordSeen(pieces) {
 }
 function excludeUuids() {
   const out = [];
+  for (const u of blockedList()) out.push(u);
   const seen = seenList();
   for (let i = seen.length - 1; i >= 0; i--) out.push(seen[i]);
   for (const col of Object.values(liveCols)) for (const p of col.pieces) if (p.uuid) out.push(p.uuid);
@@ -916,6 +947,23 @@ $("#deck").addEventListener("scroll", () => {
 }, { passive: true });
 window.addEventListener("resize", () => { clearTimeout(snapTimer); snapTimer = setTimeout(snapFix, 200); });
 /* ---------------- box ---------------- */
+/* v83: the + button cycles three states — + (nothing) -> check
+   (saved to the Box) -> thumbs down (blocked: leaves the Box, and
+   leaves the feed for good once he swipes away) -> + again (forgiven). */
+function cyclePieceAction(id) {
+  const p = DATA.feed.find((x) => x.id === id) || deckList.find((x) => x.id === id);
+  if (!p) return;
+  if (isBlocked(p)) { setBlocked(p, false); updateInfo(false); return; }
+  if (isSavedPiece(id)) {
+    const ix = box.findIndex((b) => b.type === "piece" && b.id === id);
+    if (ix >= 0) box.splice(ix, 1);
+    store.set("inspobox.box.v1", box); scheduleBoxSync();
+    setBlocked(p, true);
+    updateInfo(false); renderBox();
+    return;
+  }
+  toggleSavePiece(id);
+}
 function toggleSavePiece(id) {
   const p = DATA.feed.find((x) => x.id === id) || deckList.find((x) => x.id === id);
   if (!p) return;
@@ -1072,7 +1120,7 @@ function renderIndex() {
     </button>`).join("");
 }
 function resetIdxFilter() { const inp = $("#idxSearch"); if (inp) inp.value = ""; $$("#indexGrid .tile").forEach((t) => { t.style.display = ""; }); }
-function openIndex() { resetIdxFilter(); openLayer("#indexLayer"); const inp = $("#idxSearch"); if (inp) inp.focus({ preventScroll: true }); }
+function openIndex(fromSearch) { renderIndex(); resetIdxFilter(); openLayer("#indexLayer"); if (fromSearch) { const inp = $("#idxSearch"); if (inp) inp.focus({ preventScroll: true }); } }
 $("#idxSearch").addEventListener("input", (e) => {
   const q = e.target.value.trim().toLowerCase();
   $$("#indexGrid .tile").forEach((t) => { t.style.display = !q || (t.dataset.name || "").includes(q) ? "" : "none"; });
@@ -1414,12 +1462,14 @@ window.addEventListener("pointerup", swReset);
 window.addEventListener("pointercancel", swReset);
 window.addEventListener("touchend", tReset);
 window.addEventListener("touchcancel", tReset);
-let tapX = null, tapY = null;
-$("#deck").addEventListener("pointerdown", (e) => { tapX = e.clientX; tapY = e.clientY; });
+let tapX = null, tapY = null, tapT = 0;
+$("#deck").addEventListener("pointerdown", (e) => { tapX = e.clientX; tapY = e.clientY; tapT = Date.now(); });
 $("#deck").addEventListener("pointerup", (e) => {
   if (tapX === null) return;
   const moved = Math.hypot(e.clientX - tapX, e.clientY - tapY); tapX = null;
   if (moved > 12) return;
+  if (Date.now() - tapT > 240) return; // v83: a press-and-hold (the peek) is not a tap — never lock on release
+  if (document.body.classList.contains("peek")) return;
   if (e.target.closest("button, .panel, .vtitle, a")) return;
   const piece = e.target.closest(".piece"); if (!piece) return;
   const p = deckList.find((x) => x.id === piece.dataset.id); if (!p) return;

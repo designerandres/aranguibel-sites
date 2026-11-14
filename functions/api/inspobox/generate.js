@@ -104,7 +104,11 @@ export function buildMessages({ prompt, styleId, movementId, studioId, reroll })
   return { system: SYSTEM, user: lines.join("\n"), grounding: { studio: g.studio, ipA, ipB } };
 }
 
-const cap = (s, n) => (typeof s === "string" ? s.trim().slice(0, n) : "");
+// v83: caps are sanity bounds, not editorial limits — they were
+// clipping Claude's longer fields mid-word (a 120-char place cut
+// "…cliffs and a Sta"). Raised generously, and trimming now lands
+// on a word boundary when it ever does bite.
+const cap = (s, n) => { if (typeof s !== "string") return ""; const t = s.trim(); if (t.length <= n) return t; const cut = t.slice(0, n); const sp = cut.lastIndexOf(" "); return (sp > n * 0.6 ? cut.slice(0, sp) : cut).trim(); };
 
 function extractJsonSpan(text) {
   const start = text.indexOf("{");
@@ -132,14 +136,14 @@ export function parseConceptDetailed(text, grounding) {
   if (!title.startsWith("THE ")) title = "THE " + title;
   let role, look;
   if (ipA.free) {
-    role = cap(o.role, 140); look = cap(o.look, 260);
+    role = cap(o.role, 200); look = cap(o.look, 400);
     if (!role) return { concept: null, why: "missing role" };
     if (!look) return { concept: null, why: "missing look" };
   } else {
     role = ipA.roles.includes(o.role) ? o.role : ipA.roles[0];
     look = ipA.looks.includes(o.look) ? o.look : ipA.looks[0];
   }
-  const place = cap(o.place, 120), open = cap(o.open, 240), pivot = cap(o.pivot, 240), final = cap(o.final, 240);
+  const place = cap(o.place, 300), open = cap(o.open, 420), pivot = cap(o.pivot, 420), final = cap(o.final, 420);
   for (const [k, v] of [["place", place], ["open", open], ["pivot", pivot], ["final", final]]) if (!v) return { concept: null, why: "missing " + k };
   const aspect = ASPECTS.includes(o.aspect) ? o.aspect : ASPECTS[0];
   return { concept: { title, role, look, place, open, pivot, final, aspect, ip: ipA.name, ip2: grounding.ipB ? grounding.ipB.name : null, mashup: !!grounding.ipB, studio: grounding.studio.name }, why: "" };

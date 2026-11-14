@@ -636,10 +636,12 @@ export async function fetchHomeBatch({ cursor, exclude, media }, fetchFn, env) {
     (buckets[p.media] = buckets[p.media] || []).push(p); total++;
   }
   if (Object.keys(noneThemes).length) await persistNoneThemes(env, noneThemes);
-  // Round-robin interleave by STYLE with a per-style cap: one deep style
-  // may not flood the river. Surplus styled pieces BANK into their
-  // style's locked column; other-lane pieces bank into their home river.
-  const HOME_STYLE_CAP = 2, BANK_CAP = 8; // cap 2 since v67: batches run shallower after the none-drop, and one deep style (brutalist) was repeating through the deck
+  // Round-robin interleave by STYLE for variety. v83 (Andres's
+  // direction): the per-style cap is GONE — every piece the judge filed
+  // into this lane decks in the unlocked river, so the home feed runs
+  // deep instead of banking most of a batch away. Other-lane pieces
+  // still bank into their own home rivers; locked columns unchanged.
+  const BANK_CAP = 8;
   const inLane = (buckets[primary] || []).slice();
   const byStyle = {};
   for (const p of inLane) (byStyle[p.movement || "none"] = byStyle[p.movement || "none"] || []).push(p);
@@ -650,7 +652,6 @@ export async function fetchHomeBatch({ cursor, exclude, media }, fetchFn, env) {
   while (pieces.length < HOME_BATCH && guard++ < 500) {
     let progressed = false;
     for (const sk of styleKeys) {
-      if ((counts[sk] || 0) >= HOME_STYLE_CAP) continue;
       if (byStyle[sk].length) { pieces.push(byStyle[sk].shift()); counts[sk] = (counts[sk] || 0) + 1; progressed = true; if (pieces.length >= HOME_BATCH) break; }
     }
     if (!progressed) break;
@@ -658,7 +659,6 @@ export async function fetchHomeBatch({ cursor, exclude, media }, fetchFn, env) {
   const banked = {};
   const bankedHome = {};
   let bankedCount = 0, bankedHomeCount = 0;
-  for (const sk of styleKeys) for (const p of byStyle[sk]) if (p.movement) (banked[p.movement] = banked[p.movement] || []).push(p);
   for (const lane of Object.keys(buckets)) {
     if (lane === primary) continue;
     for (const p of buckets[lane]) (bankedHome[lane] = bankedHome[lane] || []).push(p);

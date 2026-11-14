@@ -20,9 +20,9 @@ export const MOVEMENTS = [
 ];
 
 export const MEDIA = [
-  { id: "design", name: "Design" },
   { id: "world", name: "World" },
   { id: "architecture", name: "Architecture" },
+  { id: "design", name: "Design" },
   { id: "character", name: "Character" },
   { id: "prop", name: "Prop" },
 ];
