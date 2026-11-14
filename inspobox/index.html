@@ -578,7 +578,7 @@ function pieceHtml(p, i, total) {
 }
 
 /* ---------------- fixed info chrome (v72) ---------------- */
-const APP_BUILD = "V85";
+const APP_BUILD = "V86";
 let infoTimer = null, infoCtx = "", lastInfoId = null;
 function updateInfo(animate) {
   const p = deckList[state.current] || null;
@@ -620,6 +620,7 @@ $("#vtitleEl").addEventListener("click", () => {
 });
 $("#infobar").addEventListener("click", (e) => { const mb = e.target.closest("[data-media]"); if (mb) jumpToMedia(mb.dataset.media); });
 function renderDeck(startId) {
+  sweepBlocked();
   renderingDeck = true;
   const wantId = startId || viewPos[state.movement + "|" + state.media] || null;
   const feed = deckFeed(); deckList = feed;
@@ -728,6 +729,26 @@ function setBlocked(p, on) {
   if (on) cur.push(u);
   store.set(BLOCKED_KEY, cur.slice(-2000));
 }
+/* v86: the swipe-away purge has a hole — leave a downvoted piece by
+   switching lanes or locking a style instead of swiping, and it was
+   still sitting in its column's stock when you came back. So every
+   deck render now sweeps blocked pieces out of every column first.
+   The one piece spared is the one on screen in an unchanged view:
+   he may still be looking at what he just downvoted. Any change of
+   view — lane, lock, unlock — counts as leaving it. */
+let viewCtxPrev = "";
+function sweepBlocked() {
+  const ctx = state.movement + "|" + state.media;
+  const blocked = new Set(blockedList());
+  if (blocked.size) {
+    const cur = deckList[state.current];
+    const keep = (ctx === viewCtxPrev && cur && blocked.has(pieceUuid(cur))) ? pieceUuid(cur) : "";
+    const keepP = (p) => { const u = pieceUuid(p); return !blocked.has(u) || u === keep; };
+    for (const col of Object.values(homeCols)) col.pieces = col.pieces.filter(keepP);
+    for (const col of Object.values(liveCols)) col.pieces = col.pieces.filter(keepP);
+  }
+  viewCtxPrev = ctx;
+}
 let purgingBlocked = false;
 function purgeBlockedPiece(p) {
   if (purgingBlocked) return; purgingBlocked = true;
@@ -760,6 +781,8 @@ function reindexDeck() {
   $$("#deck .piece").forEach((el, i) => { el.dataset.idx = i; const pr = el.querySelector(".prog"); if (pr) pr.style.width = Math.round(((i + 1) / deckList.length) * 100) + "%"; });
 }
 function appendPieces(pieces) {
+  pieces = pieces.filter((p) => !isBlocked(p));
+  if (!pieces.length) return;
   const deck = $("#deck");
   const empty = deck.querySelector(".deckempty"); if (empty) empty.remove();
   const base = deckList.length;
@@ -774,6 +797,7 @@ function appendPieces(pieces) {
    whole curated column. Pieces before the insertion point (everything
    already seen, including the current one) are never touched. */
 function insertPieces(fresh) {
+  fresh = fresh.filter((p) => !isBlocked(p));
   if (!fresh.length) return;
   const deck = $("#deck");
   const empty = deck.querySelector(".deckempty"); if (empty) empty.remove();
