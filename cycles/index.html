@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="description" content="Cycles — Andrés Aranguibel's recurring chores and to-dos, each on its own cadence.">
 <meta name="theme-color" content="#F5F9FC" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0E2A52" media="(prefers-color-scheme: dark)">
@@ -17,6 +17,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poiret+One&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
 <title>Cycles</title>
 <style>
+html,body{touch-action:pan-y}
 :root{
   --bg:#F5F9FC;--card:rgba(255,255,255,.78);--card-line:rgba(255,255,255,.9);
   --card-shadow:0 10px 30px rgba(14,54,92,.10),0 1px 2px rgba(14,54,92,.06);
@@ -601,6 +602,10 @@ document.getElementById("signout").addEventListener("click", async () => {
 render();
 initSync();
 if("serviceWorker" in navigator){ navigator.serviceWorker.register("sw.js").catch(() => {}); }
+</script>
+<script>/* zoom lock (standing rule): no pinch / double-tap zoom */
+for(const e of["gesturestart","gesturechange"])document.addEventListener(e,function(ev){ev.preventDefault()});
+document.addEventListener("dblclick",function(e){if(!e.target.closest("input, textarea"))e.preventDefault()},{passive:false});
 </script>
 </body>
 </html>

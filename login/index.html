@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#0C2113">
 <title>Sign in — Aranguibel Apps</title>
 <link rel="icon" href="/assets/icons/cycles.svg">
@@ -10,6 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600&family=Cinzel:wght@700&family=Cinzel+Decorative:wght@700&family=Lora:wght@600&family=Mountains+of+Christmas:wght@700&family=IM+Fell+English+SC&family=IM+Fell+English:ital@0;1&family=Special+Elite&family=Cormorant+Garamond:wght@500;600;700&family=Unbounded:wght@700;900&display=swap" rel="stylesheet">
 <style>
+html,body{touch-action:pan-y}
   :root{ color-scheme:dark; --ink:#F1E5C6; --ink2:rgba(241,229,198,.72); --line:rgba(217,161,59,.38); --card:#173322;
          --accent:#F0C569; --accent2:#D9A13B; --danger:#F0A58E; --radius:22px; --fieldbg:#0C2113;
          --safe-b:env(safe-area-inset-bottom,0px); }
@@ -403,6 +404,10 @@ $("btn-invite").addEventListener("click", async () => {
   } catch (e) { showError(e.message); }
 });
 init();
+</script>
+<script>/* zoom lock (standing rule): no pinch / double-tap zoom */
+for(const e of["gesturestart","gesturechange"])document.addEventListener(e,function(ev){ev.preventDefault()});
+document.addEventListener("dblclick",function(e){if(!e.target.closest("input, textarea"))e.preventDefault()},{passive:false});
 </script>
 </body>
 </html>

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>The Archives — Sarah's Library</title>
 <meta name="description" content="Sarah's reading library — her books by year, ratings and journal notes, the wishlist, and what she's currently reading.">
 <meta name="theme-color" content="#120a05">
@@ -15,6 +15,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="stylesheet" href="theme.css">
 <style>
+html,body{touch-action:pan-y}
   /* Boot gate only — the app itself is styled entirely by theme.css
      (Sarah's original stylesheet, compiled with Tailwind v4). */
   *{ -webkit-tap-highlight-color: transparent; }
@@ -55,6 +56,10 @@
     }).catch(function () { start(); });
     if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(function () {});
   })();
+</script>
+<script>/* zoom lock (standing rule): no pinch / double-tap zoom */
+for(const e of["gesturestart","gesturechange"])document.addEventListener(e,function(ev){ev.preventDefault()});
+document.addEventListener("dblclick",function(e){if(!e.target.closest("input, textarea"))e.preventDefault()},{passive:false});
 </script>
 </body>
 </html>

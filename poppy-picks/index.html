@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#FF6B4A">
 <title>Poppy's Picks — Family Fun</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -15,6 +15,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,700;0,9..144,900;1,9..144,700&family=Nunito+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
+html,body{touch-action:pan-y}
   :root{
     --paper:#FBF5EA; --ink:#17334E; --ink-soft:#47617A; --faint:#8CA0B3;
     --line:#EADFCB; --coral:#FF6B4A; --coral-deep:#F4502E; --coral-soft:#FFE9E2;
@@ -1248,6 +1249,10 @@ function maybeShowHsToast(){
 document.addEventListener("click", (e) => { if (e.target.closest("#hsClose") || e.target.closest("[data-hsdismiss]")) $("#hsWrap").hidden = true; });
 boot();
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+</script>
+<script>/* zoom lock (standing rule): no pinch / double-tap zoom */
+for(const e of["gesturestart","gesturechange"])document.addEventListener(e,function(ev){ev.preventDefault()});
+document.addEventListener("dblclick",function(e){if(!e.target.closest("input, textarea"))e.preventDefault()},{passive:false});
 </script>
 </body>
 </html>

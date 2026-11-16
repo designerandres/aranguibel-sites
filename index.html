@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>The Skipper's Log — Andres Aranguibel</title>
 <meta name="description" content="The Skipper's Log — a journal of expeditions and apps published at sites.aranguibel.com.">
 <meta property="og:type" content="website">
@@ -1031,5 +1031,9 @@
     <div class="csrow"><button class="csalt" id="csCopyApp" type="button">Copy app link</button><a class="csalt" id="csTextApp" href="#">Text app link</a></div>
   </div>
 </div>
+<script>/* zoom lock (standing rule): no pinch / double-tap zoom */
+for(const e of["gesturestart","gesturechange"])document.addEventListener(e,function(ev){ev.preventDefault()});
+document.addEventListener("dblclick",function(e){if(!e.target.closest("input, textarea"))e.preventDefault()},{passive:false});
+</script>
 </body>
 </html>

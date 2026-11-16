@@ -4,7 +4,7 @@
 // only successful (res.ok) responses are stored, so a cover that
 // lands later is never masked by a cached 404; pages are
 // network-first with the cache as the offline fallback.
-const CACHE = "library-v4";
+const CACHE = "library-v5";
 const SHELL = [
   ".",
   "index.html",

@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
 <meta name="color-scheme" content="light" />
 <meta name="description" content="An honest business viability report on starting a private transportation company in Orlando, Florida — market, competitors, fleet fit, unit economics, a 3-year model, and a 90-day pilot plan." />
 <link rel="icon" href="data:," />
@@ -11,6 +11,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:wght@600;700&display=swap" rel="stylesheet" />
 <style>
+html,body{touch-action:pan-y}
   :root{
     --bg:#fbfaf6;
     --surface:#ffffff;
@@ -908,6 +909,10 @@
     if (btnEs) btnEs.addEventListener('click', function(){ applyLang('es'); });
     applyLang('es');
   })();
+</script>
+<script>/* zoom lock (standing rule): no pinch / double-tap zoom */
+for(const e of["gesturestart","gesturechange"])document.addEventListener(e,function(ev){ev.preventDefault()});
+document.addEventListener("dblclick",function(e){if(!e.target.closest("input, textarea"))e.preventDefault()},{passive:false});
 </script>
 </body>
 </html>

@@ -2,9 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Hello — starter microsite</title>
 <style>
+html,body{touch-action:pan-y}
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
@@ -24,5 +25,9 @@
   <h1>Hello from /hello/</h1>
   <p>This folder is the pattern: every microsite is a folder in the repo with an <code>index.html</code> inside it, and it publishes at <code>sites.aranguibel.com/&lt;folder-name&gt;/</code>. Replace this folder's contents — or add new folders — to publish new sites.</p>
 </main>
+<script>/* zoom lock (standing rule): no pinch / double-tap zoom */
+for(const e of["gesturestart","gesturechange"])document.addEventListener(e,function(ev){ev.preventDefault()});
+document.addEventListener("dblclick",function(e){if(!e.target.closest("input, textarea"))e.preventDefault()},{passive:false});
+</script>
 </body>
 </html>
